@@ -35,7 +35,7 @@ def login():
         return render_template('login.html')
     else:
         name = request.form.get('name')
-        if name == 'eima':
+        if name == 'PASSWORD':
             session['verified'] = True
             return redirect(url_for('menu'))
         else:
@@ -135,5 +135,5 @@ def page_not_found(e):
 
 
 if __name__ == '__main__':
-    app.secret_key = 'asdasdasdasdasd'
+    app.secret_key = 'SECRET KEY'
     app.run(debug=True, host='0.0.0.0', port=5000)
