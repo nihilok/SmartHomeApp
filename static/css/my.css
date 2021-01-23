@@ -1,0 +1,40 @@
+html {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
+  background-color: #212121;
+  font-family: "Barlow Semi Condensed";
+  color: white;
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 14rem;
+  height: 15px;
+  border-radius: 5px;  
+  background: #888;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%; 
+  background: #df691a;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #df691a;
+  cursor: pointer;
+}

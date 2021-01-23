@@ -1,0 +1,61 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Smart Central Heating System!">
+  <link rel="stylesheet" type="text/css"  href="{{ url_for('static', filename='bootstrap.min.css') }}">
+  <script type="text/javascript"> (function() { var css = document.createElement('link'); css.href = 'https://use.fontawesome.com/releases/v5.15.1/css/all.css'; css.rel = 'stylesheet'; css.type = 'text/css'; document.getElementsByTagName('head')[0].appendChild(css); })(); </script>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='navbar.css') }}">
+
+  <title>MJ Radio</title>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+</head>
+<body>
+<header class="site-header">
+</header>
+<main role="main" class="main-container">
+  <div class="container h-100 w-100">
+    <div style='text-align: center'><br><br>
+      <h1 class='border-bottom pb-2 mb-5'>Radio Controls</h1>
+      <button type='button' style='font-size: 24; width: 6rem; height: 6rem; margin-right: 10px' class='btn btn-outline-primary' onclick="switchToElSol()">El Sol</button>
+      <button type='button' style='font-size: 24; width: 6rem; height: 6rem; margin-left: 10px' class='btn btn-outline-primary' onclick="switchToHeart()">Heart 80s</button><br><br>
+    </div>
+    <div class='row' id="elSol" style="display: none">
+      <audio controls style="width:100%; height:100px;">
+        <source src="https:\\playerservices.streamtheworld.com\api\livestream-redirect\EL_SOL_BOGAAC.aac" type="audio/aac">
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+    <div class='row' id="heart80s" style="display: none">
+      <iframe src="https://tunein.com/embed/player/s288395/" style="width:100%; height:100px;" scrolling="no" frameborder="no"></iframe>
+    </div>
+  </div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+<script src="https://kit.fontawesome.com/9e3e1cce54.js" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+  var heart80s = document.getElementById('heart80s')
+  var elSol = document.getElementById('elSol')
+
+  function switchToHeart() {
+    heart80s.style.display = 'block'
+    elSol.style.display = 'none'
+  }
+  function switchToElSol() {
+    heart80s.style.display = 'none'
+    elSol.style.display = 'block'
+  }
+</script>
+</body>
+</html>

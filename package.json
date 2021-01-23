@@ -1,0 +1,16 @@
+{
+  "name": "smarthomeapp",
+  "version": "1.0.0",
+  "description": "various controls for the house",
+  "main": "index.js",
+  "scripts": {
+    "build": "tailwind build src/tailwind.css -o static/css/tailwind.css"
+  },
+  "author": "MJFullStack",
+  "license": "ISC",
+  "dependencies": {
+    "autoprefixer": "^10.2.3",
+    "postcss": "^8.2.4",
+    "tailwindcss": "^2.0.2"
+  }
+}

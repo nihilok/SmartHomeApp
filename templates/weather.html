@@ -1,0 +1,14 @@
+    <section id="weather">
+      <div class="container mx-auto row justify-content-center border-top pt-3 mt-5">
+        <div class="mx-auto">
+          <p>{{ weather.weather }}</p>
+          <p>{{ weather.temp }}</p>
+          <p>{{ weather.feels }}</p>
+          <p>{{ weather.wind }}</p>
+          <p>{{ weather.date_time }}</p>
+          {% if frost_warning %}
+          <p>**Frost warning this week**</p>
+          {% endif %}
+        </div>
+      </div>
+    </section>

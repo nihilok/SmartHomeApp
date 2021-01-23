@@ -1,0 +1,76 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Smart Central Heating System!">
+<!--  <link rel="stylesheet" type="text/css"  href="{{ url_for('static', filename='css/tailwind.css') }}">-->
+  <link rel="stylesheet" type="text/css"  href="../static/css/tailwind.css">
+  <script type="text/javascript"> (function() { var css = document.createElement('link'); css.href = 'https://use.fontawesome.com/releases/v5.15.1/css/all.css'; css.rel = 'stylesheet'; css.type = 'text/css'; document.getElementsByTagName('head')[0].appendChild(css); })(); </script>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500&display=swap" rel="stylesheet">
+<!--  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/my.css') }}">-->
+  <link rel="stylesheet" type="text/css" href="../static/css/my.css">
+  <title>Heating Controls</title>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+  <script src="../static/js/index.js"></script>
+  <script type="text/javascript">
+  function loadUrl(newLocation)
+  {
+  window.location = newLocation;
+  return false;
+  }
+  </script>
+</head>
+<body>
+<main role="main" class="">
+  <div class="flex flex-row w-full px-4"><div class="flex-none" onclick="loadUrl('/heating')"><i class="fas fa-arrow-left text-3xl hover:text-gray-200 mt-4"></i></div></div>
+      <h1 class='text-center border-b-2 border-gray-200 pb-2 my-5 text-3xl'>Settings</h1>
+  <div class="border-b-2 border-gray-200 flex flex-col h-auto w-full justify-center items-center text-center pt-10 pb-20">
+    <div class="w-full">
+      <form method="POST">
+        <div class="slidecontainer">
+          <p class="mb-4 text-xl">Desired temperature: <span id="demo"></span>°C</p>
+          <input type="range" min="15" max="25" value="{{ des_temp }}" class="slider" id="myRange" name="myRange">
+        </div>
+        <div class="flex justify-center mt-10 mb-5 w-full">
+          <div class="flex flex-col w-56 space-y-4 my-1">
+            <div class="flex flex-row justify-between space-x-2">
+              <label for="on_1">ON 1</label>
+              <input class="text-black pl-3 pr-1 rounded" id="on_1" name="on_1" type="time" value="{{ timer_prog['on_1'] }}">
+            </div>
+            <div class="flex flex-row justify-between space-x-2">
+              <label for="off_2">OFF 1</label>
+              <input class="text-black pl-3 pr-1 rounded" id="off_2" name="off_1" type="time" value="{{ timer_prog['off_1'] }}">
+            </div>
+            <div class="flex flex-row justify-between space-x-2">
+              <label for="on_2">ON 2</label>
+              <input class="text-black pl-3 pr-1 rounded" id="on_2" name="on_2" type="time" value="{{ timer_prog['on_2'] }}">
+            </div>
+            <div class="flex flex-row justify-between space-x-2">
+              <label for="off_2">OFF 2</label>
+              <input class="text-black pl-3 pr-1 rounded" id="off_2" name="off_2" type="time" value="{{ timer_prog['off_2'] }}">
+            </div>
+          </div>
+        </div>
+        <div class="mt-9"><button type="submit" class="ctl-btn mx-auto">Set</button></div>
+      </form>
+    </div>
+  </div>
+</main>
+
+  <script src="https://kit.fontawesome.com/9e3e1cce54.js" crossorigin="anonymous"></script>
+  
+
+<script type="text/javascript">
+  var slider = document.getElementById("myRange");
+  var output = document.getElementById("demo");
+  output.innerHTML = slider.value;
+  slider.oninput = function() {
+    output.innerHTML = this.value;
+  };
+</script>
+  
+</body>
+</html>
