@@ -1,8 +1,11 @@
 module.exports = {
-  purge: [
+  purge: {
+    enabled: true,
+    content: [
     './templates/*.html',
     './static/js/*.js',
-  ],
+    ],
+    },
   theme: {},
   variants: {},
   plugins: [],

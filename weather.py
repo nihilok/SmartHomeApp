@@ -5,7 +5,7 @@ from datetime import datetime as dt
 degree_sign= u'\N{DEGREE SIGN}'
 
 def api_call():
-    data = requests.get('https://api.openweathermap.org/data/2.5/onecall?lat=51.6862&lon=-1.4129&exclude=minutely,hourly&units=metric&appid=<MYAPIKEY>')
+    data = requests.get('https://api.openweathermap.org/data/2.5/onecall?lat=51.6862&lon=-1.4129&exclude=minutely,hourly&units=metric&appid=9fa343773117603702a3f91a62e14ee4')
     return data.text
 
 def get_8_day_data():

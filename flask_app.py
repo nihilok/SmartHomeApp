@@ -35,7 +35,7 @@ def login():
         return render_template('login.html')
     else:
         name = request.form.get('name')
-        if name == 'PASSWORD':
+        if name == 'eima':
             session['verified'] = True
             return redirect(url_for('menu'))
         else:
