@@ -70,7 +70,7 @@ def off():
 def advance_thread():
     interrupt = False
     if hs.tstat:
-        hs.stop_thread()
+        hs.tstat = False
         interrupt = True
     hs.switch_on_relay()
     time.sleep(900)
@@ -103,7 +103,7 @@ def settings():
     else:
         interrupt = False
         if hs.tstat:
-            hs.stop_thread()
+            hs.tstat = False
             interrupt = True
         des_temp = request.form.get('myRange')
         on_1 = request.form.get('on_1')
