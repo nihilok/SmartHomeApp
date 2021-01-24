@@ -73,7 +73,7 @@ def advance_thread():
         hs.tstat = False
         interrupt = True
     hs.switch_on_relay()
-    time.sleep(900)
+    time.sleep(1800)
     hs.switch_off_relay()
     hs.advance = False
     hs.advance_start_time = None
