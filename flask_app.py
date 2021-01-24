@@ -70,7 +70,7 @@ def off():
 def advance_thread():
     interrupt = False
     if hs.tstat:
-        hs.tstat = False
+        hs.stop_thread()
         interrupt = True
     hs.switch_on_relay()
     time.sleep(900)
@@ -101,6 +101,10 @@ def settings():
             return render_template('settings.html', des_temp=hs.desired_temperature, timer_prog=hs.timer_program)
         return render_template('login.html')
     else:
+        interrupt = False
+        if hs.tstat:
+            hs.stop_thread()
+            interrupt = True
         des_temp = request.form.get('myRange')
         on_1 = request.form.get('on_1')
         off_1 = request.form.get('off_1')
@@ -114,6 +118,8 @@ def settings():
         }
         hs.desired_temperature = des_temp
         hs.timer_program = new_timer_prog
+        if interrupt:
+            hs.thermostat_thread()
         return redirect(url_for('home'))
 
 
