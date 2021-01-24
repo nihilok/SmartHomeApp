@@ -96,31 +96,31 @@ def advance():
 
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
-    if request.method == 'GET':
-        if 'verified' in session:
+    if 'verified' in session:
+        if request.method == 'GET':
             return render_template('settings.html', des_temp=hs.desired_temperature, timer_prog=hs.timer_program)
-        return render_template('login.html')
-    else:
-        interrupt = False
-        if hs.tstat:
-            hs.tstat = False
-            interrupt = True
-        des_temp = request.form.get('myRange')
-        on_1 = request.form.get('on_1')
-        off_1 = request.form.get('off_1')
-        on_2 = request.form.get('on_2')
-        off_2 = request.form.get('off_2')
-        new_timer_prog = {
-            'on_1': on_1,
-            'off_1': off_1,
-            'on_2': on_2,
-            'off_2': off_2
-        }
-        hs.desired_temperature = des_temp
-        hs.timer_program = new_timer_prog
-        if interrupt:
-            hs.thermostat_thread()
-        return redirect(url_for('home'))
+        else:
+            interrupt = False
+            if hs.tstat:
+                hs.tstat = False
+                interrupt = True
+            des_temp = request.form.get('myRange')
+            on_1 = request.form.get('on_1')
+            off_1 = request.form.get('off_1')
+            on_2 = request.form.get('on_2')
+            off_2 = request.form.get('off_2')
+            new_timer_prog = {
+                'on_1': on_1,
+                'off_1': off_1,
+                'on_2': on_2,
+                'off_2': off_2
+            }
+            hs.desired_temperature = des_temp
+            hs.timer_program = new_timer_prog
+            if interrupt:
+                hs.thermostat_thread()
+            return redirect(url_for('home'))
+    return render_template('login.html')
 
 
 @app.route('/temp', methods=['GET'])
