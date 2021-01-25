@@ -40,7 +40,7 @@ function countDownTimer(){
   }
 
   // If the count down is finished, write some text
-  if (distance > 15 * 60 * 1000) {
+  if (distance > 30 * 60 * 1000) {
     clearInterval(x);
     document.getElementById("advanceBtn").innerHTML = "END"
     setTimeout(function() {
