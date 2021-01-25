@@ -29,7 +29,7 @@ function countDownTimer(){
   var distance = now - countDownDate;
 
   // Time calculations for hours, minutes and seconds
-  var minutes = Math.floor((15 - (distance % (1000 * 60 * 60)) / (1000 * 60)));
+  var minutes = Math.floor((30 - (distance % (1000 * 60 * 60)) / (1000 * 60)));
   var seconds = Math.floor((60 - (distance % (1000 * 60)) / 1000));
 
   // Display the result in the element with id="countdown"
@@ -78,4 +78,23 @@ function getTemp(){
     })
 }
 
-setInterval(getTemp, 3000)
+function getWeather(){
+    var weatherDisplay = document.getElementById('iemarquee')
+    fetch(`${window.origin}/weather`)
+    .then(function(response){
+        if (response.status !== 200) {
+            alert(`Bad response from temperature api: ${response.status}`)
+            return ;
+        }
+        response.json().then(function(data){
+            weatherDisplay.innerHTML = data[0].weather
+        })
+    })
+}
+
+$(document).ready(function(){
+    setTimeout(getWeather(), 10);
+})
+
+setInterval(getTemp, 1000)
+setInterval(getWeather, 120000)

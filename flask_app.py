@@ -5,6 +5,7 @@ from threading import Thread
 from flask import Flask, redirect, url_for, render_template, request, session, jsonify, make_response
 
 from .heating import Heating
+from .weather import get_8_day_data, get_current_data, frost_warn
 
 app = Flask(__name__)
 
@@ -127,6 +128,15 @@ def settings():
 def fetch_temp() -> int:
     response = make_response(jsonify({"temp": int(hs.check_temperature()),
                                       "on": hs.check_state()}), 200)
+    return response
+
+
+@app.route('/weather')
+def fetch_weather():
+    current_weather = get_current_data()
+    frost_warning = frost_warn()
+    weather_string = f"<nobr>{current_weather['temp']}, {current_weather['feels']}, {current_weather['wind']}</nobr>"
+    response = make_response(jsonify({"weather": weather_string}, 200))
     return response
 
 
