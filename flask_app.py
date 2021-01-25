@@ -5,6 +5,7 @@ from threading import Thread
 from flask import Flask, redirect, url_for, render_template, request, session, jsonify, make_response
 
 from .heating import Heating
+from .weather import get_8_day_data, get_current_data, frost_warn
 
 app = Flask(__name__)
 
@@ -35,7 +36,7 @@ def login():
         return render_template('login.html')
     else:
         name = request.form.get('name')
-        if name == 'PASSWORD':
+        if name == 'YOUR PASSWORD':
             session['verified'] = True
             return redirect(url_for('menu'))
         else:
@@ -73,7 +74,7 @@ def advance_thread():
         hs.tstat = False
         interrupt = True
     hs.switch_on_relay()
-    time.sleep(900)
+    time.sleep(1800)
     hs.switch_off_relay()
     hs.advance = False
     hs.advance_start_time = None
@@ -96,37 +97,46 @@ def advance():
 
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
-    if 'verified' in session:
-        if request.method == 'GET':
+    if request.method == 'GET':
+        if 'verified' in session:
             return render_template('settings.html', des_temp=hs.desired_temperature, timer_prog=hs.timer_program)
-        else:
-            interrupt = False
-            if hs.tstat:
-                hs.tstat = False
-                interrupt = True
-            des_temp = request.form.get('myRange')
-            on_1 = request.form.get('on_1')
-            off_1 = request.form.get('off_1')
-            on_2 = request.form.get('on_2')
-            off_2 = request.form.get('off_2')
-            new_timer_prog = {
-                'on_1': on_1,
-                'off_1': off_1,
-                'on_2': on_2,
-                'off_2': off_2
-            }
-            hs.desired_temperature = des_temp
-            hs.timer_program = new_timer_prog
-            if interrupt:
-                hs.thermostat_thread()
-            return redirect(url_for('home'))
-    return render_template('login.html')
+        return render_template('login.html')
+    else:
+        interrupt = False
+        if hs.tstat:
+            hs.tstat = False
+            interrupt = True
+        des_temp = request.form.get('myRange')
+        on_1 = request.form.get('on_1')
+        off_1 = request.form.get('off_1')
+        on_2 = request.form.get('on_2')
+        off_2 = request.form.get('off_2')
+        new_timer_prog = {
+            'on_1': on_1,
+            'off_1': off_1,
+            'on_2': on_2,
+            'off_2': off_2
+        }
+        hs.desired_temperature = des_temp
+        hs.timer_program = new_timer_prog
+        if interrupt:
+            hs.thermostat_thread()
+        return redirect(url_for('home'))
 
 
 @app.route('/temp', methods=['GET'])
 def fetch_temp() -> int:
     response = make_response(jsonify({"temp": int(hs.check_temperature()),
                                       "on": hs.check_state()}), 200)
+    return response
+
+
+@app.route('/weather')
+def fetch_weather():
+    current_weather = get_current_data()
+    frost_warning = frost_warn()
+    weather_string = f"<nobr>{current_weather['temp']}, {current_weather['feels']}, {current_weather['wind']}</nobr>"
+    response = make_response(jsonify({"weather": weather_string}, 200))
     return response
 
 
@@ -141,5 +151,5 @@ def page_not_found(e):
 
 
 if __name__ == '__main__':
-    app.secret_key = 'SECRET KEY'
+    app.secret_key = 'YOUR SECRET KEY'
     app.run(debug=True, host='0.0.0.0', port=5000)
