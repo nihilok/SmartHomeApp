@@ -72,4 +72,4 @@ Current data:
 ====================================
     """)
 
-print(frost_warn())
+# print(frost_warn())

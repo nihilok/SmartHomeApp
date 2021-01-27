@@ -40,6 +40,7 @@ def login():
             session['verified'] = True
             return redirect(url_for('menu'))
         else:
+            hs.logger.warning('incorrect password entered')
             return render_template('login.html', message='You are not allowed to enter.')
 
 
@@ -125,7 +126,7 @@ def settings():
 
 
 @app.route('/temp', methods=['GET'])
-def fetch_temp() -> int:
+def fetch_temp():
     response = make_response(jsonify({"temp": int(hs.check_temperature()),
                                       "on": hs.check_state()}), 200)
     return response
@@ -134,7 +135,6 @@ def fetch_temp() -> int:
 @app.route('/weather')
 def fetch_weather():
     current_weather = get_current_data()
-    frost_warning = frost_warn()
     weather_string = f"<nobr>{current_weather['temp']}, {current_weather['feels']}, {current_weather['wind']}</nobr>"
     response = make_response(jsonify({"weather": weather_string}, 200))
     return response
