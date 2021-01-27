@@ -6,6 +6,7 @@ from datetime import datetime
 from threading import Thread
 import pigpio
 import requests
+from . import telegram_bot as tg
 
 
 class Heating:
@@ -32,6 +33,7 @@ class Heating:
             'on_2': '17:30',
             'off_2': '22:00',
         }
+        self.error_alert_sent = False
         self.temperature = self.check_temperature()
         self.humidity = self.check_humidity()
         self.pressure = self.check_pressure()
@@ -46,7 +48,7 @@ class Heating:
         return self.pi.read(27)
 
     def thermostatic_control(self):
-        self.logger.info('thermostatic_control started')
+        self.logger.info('thermostatic control switched on')
         self.tstat = True
         while self.tstat:
             time_check = datetime.strptime(datetime.utcnow().time().strftime('%H:%M'), '%H:%M').time()
@@ -64,7 +66,6 @@ class Heating:
                 if self.check_state():
                     self.switch_off_relay()
                 time.sleep(600)
-        self.logger.info('thermostatic_control thread ended naturally')
 
     def thermostat_thread(self):
         self.on = True
@@ -76,15 +77,22 @@ class Heating:
         self.on = False
         self.tstat = False
         self.switch_off_relay()
+        self.logger.info('thermostatic control switched off naturally')
 
     def sensor_api(self):
         try:
             req = requests.get('http://192.168.1.88/')
             data = json.loads(req.text)
+            if self.error_alert_sent:
+                tg.send_message('Contact with sensor resumed')
+                self.error_alert_sent = False
             return data
         except Exception as e:
             print(e)
             self.logger.warning('cannot communicate with sensor API')
+            if not self.error_alert_sent:
+                tg.send_message('WARNING: Heating module cannot communicate with sensor API')
+                self.error_alert_sent = True
             time.sleep(1)
             return {
                 'temperature': self.temperature,
