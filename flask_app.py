@@ -5,16 +5,11 @@ from threading import Thread
 from flask import Flask, redirect, url_for, render_template, request, session, jsonify, make_response
 
 from .heating import Heating
-from .weather import get_8_day_data, get_current_data, frost_warn
+from .weather import get_current_data
 
 app = Flask(__name__)
 
 hs = Heating()
-
-# Throwaway temp checks:
-hs.check_temperature()
-time.sleep(1)
-hs.check_temperature()
 
 
 @app.route('/heating')
