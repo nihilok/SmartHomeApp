@@ -1,12 +1,11 @@
 import json
-import sys
 import time
 import logging
+import configparser
 from datetime import datetime
 from threading import Thread
 import pigpio
 import requests
-from requests.exceptions import ConnectionError
 
 
 class Heating:
@@ -16,7 +15,7 @@ class Heating:
                                   datefmt='%Y-%m-%d %H:%M:%S')
     fh.setFormatter(formatter)
     logger.addHandler(fh)
-    logger.setLevel(logging.WARNING)
+    logger.setLevel(logging.DEBUG)
 
     def __init__(self):
         self.pi = pigpio.pi()
@@ -47,7 +46,7 @@ class Heating:
         return self.pi.read(27)
 
     def thermostatic_control(self):
-        self.logger.debug('thermostatic_control started')
+        self.logger.info('thermostatic_control started')
         self.tstat = True
         while self.tstat:
             time_check = datetime.strptime(datetime.utcnow().time().strftime('%H:%M'), '%H:%M').time()
@@ -65,7 +64,7 @@ class Heating:
                 if self.check_state():
                     self.switch_off_relay()
                 time.sleep(600)
-        self.logger.debug('thermostatic_control thread ended')
+        self.logger.info('thermostatic_control thread ended naturally')
 
     def thermostat_thread(self):
         self.on = True
@@ -86,7 +85,7 @@ class Heating:
         except Exception as e:
             print(e)
             self.logger.warning('cannot communicate with sensor API')
-            time.sleep(2)
+            time.sleep(1)
             return {
                 'temperature': self.temperature,
                 'humidity': self.humidity,
