@@ -5,16 +5,11 @@ from threading import Thread
 from flask import Flask, redirect, url_for, render_template, request, session, jsonify, make_response
 
 from .heating import Heating
-from .weather import get_8_day_data, get_current_data, frost_warn
+from .weather import get_current_data
 
 app = Flask(__name__)
 
 hs = Heating()
-
-# Throwaway temp checks:
-hs.check_temperature()
-time.sleep(1)
-hs.check_temperature()
 
 
 @app.route('/heating')
@@ -36,10 +31,11 @@ def login():
         return render_template('login.html')
     else:
         name = request.form.get('name')
-        if name == 'YOUR PASSWORD':
+        if name == 'PASSWORD':
             session['verified'] = True
             return redirect(url_for('menu'))
         else:
+            hs.logger.warning('incorrect password entered')
             return render_template('login.html', message='You are not allowed to enter.')
 
 
@@ -125,7 +121,7 @@ def settings():
 
 
 @app.route('/temp', methods=['GET'])
-def fetch_temp() -> int:
+def fetch_temp():
     response = make_response(jsonify({"temp": int(hs.check_temperature()),
                                       "on": hs.check_state()}), 200)
     return response
@@ -134,7 +130,6 @@ def fetch_temp() -> int:
 @app.route('/weather')
 def fetch_weather():
     current_weather = get_current_data()
-    frost_warning = frost_warn()
     weather_string = f"<nobr>{current_weather['temp']}, {current_weather['feels']}, {current_weather['wind']}</nobr>"
     response = make_response(jsonify({"weather": weather_string}, 200))
     return response
@@ -151,5 +146,5 @@ def page_not_found(e):
 
 
 if __name__ == '__main__':
-    app.secret_key = 'YOUR SECRET KEY'
+    app.secret_key = 'SECRET KEY'
     app.run(debug=True, host='0.0.0.0', port=5000)

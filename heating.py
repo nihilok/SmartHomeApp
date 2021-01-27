@@ -1,5 +1,7 @@
 import json
+import sys
 import time
+import logging
 from datetime import datetime
 from threading import Thread
 import pigpio
@@ -8,23 +10,44 @@ from requests.exceptions import ConnectionError
 
 
 class Heating:
+    logger = logging.getLogger('Heating')
+    fh = logging.FileHandler('/home/mj/FlaskApp/FlaskApp/heating.log')
+    formatter = logging.Formatter('[%(levelname)s][%(asctime)s][%(name)s] %(message)s',
+                                  datefmt='%Y-%m-%d %H:%M:%S')
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+    logger.setLevel(logging.WARNING)
+
     def __init__(self):
         self.pi = pigpio.pi()
+        if self.check_state():
+            self.switch_off_relay()
         self.advance = False
         self.advance_start_time = None
         self.on = False
         self.tstat = False
-        self.temperature = self.check_temperature()
-        self.humidity = self.check_humidity()
-        self.pressure = self.check_pressure()
-        self.desired_temperature = 19
+        self.desired_temperature = 20
         self.timer_program = {
             'on_1': '07:30',
             'off_1': '09:30',
             'on_2': '17:30',
             'off_2': '22:00',
         }
+        self.temperature = self.check_temperature()
+        self.humidity = self.check_humidity()
+        self.pressure = self.check_pressure()
+
+    def switch_on_relay(self):
+        self.pi.write(27, 1)
+
+    def switch_off_relay(self):
+        self.pi.write(27, 0)
+
+    def check_state(self):
+        return self.pi.read(27)
+
     def thermostatic_control(self):
+        self.logger.debug('thermostatic_control started')
         self.tstat = True
         while self.tstat:
             time_check = datetime.strptime(datetime.utcnow().time().strftime('%H:%M'), '%H:%M').time()
@@ -33,16 +56,16 @@ class Heating:
             on_2 = datetime.strptime(self.timer_program['on_2'], '%H:%M').time()
             off_2 = datetime.strptime(self.timer_program['off_2'], '%H:%M').time()
             if (on_1 < time_check < off_1) or (on_2 < time_check < off_2):
-                if float(self.check_temperature()) < float(self.desired_temperature) and not self.check_state():
+                if float(self.check_temperature()) < float(self.desired_temperature) - 0.4 and not self.check_state():
                     self.switch_on_relay()
-                elif float(self.check_temperature()) > float(self.desired_temperature) + 0.5 and self.check_state():
+                elif float(self.check_temperature()) > float(self.desired_temperature) + 0.4 and self.check_state():
                     self.switch_off_relay()
                 time.sleep(5)
             else:
                 if self.check_state():
                     self.switch_off_relay()
-                time.sleep(900)
-        return
+                time.sleep(600)
+        self.logger.debug('thermostatic_control thread ended')
 
     def thermostat_thread(self):
         self.on = True
@@ -60,7 +83,10 @@ class Heating:
             req = requests.get('http://192.168.1.88/')
             data = json.loads(req.text)
             return data
-        except ConnectionError:
+        except Exception as e:
+            print(e)
+            self.logger.warning('cannot communicate with sensor API')
+            time.sleep(2)
             return {
                 'temperature': self.temperature,
                 'humidity': self.humidity,
@@ -78,15 +104,6 @@ class Heating:
     def check_humidity(self):
         self.humidity = self.sensor_api()['humidity']
         return self.humidity
-
-    def switch_on_relay(self):
-        self.pi.write(27, 1)
-
-    def switch_off_relay(self):
-        self.pi.write(27, 0)
-
-    def check_state(self):
-        return self.pi.read(27)
 
     def start_time(self):
         if not self.advance_start_time:
