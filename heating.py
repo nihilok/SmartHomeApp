@@ -56,7 +56,7 @@ class Heating:
         self.save_state_thread()
 
     def save_state(self):
-        with open('heating.conf.json', 'w') as f:
+        with open('/home/mj/FlaskApp/FlaskApp/heating.conf.json', 'w') as f:
             f.write(json.dumps(self.config))
 
     def save_state_thread(self):
