@@ -1,7 +1,6 @@
 import json
 import time
 import logging
-import configparser
 from datetime import datetime
 from threading import Thread
 import pigpio
@@ -17,17 +16,17 @@ class Heating:
     fh.setFormatter(formatter)
     logger.addHandler(fh)
     logger.setLevel(logging.DEBUG)
-    config = configparser.ConfigParser()
-    config.read('heating.conf.ini')
+    with open('heating.conf.json', 'r') as f:
+        config = json.loads(f.read())
 
     def __init__(self):
         self.pi = pigpio.pi()
         self.tstat = False
         self.on = False
-        if self.config['DEFAULT'].getboolean('tstat'):
+        if self.config['tstat']:
             print('yes tstat')
             self.thermostat_thread()
-        if self.config['DEFAULT'].getboolean('relay'):
+        if self.config['relay']:
             print('yes relay')
             self.switch_on_relay()
         else:
@@ -48,11 +47,22 @@ class Heating:
 
     def switch_on_relay(self):
         self.pi.write(27, 1)
-        self.config.set('DEFAULT', 'relay', 'true')
+        self.config['relay'] = True
+        self.save_state_thread()
 
     def switch_off_relay(self):
         self.pi.write(27, 0)
-        self.config.set('DEFAULT', 'relay', 'false')
+        self.config['relay'] = False
+        self.save_state_thread()
+
+    def save_state(self):
+        with open('heating.conf.json', 'w') as f:
+            f.write(json.dumps(self.config))
+
+    def save_state_thread(self):
+        t = Thread(target=self.save_state)
+        t.daemon = True
+        t.start()
 
     def check_state(self):
         return self.pi.read(27)
@@ -60,7 +70,9 @@ class Heating:
     def thermostatic_control(self):
         self.logger.info('thermostatic control switched on')
         self.tstat = True
-        self.config.set('DEFAULT', 'tstat', 'true')
+        self.config['tstat'] = True
+        self.save_state_thread()
+
         while self.tstat:
             time_check = datetime.strptime(datetime.utcnow().time().strftime('%H:%M'), '%H:%M').time()
             on_1 = datetime.strptime(self.timer_program['on_1'], '%H:%M').time()
@@ -87,7 +99,8 @@ class Heating:
     def stop_thread(self):
         self.on = False
         self.tstat = False
-        self.config.set('DEFAULT', 'tstat', 'false')
+        self.config['tstat'] = False
+        self.save_state_thread()
         self.switch_off_relay()
         self.logger.info('thermostatic control switched off naturally')
 
