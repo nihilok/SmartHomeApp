@@ -17,17 +17,15 @@ class Heating:
     fh.setFormatter(formatter)
     logger.addHandler(fh)
     logger.setLevel(logging.DEBUG)
+    config = configparser.ConfigParser()
+    config.read('heating.conf.ini')
 
     def __init__(self):
         self.pi = pigpio.pi()
-        self.config = configparser.ConfigParser()
-        self.config.read('heating.conf.ini')
         self.tstat = False
+        self.on = False
         if self.config['DEFAULT'].getboolean('tstat'):
-            self.on = True
             self.thermostat_thread()
-        else:
-            self.on = False
         if self.config['DEFAULT'].getboolean('relay'):
             self.switch_on_relay()
         else:
