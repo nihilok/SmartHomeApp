@@ -21,16 +21,11 @@ class Heating:
 
     def __init__(self):
         self.pi = pigpio.pi()
+        self.switch_off_relay()
         self.tstat = False
         self.on = False
         if self.config['tstat']:
-            print('yes tstat')
             self.thermostat_thread()
-        if self.config['relay']:
-            print('yes relay')
-            self.switch_on_relay()
-        else:
-            self.switch_off_relay()
         self.advance = False
         self.advance_start_time = None
         self.desired_temperature = 20
