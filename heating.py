@@ -16,7 +16,7 @@ class Heating:
     fh.setFormatter(formatter)
     logger.addHandler(fh)
     logger.setLevel(logging.DEBUG)
-    with open('heating.conf.json', 'r') as f:
+    with open('/home/mj/FlaskApp/FlaskApp/heating.conf.json', 'r') as f:
         config = json.loads(f.read())
 
     def __init__(self):
