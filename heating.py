@@ -23,12 +23,12 @@ class Heating:
         self.config = configparser.ConfigParser()
         self.config.read('heating.conf.ini')
         self.tstat = False
-        if self.config['last-settings'].getboolean('tstat'):
+        if self.config['last-configuration'].getboolean('tstat'):
             self.on = True
             self.thermostat_thread()
         else:
             self.on = False
-        if self.config['last-settings'].getboolean('relay'):
+        if self.config['last-configuration'].getboolean('relay'):
             self.switch_on_relay()
         else:
             self.switch_off_relay()
@@ -48,11 +48,11 @@ class Heating:
 
     def switch_on_relay(self):
         self.pi.write(27, 1)
-        self.config['last-settings']['relay'] = 'true'
+        self.config['last-configuration']['relay'] = 'true'
 
     def switch_off_relay(self):
         self.pi.write(27, 0)
-        self.config['last-settings']['relay'] = 'false'
+        self.config['last-configuration']['relay'] = 'false'
 
     def check_state(self):
         return self.pi.read(27)
@@ -60,7 +60,7 @@ class Heating:
     def thermostatic_control(self):
         self.logger.info('thermostatic control switched on')
         self.tstat = True
-        self.config['last-settings']['tstat'] = 'true'
+        self.config['last-configuration']['tstat'] = 'true'
         while self.tstat:
             time_check = datetime.strptime(datetime.utcnow().time().strftime('%H:%M'), '%H:%M').time()
             on_1 = datetime.strptime(self.timer_program['on_1'], '%H:%M').time()
@@ -87,7 +87,7 @@ class Heating:
     def stop_thread(self):
         self.on = False
         self.tstat = False
-        self.config['last-settings']['tstat'] = 'false'
+        self.config['last-configuration']['tstat'] = 'false'
         self.switch_off_relay()
         self.logger.info('thermostatic control switched off naturally')
 
