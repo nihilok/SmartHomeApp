@@ -81,14 +81,12 @@ def advance_thread():
 
 @app.route('/advance')
 def advance():
-    if 'verified' in session:
-        hs.on = True
-        hs.advance = True
-        t1 = Thread(target=advance_thread)
-        t1.daemon = True
-        t1.start()
-        return redirect(url_for('home'))
-    return redirect(url_for('login'))
+    hs.on = True
+    hs.advance = True
+    t1 = Thread(target=advance_thread)
+    t1.daemon = True
+    t1.start()
+    return redirect(url_for('home'))
 
 
 @app.route('/settings', methods=['GET', 'POST'])
