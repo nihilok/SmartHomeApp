@@ -105,8 +105,5 @@ function changeStation(btn) {
             alert(`Bad response from radio api: ${response.status}`)
             return ;
         }
-        response.json().then(function(data){
-            alert(data.message)
-        })
     })
 }
