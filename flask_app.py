@@ -165,6 +165,7 @@ def radio():
             kill_station()
             return render_template('radio.html')
         play_radio_station(request.get_json()['station'])
+        return make_response(jsonify({'message': 'success'}, 200))
     return render_template('radio.html')
 
 
