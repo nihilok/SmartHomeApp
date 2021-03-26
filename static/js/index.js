@@ -99,7 +99,6 @@ $(document).ready(function(){
 
 function changeStation(btn) {
     var station = btn.innerHTML.toLowerCase()
-    alert(station)
     fetch(`${window.origin}/radio`, {method: 'POST', headers: {
             'Content-Type': 'application/json'
             // 'Content-Type': 'application/x-www-form-urlencoded',
