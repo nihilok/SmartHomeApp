@@ -164,6 +164,7 @@ def radio():
         if 'kill' in request.get_json().keys():
             kill_station()
             return 'Success', 200
+        print(request.get_json()['station'])
         play_radio_station(request.get_json()['station'])
         return 'Success', 200
     return render_template('radio.html')
