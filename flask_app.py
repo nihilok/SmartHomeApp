@@ -161,8 +161,8 @@ def play_radio_station(station):
 @app.route('/radio', methods=['GET', 'POST'])
 def radio():
     if request.method == 'POST':
-        # print(request.get_json())
-        # print(request.get_json()['station'])
+        if request.get_json() and request.get_json().get('kill'):
+            kill_station()
         play_radio_station(request.get_json()['station'])
         return 'Success', 200
     return render_template('radio.html')

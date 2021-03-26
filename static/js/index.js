@@ -111,3 +111,16 @@ function changeStation(btn) {
         }
     })
 }
+
+function killStation() {
+    fetch(`${window.origin}/radio`, {method: 'POST', headers: {
+            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+        }, body: JSON.stringify({kill: true})})
+    .then(function(response){
+        if (response.status !== 200) {
+            alert(`Bad response from radio api: ${response.status}`)
+            return ;
+        }
+    })
+}
