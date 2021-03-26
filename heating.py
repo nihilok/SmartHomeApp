@@ -1,4 +1,5 @@
 import json
+import pickle
 import time
 import logging
 from datetime import datetime
@@ -6,6 +7,16 @@ from threading import Thread
 import pigpio
 import requests
 from . import telegram_bot as tg
+
+
+def load_times():
+    with open('times', 'rb') as f:
+        return pickle.load(f)
+
+
+def save_times(times: dict):
+    with open('times', 'wb') as f:
+        pickle.dump(times, f)
 
 
 class Heating:
@@ -29,7 +40,10 @@ class Heating:
         self.advance = False
         self.advance_start_time = None
         self.desired_temperature = 20
-        self.timer_program = {
+        try:
+            self.timer_program = self.config['timer_program']
+        except (FileNotFoundError, KeyError):
+            self.timer_program = {
             'on_1': '07:30',
             'off_1': '09:30',
             'on_2': '17:30',
@@ -51,6 +65,7 @@ class Heating:
         self.save_state_thread()
 
     def save_state(self):
+        self.config['timer_program'] = self.timer_program
         with open('/home/mj/FlaskApp/FlaskApp/heating.conf.json', 'w') as f:
             f.write(json.dumps(self.config))
 

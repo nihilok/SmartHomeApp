@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import os
+import signal
+import subprocess
 import time
 from threading import Thread
 
@@ -113,6 +116,7 @@ def settings():
         }
         hs.desired_temperature = des_temp
         hs.timer_program = new_timer_prog
+        hs.save_state_thread()
         if interrupt:
             hs.thermostat_thread()
         return redirect(url_for('home'))
@@ -133,8 +137,35 @@ def fetch_weather():
     return response
 
 
-@app.route('/radio')
+STATION_URLS = {
+    'heart80s': 'http://media-ice.musicradio.com/Heart80sMP3',
+    'elsol': 'https://playerservices.streamtheworld.com/api/livestream-redirect/EL_SOL_BOGAAC.aac'
+}
+
+stream = None
+
+
+def kill_station():
+    global stream
+    try:
+        os.kill(stream.pid, signal.SIGTERM)
+    except Exception as e:
+        print(e)
+
+
+def play_radio_station(station):
+    kill_station()
+    global stream
+    stream = subprocess.call(['mpv', STATION_URLS[station]])
+
+
+@app.route('/radio', methods=['GET', 'POST'])
 def radio():
+    if request.method == 'POST':
+        if 'kill' in request.get_json().keys():
+            kill_station()
+            return render_template('radio.html')
+        play_radio_station(request.get_json()['station'])
     return render_template('radio.html')
 
 
