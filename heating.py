@@ -42,7 +42,7 @@ class Heating:
         self.desired_temperature = 20
         try:
             self.timer_program = self.config['timer_program']
-        except (FileNotFoundError, KeyError):
+        except (FileNotFoundError, KeyError, AttributeError):
             self.timer_program = {
             'on_1': '07:30',
             'off_1': '09:30',
