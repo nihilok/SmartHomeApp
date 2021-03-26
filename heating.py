@@ -65,7 +65,15 @@ class Heating:
         self.save_state_thread()
 
     def save_state(self):
-        self.config['timer_program'] = self.timer_program
+        try:
+            self.config['timer_program'] = self.timer_program
+        except AttributeError:
+            self.config['timer_program'] = {
+            'on_1': '07:30',
+            'off_1': '09:30',
+            'on_2': '17:30',
+            'off_2': '22:00',
+        }
         with open('/home/mj/FlaskApp/FlaskApp/heating.conf.json', 'w') as f:
             f.write(json.dumps(self.config))
 
