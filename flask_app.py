@@ -3,7 +3,9 @@ import os
 import signal
 import subprocess
 import time
+import mpv
 from threading import Thread
+
 
 from flask import Flask, redirect, url_for, render_template, request, session, jsonify, make_response
 
@@ -142,21 +144,18 @@ STATION_URLS = {
     'el sol': 'https://playerservices.streamtheworld.com/api/livestream-redirect/EL_SOL_BOGAAC.aac'
 }
 
-stream = None
+stream = mpv.MPV()
 
 
 def kill_station():
     global stream
-    try:
-        os.kill(stream.pid, signal.SIGTERM)
-    except Exception as e:
-        print(e)
+    stream.stop()
 
 
 def play_radio_station(station):
     # kill_station()
     global stream
-    stream = subprocess.Popen(['mpv', STATION_URLS[station], '&'])
+    stream.play(STATION_URLS[station])
 
 
 @app.route('/radio', methods=['GET', 'POST'])
