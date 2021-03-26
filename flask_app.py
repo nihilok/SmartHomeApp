@@ -154,7 +154,7 @@ def kill_station():
 
 
 def play_radio_station(station):
-    kill_station()
+    # kill_station()
     global stream
     stream = subprocess.Popen(['mpv', STATION_URLS[station]])
 
