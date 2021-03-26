@@ -3,7 +3,7 @@ import os
 import signal
 import subprocess
 import time
-import mpv
+# import mpv
 from threading import Thread
 
 
@@ -144,28 +144,28 @@ STATION_URLS = {
     'el sol': 'https://playerservices.streamtheworld.com/api/livestream-redirect/EL_SOL_BOGAAC.aac'
 }
 
-stream = mpv.MPV()
+# stream = mpv.MPV()
 
 
-def kill_station():
-    global stream
-    stream.stop()
-
-
-def play_radio_station(station):
-    # kill_station()
-    global stream
-    stream.play(STATION_URLS[station])
+# def kill_station():
+#     global stream
+#     stream.stop()
+#
+#
+# def play_radio_station(station):
+#     # kill_station()
+#     global stream
+#     stream.play(STATION_URLS[station])
 
 
 @app.route('/radio', methods=['GET', 'POST'])
 def radio():
-    if request.method == 'POST':
-        if request.get_json() and request.get_json().get('kill'):
-            kill_station()
-            return 'Success', 200
-        play_radio_station(request.get_json()['station'])
-        return 'Success', 200
+    # if request.method == 'POST':
+    #     if request.get_json() and request.get_json().get('kill'):
+    #         kill_station()
+    #         return 'Success', 200
+    #     play_radio_station(request.get_json()['station'])
+    #     return 'Success', 200
     return render_template('radio.html')
 
 
