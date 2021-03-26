@@ -156,7 +156,7 @@ def kill_station():
 def play_radio_station(station):
     # kill_station()
     global stream
-    stream = subprocess.Popen(['mpv', STATION_URLS[station]])
+    stream = subprocess.Popen(['mpv', STATION_URLS[station], '&'])
 
 
 @app.route('/radio', methods=['GET', 'POST'])
