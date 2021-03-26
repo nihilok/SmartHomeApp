@@ -163,9 +163,9 @@ def radio():
     if request.method == 'POST':
         if 'kill' in request.get_json().keys():
             kill_station()
-            return render_template('radio.html')
+            return make_response(jsonify({'message': 'success'}, 202))
         play_radio_station(request.get_json()['station'])
-        return make_response(jsonify({'message': 'success'}, 200))
+        return make_response(jsonify({'message': 'success'}, 202))
     return render_template('radio.html')
 
 

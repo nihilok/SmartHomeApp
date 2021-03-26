@@ -102,7 +102,7 @@ function changeStation(btn) {
     fetch(`${window.origin}/changeStation`, {method: 'POST', contentType: 'application/json', body: JSON.stringify({station: station})})
     .then(function(response){
         if (response.status !== 202) {
-            alert(`Bad response from temperature api: ${response.status}`)
+            alert(`Bad response from radio api: ${response.status}`)
             return ;
         }
         response.json().then(function(data){
