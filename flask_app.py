@@ -138,8 +138,8 @@ def fetch_weather():
 
 
 STATION_URLS = {
-    'heart80s': 'http://media-ice.musicradio.com/Heart80sMP3',
-    'elsol': 'https://playerservices.streamtheworld.com/api/livestream-redirect/EL_SOL_BOGAAC.aac'
+    'heart 80s': 'http://media-ice.musicradio.com/Heart80sMP3',
+    'el sol': 'https://playerservices.streamtheworld.com/api/livestream-redirect/EL_SOL_BOGAAC.aac'
 }
 
 stream = None
