@@ -100,7 +100,10 @@ $(document).ready(function(){
 function changeStation(btn) {
     var station = btn.innerHTML.toLowerCase()
     alert(station)
-    fetch(`${window.origin}/radio`, {method: 'POST', contentType: 'application/json', body: JSON.stringify({station: station})})
+    fetch(`${window.origin}/radio`, {method: 'POST', headers: {
+            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+        }, body: JSON.stringify({station: station})})
     .then(function(response){
         if (response.status !== 200) {
             alert(`Bad response from radio api: ${response.status}`)
