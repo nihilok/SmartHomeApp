@@ -96,9 +96,6 @@ $(document).ready(function(){
     setTimeout(getWeather(), 10);
 })
 
-setInterval(getTemp, 1000)
-setInterval(getWeather, 120000)
-
 
 function changeStation(btn) {
     var station = btn.innerHTML.toLowerCase()

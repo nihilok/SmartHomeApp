@@ -147,6 +147,8 @@
 {% if advance %}
 <script type="text/javascript">
   disableAdvance()
+  setInterval(getTemp, 1000)
+  setInterval(getWeather, 120000)
 </script>
 {% endif %}
 <script src="https://kit.fontawesome.com/9e3e1cce54.js" crossorigin="anonymous"></script>
