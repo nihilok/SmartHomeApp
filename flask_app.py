@@ -163,6 +163,7 @@ def radio():
     if request.method == 'POST':
         if request.get_json() and request.get_json().get('kill'):
             kill_station()
+            return 'Success', 200
         play_radio_station(request.get_json()['station'])
         return 'Success', 200
     return render_template('radio.html')
