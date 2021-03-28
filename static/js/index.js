@@ -1,100 +1,105 @@
+
+function loadData() {
+    var tempDisplay = document.getElementById('tempDisplay')
+    var timeDisplay = document.getElementById('timeDisplay')
+    var weather = document.getElementById('weather')
+    var outdoorTemp = document.getElementById('outdoorTemp')
+    fetch(`${window.origin}/api`)
+    .then(function(response){
+        if (response.status !== 202) {
+            alert(`Bad response from temperature api: ${response.status}`)
+            return ;
+        }
+        response.json().then(function(data){
+            tempDisplay.innerHTML = data.indoor_temp
+//            timeDisplay.innerHTML = data.current_time
+            weather.innerHTML = data.weather
+            outdoorTemp.innerHTML = data.outdoor_temp
+        })
+    })
+}
+
 function loadUrl(newLocation){
   window.location = newLocation;
   return false;
 }
 
-function digits_count(n) {
-        var count = 0;
-        if (n >= 1) ++count;
+var pwdInput = document.getElementById('passwd')
 
-        while (n / 10 >= 1) {
-          n /= 10;
-          ++count;
-        }
-
-        return count;
-      }
-
-function countDownTimer(){
-  // Set the date we're counting down to
-  var countDownDate = new Date(document.getElementById('time').innerHTML).getTime();
-
-  // Update the count down every 1 second
-  var x = setInterval(function() {
-
-  // Get today's date and time
-  var now = new Date().getTime();
-
-  // Find the distance between now and the count down date
-  var distance = now - countDownDate;
-
-  // Time calculations for hours, minutes and seconds
-  var minutes = Math.floor((30 - (distance % (1000 * 60 * 60)) / (1000 * 60)));
-  var seconds = Math.floor((60 - (distance % (1000 * 60)) / 1000));
-
-  // Display the result in the element with id="countdown"
-  if (digits_count(seconds) > 1){
-    document.getElementById("advanceBtn").innerHTML =  minutes + ":" + seconds;
-  } else {
-    document.getElementById("advanceBtn").innerHTML =  minutes + ":0" + seconds;
-  }
-
-  // If the count down is finished, write some text
-  if (distance > 30 * 60 * 1000) {
-    clearInterval(x);
-    document.getElementById("advanceBtn").innerHTML = "END"
-    setTimeout(function() {
-      location.reload();
-    }, 2000);
-  }
-  }, 1000);
-}
-
-function disableAdvance() {
-  var advanceBtn = document.getElementById('advanceBtn')
-  advanceBtn.onmouseover = ''
-  advanceBtn.onclick = ''
-  $('#advanceBtn').addClass('disabled')
-//  advanceBtn.style.cursor = 'none'
-}
-
-function getTemp(){
-    var tempDisplay = document.getElementById('tempDisplay')
-    var temp = document.getElementById('temp')
-    fetch(`${window.origin}/temp`)
-    .then(function(response){
+function login() {
+    var passwd = md5(pwdInput.value)
+    var pwd = {passwd : passwd}
+    fetch(`${window.origin}/login`, {
+        method: "POST",
+        redirect: "follow",
+        headers: {
+            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: JSON.stringify(pwd)
+    }).then(function(response){
         if (response.status !== 200) {
-            alert(`Bad response from temperature api: ${response.status}`)
+            alert(`Bad response from api: ${response.status}`)
             return ;
         }
         response.json().then(function(data){
-            tempDisplay.innerHTML = data.temp
-            if (data.on == 1){
-              temp.style.color = 'red'
-            } else {
-              temp.style.color = 'white'
-            }
+            loadUrl(data.redirect_url)
         })
-    })
+    });
 }
 
-function getWeather(){
-    var weatherDisplay = document.getElementById('iemarquee')
-    fetch(`${window.origin}/weather`)
-    .then(function(response){
+function returnCurrentTime() {
+    var ct = new Date().toLocaleTimeString()
+    return ct
+}
+
+function switchOn(com) {
+    var command = {
+        command: com
+    }
+    fetch(`${window.origin}/switch`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: JSON.stringify(command)
+    }).then(function(response){
         if (response.status !== 200) {
-            alert(`Bad response from temperature api: ${response.status}`)
+            alert(`Bad response from api: ${response.status}`)
             return ;
         }
-        response.json().then(function(data){
-            weatherDisplay.innerHTML = data[0].weather
-        })
+        location.reload()
+    });
+}
+
+function endPoint(url_string) {
+    loadUrl(`${window.origin}/${url_string}`)
+}
+
+function changeStation(btn) {
+    var station = btn.innerHTML.toLowerCase()
+    fetch(`${window.origin}/music`, {method: 'POST', headers: {
+            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+        }, body: JSON.stringify({station: station})})
+    .then(function(response){
+        if (response.status !== 200) {
+            alert(`Bad response from radio api: ${response.status}`)
+            return ;
+        }
     })
 }
 
-$(document).ready(function(){
-    setTimeout(getWeather(), 10);
-})
-
-setInterval(getTemp, 1000)
-setInterval(getWeather, 120000)
+function killStation() {
+    fetch(`${window.origin}/music`, {method: 'POST', headers: {
+            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+        }, body: JSON.stringify({kill: true})})
+    .then(function(response){
+        if (response.status !== 200) {
+            alert(`Bad response from radio api: ${response.status}`)
+            return ;
+        }
+    })
+}
