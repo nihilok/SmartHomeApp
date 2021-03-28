@@ -20,6 +20,7 @@ My setup involves 2 physical machines, a Raspberry Pi 3B as the main server (whi
 3. Create a simple shared password for the main app screen and generate an MD5 hash to store in `credentials_funcs.py` (This is how the password will be sent from the frontend and will need to match the hash)
 4. To use keep notes functionality edit `Creds` class in `credentials_funcs.py` and run this script as `'__main__'` to encrypt/store password using my poor but passable password encryption (feel free to adjust the `encode_pw`/`decode_pw` functions in `credentials_funcs.py`).
 5. Install requirements: `pip install -r requirements.txt`
+6. Run as module from outside the main folder: `python3 -m SmartHomeApp.smarthome_server` or `gunicorn -k SmartHomeApp/gunicorn.conf.py SmartHomeApp.smarthome_server:app`
 
 __N.B.__ Music over bluetooth (`mpv`) functionality currently only works when running with Flask dev server (werkzeug) in the foreground (i.e. not working when run through `Supervisord` / `Gunicorn` / `Nginx` etc -- work in progress), and your main server machine must already be connected to your bluetooth speaker device.
 Additional requirement: `sudo apt install libmpv-dev` or similar depending on your distro.
