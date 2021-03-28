@@ -4,6 +4,7 @@
 ###### Recent changes:
 
 - `apscheduler` for heating programmer
+- simplified/optimised API (Flask)
 - more 'ACID-like' transaction for heating settings
 - `mpv` integration for music over bluetooth
 - Keep notes integration (for shopping list etc.) with `gkeepapi`
