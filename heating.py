@@ -15,7 +15,7 @@ SENSOR_IP = 'http://192.168.1.88/'
 
 class Heating:
     logger = logging.getLogger('Heating')
-    fh = logging.FileHandler('/home/mj/FlaskApp/FlaskApp/heating.log')
+    fh = logging.FileHandler('/var/log/smarthome/heating.log')
     formatter = logging.Formatter('[%(levelname)s][%(asctime)s][%(name)s] %(message)s',
                                   datefmt='%Y-%m-%d %H:%M:%S')
     fh.setFormatter(formatter)
@@ -43,7 +43,7 @@ class Heating:
                 },
                 "desired": 19
             }
-            self.save_state_thread()
+            self.save_state()
         self.temperature = self.check_temperature()
         self.humidity = self.check_humidity()
         self.pressure = self.check_pressure()
@@ -82,7 +82,7 @@ class Heating:
             else:
                 self.scheduler.add_job(self.stop_loop, trigger='cron', hour=hour, minute=minute, id=job)
         self.scheduler.start()
-        self.save_state_thread()
+        self.save_state()
 
     def change_schedule(self):
         jobs = {'on_1', 'off_1', 'on_2', 'off_2'}
@@ -93,11 +93,11 @@ class Heating:
 
     def switch_on_relay(self):
         self.pi.write(27, 1)
-        self.save_state_thread()
+        self.save_state()
 
     def switch_off_relay(self):
         self.pi.write(27, 0)
-        self.save_state_thread()
+        self.save_state()
 
     def check_state(self):
         return self.pi.read(27)
@@ -106,14 +106,9 @@ class Heating:
         with open('heating.conf.json', 'w') as f:
             f.write(json.dumps(self.config))
 
-    def save_state_thread(self):
-        t = Thread(target=self.save_state)
-        t.daemon = True
-        t.start()
-
     def thermostat_loop(self):
         self.config['tstat'] = True
-        self.save_state_thread()
+        self.save_state()
         while self.config['tstat']:
             if float(self.check_temperature()) < float(self.config['desired']) - 0.4 and not self.check_state():
                 self.switch_on_relay()
@@ -128,19 +123,13 @@ class Heating:
                 t.join()
             self.thread_store = []
         self.switch_off_relay()
-        self.save_state_thread()
+        self.save_state()
 
     def thermostat_thread(self):
         t1 = Thread(target=self.thermostat_loop)
         t1.daemon = True
         t1.start()
         self.thread_store.append(t1)
-
-    def stop_thread(self):
-        self.config['tstat'] = False
-        self.switch_off_relay()
-        self.save_state_thread()
-        self.logger.info('thermostatic control switched off naturally')
 
     def sensor_api(self):
         try:

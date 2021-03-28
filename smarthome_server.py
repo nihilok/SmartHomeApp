@@ -8,7 +8,7 @@ import mpv
 import requests
 from flask import Flask, request, make_response, jsonify, render_template, redirect, url_for
 
-from .heating2 import Heating
+from .heating import Heating
 from .credentials_funcs import hash
 from .keep_funcs import create_keep_note, add_to_shopping_list
 
@@ -135,7 +135,7 @@ def settings():
         }
         hs.config['desired'] = des_temp
         hs.config['program'] = new_timer_prog
-        hs.save_state_thread()
+        hs.save_state()
         if hs.config['program_on']:
             if hs.scheduler.get_jobs():
                 hs.change_schedule()
