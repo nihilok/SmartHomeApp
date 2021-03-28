@@ -1,4 +1,1 @@
-{
-  "tstat": false,
-  "relay": false
-}
+{"tstat": true, "program_on": false, "program": {"on_1": "08:00", "off_1": "10:30", "on_2": "19:00", "off_2": "22:00"}, "desired": "19"}
