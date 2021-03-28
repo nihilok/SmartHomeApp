@@ -17,7 +17,7 @@ My setup involves 2 physical machines, a Raspberry Pi 3B, running Ubuntu Server 
 
 ###### Main server
 1. Clone the repository
-2. Create log file at `/var/log/smarthome/heating.log`
+2. Create log file at `/var/log/smarthome/heating.log` and make sure the intended user (e.g. main user/web-server user) has `rw` permissions.
 3. Create a simple shared password for the main app screen and generate an MD5 hash to store in `credentials_funcs.py` (This is how the password will be sent from the frontend and will need to match the hash)
 4. To use keep notes functionality edit `Creds` class in `credentials_funcs.py` and run this script as `'__main__'` to encrypt/store password using my poor but passable password encryption (feel free to adjust the `encode_pw`/`decode_pw` functions in `credentials_funcs.py`).
 5. Install requirements: `pip install -r requirements.txt`
