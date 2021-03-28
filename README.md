@@ -10,7 +10,9 @@
 
 ### Installation:
 
-My setup involves 2 physical machines, a Raspberry Pi 3B as the main server (which also performs other tasks) connected to the relay that controls the central heating, and a separate portable Raspberry Pi Zero W as the temperature sensor. (In the near future, I may simplify this setup and utilise a microcontroller.)
+My setup involves 2 physical machines, a Raspberry Pi 3B as the main server (which also performs other tasks) connected to the relay that controls the central heating, and a separate portable Raspberry Pi Zero W as the temperature sensor. (In the near future, I may simplify this setup and utilise a microcontroller.) 
+
+[-Full write-up of initial build-](https://python.plainenglish.io/building-a-smart-central-heating-system-with-a-raspberry-pi-and-python-403c6ea0fd7e)
 
 ###### Main server
 1. Clone the repository
