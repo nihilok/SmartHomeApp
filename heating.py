@@ -1,27 +1,54 @@
 import json
 import time
+import logging
 from datetime import datetime
 
 import pigpio
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 
-SENSOR_IP = 'http://192.168.1.88/'  # Local IP of temperature sensor API
+logging.basicConfig(level=logging.INFO)
 
 
 class HeatingSystem:
+
     config_file = 'heating.conf'
     scheduler = BackgroundScheduler()
+    SENSOR_IP = 'http://192.168.1.88/'  # Local IP of temperature sensor API
 
     def __init__(self):
         """Create connection with temperature api and load settings from config file"""
         self.pi = pigpio.pi()
-        self.measurements = requests.get(SENSOR_IP).json()
+        self.measurements = requests.get(self.SENSOR_IP).json()
         self.conf = self.get_or_create_config()
         self.scheduler.add_job(self.main_loop, 'interval', minutes=1, id='main_loop')
         self.scheduler.start(paused=True)
         if self.conf['program_on']:
             self.program_on()
+    
+    def main_loop(self):
+        """If time is within range, turn on relay if temp is below range, turn off if above range."""
+        if self.check_time():
+            temp = self.check_temp()
+            if temp is True:
+                self.switch_on_relay()
+            elif temp is False:
+                self.switch_off_relay()
+            pass
+        else:
+            self.switch_off_relay()
+            
+    def program_on(self):
+        self.conf['program_on'] = True
+        self.main_loop()
+        self.scheduler.resume()
+        self.save_state()
+
+    def program_off(self):
+        self.conf['program_on'] = False
+        self.switch_off_relay()
+        self.scheduler.pause()
+        self.save_state()
 
     def get_or_create_config(self):
         try:
@@ -43,19 +70,7 @@ class HeatingSystem:
             return conf
 
     def get_measurements(self):
-        self.measurements = requests.get(SENSOR_IP).json()
-
-    def program_on(self):
-        self.conf['program_on'] = True
-        self.main_loop()
-        self.scheduler.resume()
-        self.save_state()
-
-    def program_off(self):
-        self.conf['program_on'] = False
-        self.switch_off_relay()
-        self.scheduler.pause()
-        self.save_state()
+        self.measurements = requests.get(self.SENSOR_IP).json()
 
     def check_temp(self):
         self.get_measurements()
@@ -82,18 +97,6 @@ class HeatingSystem:
                     self.conf['program']['on_2']):
                 return True
         return False
-
-    def main_loop(self):
-        """If time is within range, turn on relay if temp is below range, turn off if above range."""
-        if self.check_time():
-            temp = self.check_temp()
-            if temp is True:
-                self.switch_on_relay()
-            elif temp is False:
-                self.switch_off_relay()
-            pass
-        else:
-            self.switch_off_relay()
 
     def save_state(self):
         with open(self.config_file, 'w') as f:
