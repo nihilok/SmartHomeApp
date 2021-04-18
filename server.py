@@ -12,7 +12,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 
 from .credentials_funcs import hash
-from .heating2 import HeatingSystem
+from .heating import HeatingSystem
 from .utils import GradientShifter
 
 app = Flask(__name__)
