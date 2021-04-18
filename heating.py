@@ -32,6 +32,8 @@ class HeatingSystem:
                     },
                     "program_on": True
                 }, f)
+            with open(self.config_file, 'r') as f:
+                self.conf = json.load(f)
         self.scheduler.add_job(self.main_loop, 'interval', minutes=1, id='main_loop')
         self.scheduler.start(paused=True)
         if self.conf['program_on']:
