@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block style %}
+<style type="text/css">
+  /* The Modal (background) */
+  .modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: -2px;
+  width: 100%; /* Full width */
+  height: 101%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  }
+
+  /* Modal Header */
+  .modal-header {
+  padding: 2px 16px;
+  background-color: #f59e0b;
+  color: white;
+  }
+
+  /* Modal Body */
+  .modal-body {padding: 2px 16px;}
+
+  /* Modal Footer */
+  .modal-footer {
+  padding: 2px 16px;
+  background-color: #5cb85c;
+  color: white;
+  }
+
+  /* Modal Content */
+  .modal-content {
+  position: relative;
+  background-color: #fefefe;
+  margin: auto;
+  top: 32%;
+  padding: 0;
+  border: 1px solid #000;
+  border-radius: 8px;
+  overflow: hidden;
+  width: 80%;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+  animation-name: animatetop;
+  animation-duration: 0.1s
+  }
+
+  /* Add Animation */
+  @keyframes animatetop {
+  from {top: 10%; opacity: 0}
+  to {top: 32.5%; opacity: 1}
+  }
+
+  /* The Close Button */
+  .close {
+  color: #fff;
+  float: right;
+  margin-top: -5px;
+  font-size: 28px;
+  font-weight: bold;
+  }
+
+  .close:hover,
+  .close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+  }
+
+
+  #addNew {
+  display: none;
+  }
+</style>
+{% endblock style %}
+
+{% block content %}
+<div class="container mx-auto w-screen h-screen">
+  <div class="flex flex-col justify-start items-center h-full w-full space-y-3 pb-20">
+    <div class="text-3xl font-semibold mb-1">Cooking Ideas</div>
+
+    <div id="shoppingBlock" class="w-full h-2/3 overflow-y-auto px-4 flex flex-col divide-y divide-gray-600">
+      {% for meal in meals %}
+      <div class="flex justify-between items-center mb-2">
+        <div class="text-2xl font-semibold">
+          {{meal[1]}}
+        </div>
+
+        <div class="flex flex-row">
+          <div class="cursor-pointer hover:text-gray-500 focus:outline-none select-none" id="notesBtn{{meal[0]}}">
+            <i class="fas fa-tasks ml-3 mt-2 text-2xl"></i>
+          </div>
+          <div class="editIcon cursor-pointer hover:text-gray-500 focus:outline-none select-none" id="editBtn{{meal[0]}}">
+            <i class="fas fa-edit ml-3 mt-2 text-2xl"></i>
+          </div>
+        </div>
+
+      </div>
+      <div id="foodModal{{meal[0]}}" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content text-black">
+          <div class="modal-header text-2xl font-semibold">
+            <span class="close font-bold text-2xl" id="closeSpan{{meal[0]}}">&times;</span>
+            <h2>{{meal[1]}}</h2>
+          </div>
+          <div class="modal-body">
+            <p><span class="font-semibold">Ingredients:</span> {{meal[2]}}</p>
+            {% if meal[3] %}
+            <p><span class="font-semibold">Notes:</span> {{meal[3]}}</p>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+      <script type="text/javascript">
+          let btn{{meal[0]}} = document.getElementById("notesBtn{{meal[0]}}")
+          let modal{{meal[0]}} = document.getElementById("foodModal{{meal[0]}}")
+          let close{{meal[0]}} = document.getElementById("closeSpan{{meal[0]}}")
+
+          // When the user clicks on the button, open the modal
+          btn{{meal[0]}}.onclick = function () {
+              modal{{meal[0]}}.style.display = "block";
+              console.log('click')
+          }
+
+          // When the user clicks on <span> (x), close the modal
+          close{{meal[0]}}.onclick = function () {
+              modal{{meal[0]}}.style.display = "none";
+          }
+
+          // When the user clicks anywhere outside of the modal, close it
+          window.onclick = function (event) {
+              if (event.target == modal{{meal[0]}}) {
+                  modal{{meal[0]}}.style.display = "none";
+              }
+          }
+      </script>
+      {% endfor %}
+    </div>
+    <div id="showForm" class="rounded bg-yellow-500 hover:bg-yellow-600 font-semibold cursor-pointer w-64 flex justify-center items-center">Add New Meal</div>
+    <div class="flex flex-col space-y-3 items-center" id="addNew">
+      <input type="text" id="meal" name="meal" class="text-2xl mt-10 rounded pl-2 inner-shadow text-black w-64"
+              placeholder="Name of meal">
+      <input type="text" id="ingredients" name="ingredients" class="text-2xl mb-4 mt-10 rounded pl-2 inner-shadow text-black w-64"
+              placeholder="Ingredients">
+      <input type="text" id="notes" name="notes" class="text-2xl mt-10 rounded pl-2 inner-shadow text-black w-64"
+              placeholder="Notes">
+      <button id="submit"
+              class="rounded bg-yellow-500 hover:bg-yellow-600 font-semibold cursor-pointer w-64 flex justify-center items-center">
+        Add to Menu
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script type="text/javascript">
+    let form = document.getElementById("addNew")
+    let showForm = document.getElementById('showForm')
+    let submit = document.getElementById('submit')
+    let meal = document.getElementById('meal')
+    let ingredients = document.getElementById('ingredients')
+    let notes = document.getElementById('notes')
+    showForm.onclick = () => {
+        if (form.style.display !== 'flex') {
+            console.log('hello')
+            form.style.display = 'flex';
+            showForm.style.display = 'none'
+        }
+    }
+    submit.onclick = () => {
+        if (!meal.value) {
+            if (!ingredients.value) {
+                form.style.display = 'none';
+                showForm.style.display = 'flex';
+            } else {
+                meal.focus();
+            }
+        } else {
+            fetch(`${window.origin}/recipes`, {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST',
+                body: JSON.stringify({
+                    meal: meal.value,
+                    ingredients: ingredients.value,
+                    notes: notes.value
+                })
+            })
+                .then((response) => {
+                    if (response.status !== 200) {
+                        alert(`Bad response: ${response.status}`)
+                        return;
+                    }
+                    response.json().then((data) => {
+                        location.reload()
+                    })
+                });
+        }
+    }
+</script>
+{% endblock scripts %}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Home{% block title %}{% endblock title %}</title>
+  <link rel="manifest" href="../static/manifest.json">
+  <link rel="stylesheet" type="text/css" href="../static/css/tailwind.css">
+  <link rel="stylesheet" type="text/css" href="../static/css/test.css">
+  <script type="text/javascript">
+      (function () {
+          var css = document.createElement('link');
+          css.href = 'https://use.fontawesome.com/releases/v5.15.1/css/all.css';
+          css.rel = 'stylesheet';
+          css.type = 'text/css';
+          document.getElementsByTagName('head')[0].appendChild(css);
+      })();
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"
+          integrity="sha512-eVL5Lb9al9FzgR63gDs1MxcDS2wFu3loYAgjIH0+Hg38tCS8Ag62dwKyH+wzDb+QauDpEZjXbMn11blw8cbTJQ=="
+          crossorigin="anonymous"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+  {% block style %}
+  {% endblock style %}
+</head>
+<body class="text-white" style="background-image: linear-gradient(0deg, rgb(0, 0, 0) 20%, rgb(17, 24, 39) 95%);">
+<div class="container mx-auto w-screen h-screen max-h-screen overflow-y-hidden">
+  <div class="flex flex-row w-full px-4 justify-between">
+    {% if settings and back %}
+    <div class="flex-none" onclick="loadUrl('/')">
+      <i class="fas fa-arrow-left text-3xl cursor-pointer hover:text-gray-500 focus:outline-none select-none mt-4"></i>
+    </div>
+    <div class="flex-none" onclick="loadUrl('/settings')">
+      <i class="fas fa-cog text-3xl cursor-pointer hover:text-gray-500 focus:outline-none select-none mt-4"></i>
+    </div>
+    {% elif not settings and back %}
+    <div class="flex flex-row w-full px-4">
+      <div class="flex-none" onclick="loadUrl('/')">
+        <i class="fas fa-arrow-left text-3xl cursor-pointer hover:text-gray-500 focus:outline-none select-none mt-4"></i>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  <div id="messageDiv" class="h-max w-full flex flex-col space-y-2 justify-end items-center absolute pb-20">
+    {% for m in messages %}
+    <div class="px-2 py-1 bg-green-200 rounded-lg border border-green-300 text-green-800 text-xl shadow-lg relative z-10">
+      {{m}}
+    </div>
+    {% endfor %}
+  </div>
+  <script type="text/javascript">
+      let messageDiv = document.getElementById('messageDiv');
+      setTimeout(function () {
+          messageDiv.style.display = 'none';
+      }, 3000)
+  </script>
+{% endif %}
+{% endwith %}
+
+{% block content %}
+{% endblock content %}
+</div>
+
+<script type="text/javascript" src="../static/js/index.js"></script>
+
+{% block scripts %}
+<script type="text/javascript">
+    window.onload = () => {
+        let messageDiv = document.getElementById('messageDiv');
+        if (messageDiv) {
+            setTimeout(function () {
+                messageDiv.style.display = 'none';
+            }, 3000)
+        }
+    }
+</script>
+{% endblock scripts %}
+
+</body>
+</html>

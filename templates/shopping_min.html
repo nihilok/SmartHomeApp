@@ -1,0 +1,9 @@
+<!--<div class="text-3xl font-semibold mb-1">Shopping List</div>-->
+{% for item in items %}
+<div class="flex justify-between items-center mb-2">
+  <div class="text-2xl font-semibold">
+    {{item[1]}}
+  </div>
+  <div class="" onclick="deleteItem({{item[0]}})"><i class="far fa-check-circle ml-3 mt-2 text-2xl cursor-pointer"></i></div>
+</div>
+{% endfor %}

@@ -1,22 +1,120 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notes</title>
-  <link rel="stylesheet" type="text/css" href="../static/css/tailwind.css">
-  <script type="text/javascript"> (function() { var css = document.createElement('link'); css.href = 'https://use.fontawesome.com/releases/v5.15.1/css/all.css'; css.rel = 'stylesheet'; css.type = 'text/css'; document.getElementsByTagName('head')[0].appendChild(css); })(); </script>
-
-</head>
-<body class="bg-gray-900 text-white">
+{% extends 'base.html' %}
+{% block content %}
 <div class="container mx-auto max-w-screen h-screen px-4 md:px-0">
 
-    <div class="flex flex-col justify-center items-center h-full w-full space-y-3">
-        <form method="POST">
-            <input type="text" id="item" name="item" class="mb-4 rounded pl-2 inner-shadow text-black w-64" placeholder="Item">
-            <button id="submit" type="submit" class="rounded bg-yellow-500 hover:bg-yellow-600 font-semibold cursor-pointer w-64 flex justify-center items-center">Add to Shopping List</button>
-        </form>
+  <div class="flex flex-col justify-start items-center h-full w-full space-y-3">
+    <div class="text-3xl font-semibold mb-1">Shopping List</div>
+
+    <div id="shoppingBlock" class="w-full h-2/3 overflow-y-auto px-4 flex flex-col divide-y divide-gray-600">
+      {% for item in items %}
+      <div class="flex justify-between items-center mb-2">
+        <div class="text-2xl font-semibold">
+          {{item[1]}}
+        </div>
+        <div class="deleteIcon cursor-pointer" data-id="{{item[0]}}">
+          <i class="far fa-check-circle ml-3 mt-2 text-2xl"></i>
+        </div>
+      </div>
+      {% endfor %}
     </div>
+    <input type="text" id="item" name="item" class="text-2xl mb-4 mt-10 rounded pl-2 inner-shadow text-black w-64"
+           placeholder="Item1, Item2, etc.">
+    <button id="submit"
+            class="rounded bg-yellow-500 hover:bg-yellow-600 font-semibold cursor-pointer w-64 flex justify-center items-center">
+      Add to Shopping List
+    </button>
+  </div>
 </div>
-</body>
-</html>
+{% endblock content %}
+
+{% block scripts %}
+<script type="text/javascript">
+    let socket = io.connect('smarthome.mjfullstack.com')
+    $(document).ready(function () {
+
+        socket.on('connect', () => {
+            console.log('connected')
+        })
+        socket.on('disconnect', () => {
+            console.log('disconnected')
+        })
+
+        socket.on('update_items', (items) => {
+            document.getElementById('shoppingBlock').innerHTML = items
+        })
+
+        $('#submit').on('click', (e) => {
+            e.preventDefault()
+            socket.emit('add_to_shopping_list', $('#item').val());
+            $('#item').val('');
+        })
+        $('#item').keypress((e) => {
+            if (e.which === 13) {
+                e.preventDefault()
+                socket.emit('add_to_shopping_list', $('#item').val());
+                $('#item').val('');
+            }
+        })
+        $('.deleteIcon').on('click', (e) => {
+            socket.emit('delete_from_shopping_list', $(e.currentTarget).data('id'));
+        })
+    })
+
+    function deleteItem(id) {
+        socket.emit('delete_from_shopping_list', id);
+    }
+
+    // function addItem() {
+    //     let item = document.getElementById('item')
+    //     let form = {
+    //         item: item.value
+    //     }
+    //     fetch(`${window.origin}/shopping`, {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json'
+    //         },
+    //         body: JSON.stringify(form)
+    //     })
+    //         .then(function (response) {
+    //             if (response.status !== 200) {
+    //                 alert(`Bad response from api: ${response.status}`)
+    //                 return;
+    //             }
+    //             response.text().then(function (data) {
+    //                 document.getElementById('shoppingBlock').innerHTML = data
+    //                 item.value = ''
+    //                 flashMessage('Item added!')
+    //             })
+    //         })
+    // }
+    //
+    // function deleteItem(id) {
+    //     fetch(`${window.origin}/shopping`, {
+    //         method: 'DELETE',
+    //         headers: {
+    //             'Content-Type': 'application/json'
+    //         },
+    //         body: JSON.stringify({id})
+    //     })
+    //         .then(function (response) {
+    //             if (response.status !== 200) {
+    //                 alert(`Bad response from api: ${response.status}`);
+    //             } else {
+    //                 response.text().then(function (data) {
+    //                     document.getElementById('shoppingBlock').innerHTML = data;
+    //                     // flashMessage('Item removed')
+    //                 })
+    //             }
+    //         })
+    // }
+
+    // document.getElementById('item').addEventListener('keyup', function (event) {
+    //     if (event.keyCode === 13) {
+    //         addItem()
+    //     }
+    // })
+
+
+</script>
+{% endblock scripts %}
