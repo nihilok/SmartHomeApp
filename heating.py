@@ -1,178 +1,125 @@
 import json
-import os
 import time
-import logging
 from datetime import datetime
-from threading import Thread
+
 import pigpio
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
-from . import telegram_bot as tg
-
 
 SENSOR_IP = 'http://192.168.1.88/'
 
 
-class Heating:
-    logger = logging.getLogger('Heating')
-    fh = logging.FileHandler('/var/log/smarthome/heating.log')
-    formatter = logging.Formatter('[%(levelname)s][%(asctime)s][%(name)s] %(message)s',
-                                  datefmt='%Y-%m-%d %H:%M:%S')
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
-    logger.setLevel(logging.DEBUG)
-
+class HeatingSystem:
+    config_file = 'heating.conf'
     scheduler = BackgroundScheduler()
 
     def __init__(self):
-        os.chdir(os.path.dirname(__file__))
+        """Create connection with temperature api and load settings from conf"""
         self.pi = pigpio.pi()
-        self.error_alert_sent = False
+        self.measurements = requests.get(SENSOR_IP).json()
         try:
-            with open('heating.conf.json', 'r') as f:
-                self.config = json.load(f)
-        except Exception:
-            self.config = {
-                "tstat": False,
-                "program_on": False,
-                "program": {
-                    "on_1": "07:30",
-                    "off_1": "09:30",
-                    "on_2": "17:30",
-                    "off_2": "22:00"
-                },
-                "desired": 19
-            }
-            self.save_state()
-        self.temperature = self.check_temperature()
-        self.humidity = self.check_humidity()
-        self.pressure = self.check_pressure()
-        self.thread_store = []
-        if self.config['program_on']:
-            self.start_scheduled_tasks()
-            if self.config['tstat']:
-                self.thermostat_thread()
+            with open(self.config_file, 'r') as f:
+                self.conf = json.load(f)
+        except:
+            with open(self.config_file, 'w') as f:
+                json.dump({
+                    "target": "20",
+                    "program": {
+                        "on_1": "08:30",
+                        "off_1": "10:30",
+                        "on_2": "18:30",
+                        "off_2": "22:30",
+                    },
+                    "program_on": True
+                }, f)
+        self.scheduler.add_job(self.main_loop, 'interval', minutes=1, id='main_loop')
+        self.scheduler.start(paused=True)
+        if self.conf['program_on']:
+            self.program_on()
+            # logging.debug(' Program restarted on init')
+
+    def get_measurements(self):
+        self.measurements = requests.get(SENSOR_IP).json()
+
+    def program_on(self):
+        self.conf['program_on'] = True
+        self.main_loop()
+        self.scheduler.resume()
+        self.save_state()
+        # logging.debug(' Program switched on')
+
+    def program_off(self):
+        self.conf['program_on'] = False
+        self.switch_off_relay()
+        self.scheduler.pause()
+        self.save_state()
+        # logging.debug(' Program switched off')
+
+    def check_temp(self):
+        self.get_measurements()
+        target = self.conf['target']
+        current = self.measurements['temperature']
+        msg = f'\ntarget: {target}\ncurrent: {current}'
+        # logging.debug(msg)
+        if (float(target) - 0.4) > float(current):
+            return True
+        elif float(target) < float(current):
+            return False
+        return None
 
     @staticmethod
     def parse_time(time):
         return datetime.strptime(time, '%H:%M').time()
 
     def check_time(self):
-        time_now = datetime.fromtimestamp(time.time()).time()
-        if any((all((time_now > self.parse_time(self.config['program']['on_1']),
-                time_now < self.parse_time(self.config['program']['off_1']))),
-                all((time_now > self.parse_time(self.config['program']['on_2']),
-                time_now < self.parse_time(self.config['program']['off_2']))))):
+        time_now = datetime.fromtimestamp(time.mktime(time.localtime())).time()
+        if self.parse_time(self.conf['program']['off_1']) > time_now > self.parse_time(self.conf['program']['on_1']):
             return True
+        elif self.conf['program']['on_2']:
+            if self.parse_time(self.conf['program']['off_2']) > time_now > self.parse_time(
+                    self.conf['program']['on_2']):
+                return True
         return False
 
-    def stop_jobs(self):
-        self.config['program_on'] = False
-        self.scheduler.shutdown()
-        self.stop_loop()
+    def main_loop(self):
+        """If time is within range, turn on relay if temp is below range, turn off if above range."""
+        if self.check_time():
+            temp = self.check_temp()
+            msg = f' Temp below target: {temp}'
+            # logging.debug(msg)
+            if temp is True:
+                self.switch_on_relay()
+            elif temp is False:
+                self.switch_off_relay()
+            pass
+        else:
+            self.switch_off_relay()
 
-    def start_scheduled_tasks(self):
-        self.config['program_on'] = True
-        jobs = {'on_1', 'off_1', 'on_2', 'off_2'}
-        for job in jobs:
-            hour = datetime.strptime(self.config['program'][job], '%H:%M').hour
-            minute = datetime.strptime(self.config['program'][job], '%H:%M').minute
-            if 'on' in job:
-                self.scheduler.add_job(self.thermostat_loop, trigger='cron', hour=hour, minute=minute, id=job)
-            else:
-                self.scheduler.add_job(self.stop_loop, trigger='cron', hour=hour, minute=minute, id=job)
-        self.scheduler.start()
+    def save_state(self):
+        with open(self.config_file, 'w') as f:
+            json.dump(self.conf, f)
+
+    def change_times(self, on1, off1, on2=None, off2=None):
+        """Accept times in format HH:MM or None for set 2"""
+        self.conf['program'] = {
+            'on_1': on1,
+            'off_1': off1,
+            'on_2': on2,
+            'off_2': off2,
+        }
         self.save_state()
 
-    def change_schedule(self):
-        jobs = {'on_1', 'off_1', 'on_2', 'off_2'}
-        for job in jobs:
-            hour = datetime.strptime(self.config['program'][job], '%H:%M').hour
-            minute = datetime.strptime(self.config['program'][job], '%H:%M').minute
-            self.scheduler.reschedule_job(job, trigger='cron', hour=hour, minute=minute)
+    def change_temp(self, temp: int):
+        self.conf['target'] = temp
+        self.save_state()
 
     def switch_on_relay(self):
-        self.pi.write(27, 1)
-        self.save_state()
+        if not self.check_state():
+            self.pi.write(27, 1)
 
     def switch_off_relay(self):
-        self.pi.write(27, 0)
-        self.save_state()
+        if self.check_state():
+            self.pi.write(27, 0)
 
     def check_state(self):
         return self.pi.read(27)
-
-    def save_state(self):
-        with open('heating.conf.json', 'w') as f:
-            f.write(json.dumps(self.config))
-
-    def thermostat_loop(self):
-        self.config['tstat'] = True
-        self.save_state()
-        while self.config['tstat']:
-            if float(self.check_temperature()) < float(self.config['desired']) - 0.4 and not self.check_state():
-                self.switch_on_relay()
-            elif float(self.check_temperature()) > float(self.config['desired']) + 0.4 and self.check_state():
-                self.switch_off_relay()
-            time.sleep(60)
-
-    def stop_loop(self):
-        self.config['tstat'] = False
-        if self.thread_store:
-            for t in self.thread_store:
-                t.join()
-            self.thread_store = []
-        self.switch_off_relay()
-        self.save_state()
-
-    def thermostat_thread(self):
-        t1 = Thread(target=self.thermostat_loop)
-        t1.daemon = True
-        t1.start()
-        self.thread_store.append(t1)
-
-    def sensor_api(self):
-        try:
-            req = requests.get(SENSOR_IP)
-            data = json.loads(req.text)
-            if self.error_alert_sent:
-                tg.send_message('Contact with sensor resumed')
-                self.error_alert_sent = False
-            return data
-        except Exception as e:
-            print(e)
-            self.logger.warning('cannot communicate with sensor API')
-            if not self.error_alert_sent:
-                tg.send_message('WARNING: Heating module cannot communicate with sensor API')
-                self.error_alert_sent = True
-            time.sleep(1)
-            return {
-                'temperature': self.temperature,
-                'humidity': self.humidity,
-                'pressure': self.pressure,
-            }
-
-    def check_temperature(self):
-        self.temperature = self.sensor_api()['temperature']
-        return self.temperature
-
-    def check_pressure(self):
-        self.pressure = self.sensor_api()['pressure']
-        return self.pressure
-
-    def check_humidity(self):
-        self.humidity = self.sensor_api()['humidity']
-        return self.humidity
-
-
-if __name__ == '__main__':
-    hs = Heating()
-    while True:
-        print(f'''________________________________________________________________
-==={datetime.utcnow().time()}===
-Temp: {hs.check_temperature()}
-Pressure: {hs.check_pressure()}
-Humidity: {hs.check_humidity()}
-________________________________________________________________
-        ''')
-        time.sleep(2)
