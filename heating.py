@@ -14,7 +14,7 @@ class HeatingSystem:
     scheduler = BackgroundScheduler()
 
     def __init__(self):
-        """Create connection with temperature api and load settings from conf"""
+        """Create connection with temperature api and load settings from config file"""
         self.pi = pigpio.pi()
         self.measurements = requests.get(SENSOR_IP).json()
         self.conf = self.get_or_create_config()
