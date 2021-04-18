@@ -1,37 +1,93 @@
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="Smart Central Heating System!">
-<!--  <link rel="stylesheet" type="text/css"  href="{{ url_for('static', filename='css/tailwind.css') }}">-->
-  <link rel="stylesheet" type="text/css"  href="../static/css/tailwind.css">
-  <script type="text/javascript"> (function() { var css = document.createElement('link'); css.href = 'https://use.fontawesome.com/releases/v5.15.1/css/all.css'; css.rel = 'stylesheet'; css.type = 'text/css'; document.getElementsByTagName('head')[0].appendChild(css); })(); </script>
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500&display=swap" rel="stylesheet">
-<!--  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/my.css') }}">-->
-<!--  <link rel="stylesheet" type="text/css" href="../static/css/my.css">-->
-  <title>Heating Controls</title>
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-        crossorigin="anonymous"></script>
-  <script src="../static/js/index.js"></script>
-  <style type="text/css">
+{% extends 'base.html' %}
+{% block style %}
+<style type="text/css">
+
     {% if relay_on %}
+
     #temp {
-      color: red;
+        color: red;
     }
+
     {% else %}
+
     #temp {
-      color: white;
+        color: white;
     }
+
     {% endif %}
-  </style>
-</head>
-<body class="bg-gray-900 text-white">
-<main role="main" class="">
-  <div class="flex flex-row w-full px-4"><div class="flex-none" onclick="loadUrl('/settings')"><i class="fas fa-cog text-3xl hover:text-gray-200 mt-4"></i></div></div>
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+    /* Hide default HTML checkbox */
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    /* The slider */
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    input:checked + .slider {
+        background-color: #2196F3;
+    }
+
+    input:focus + .slider {
+        box-shadow: 0 0 1px #2196F3;
+    }
+
+    input:checked + .slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+    }
+
+    /* Rounded sliders */
+    .slider.round {
+        border-radius: 34px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
+
+    #gradient {
+        background-image: linear-gradient(0deg, rgb({{gradient}}, 0, 0) 20%, rgb(17, 24, 39) 90%);
+    }
+</style>
+{% endblock style %}
+
+{% block content %}
+<div class="w-full h-full" id="gradient">
   <h1 class='text-center border-b-2 border-gray-200 pb-2 my-5 text-3xl'>Central Heating Controls</h1>
-  <div class="flex flex-col w-full justify-center items-center text-center">
+  <div class="flex flex-col w-full h-full justify-start items-center text-center">
     <div class="border-b-2 border-gray-200 w-full">
       <div class="my-10">
         <h1 id="temp" class="text-7xl"><span id="tempDisplay">{{info['indoor_temp']}}</span></h1>
@@ -43,22 +99,78 @@
         <div id="outdoorTemp" class="text-left ml-1">{{info['outdoor_temp']}}</div>
         <div class="text-right mr-2">Weather:</div>
         <div id="weather" class="text-left ml-1">{{info['weather']}}</div>
-<!--        <div class="text-right mr-2">Current Time:</div>-->
-<!--        <div id="timeDisplay">{{info['current_time']}}</div>-->
-<!--        <div class="text-right mr-2">External IP:</div>-->
-<!--        <div id="ipDisplay">{{info['external_ip']}}</div>-->
       </div>
-
-      <div class="flex justify-center items-center space-x-4 mb-20">
-        <div id="onBtn" {% if not on %}onclick="switchOn('on')"{% endif %} class="ctl-btn {% if on %}ctl-active{% endif %}">On</div>
-        <div id="offBtn" {% if on %}onclick="switchOn('off')"{% endif %} class="ctl-btn {% if not on %}ctl-active{% endif %}">Off</div>
+      <div class="flex justify-center space-x-3 items-center mb-20">
+        <label class="switch">
+          <input type="checkbox" {% if on %}checked{% endif %} onclick="switchOn(this.checked)" class="mb-3">
+          <span class="slider round"></span>
+        </label>
+        <div class="text-2xl"><i class="far fa-clock"></i></div>
       </div>
     </div>
   </div>
-</main>
+</div>
+{% endblock content %}
+
+{% block scripts %}
 <script type="text/javascript">
-  setInterval(loadData, 60000)
+    function loadData() {
+        let tempDisplay = document.getElementById('tempDisplay')
+        let weather = document.getElementById('weather')
+        let outdoorTemp = document.getElementById('outdoorTemp')
+        let gradient = document.getElementById('gradient')
+
+        fetch(`${window.origin}/api`)
+            .then(function (response) {
+                if (response.status !== 202) {
+                    alert(`Bad response from temperature api: ${response.status}`)
+                    return;
+                }
+                response.json().then(function (data) {
+                    tempDisplay.innerHTML = data.indoor_temp
+                    weather.innerHTML = data.weather
+                    outdoorTemp.innerHTML = data.outdoor_temp
+                    gradient.style.backgroundImage = `linear-gradient(0deg, rgb(${data.redValue}, 0, 0) 20%, rgb(17, 24, 39) 90%)`
+                    if (data.on) {
+                        tempDisplay.style.color = 'red';
+                    } else {
+                        tempDisplay.style.color = 'white'
+                    }
+
+                })
+            })
+    }
+
+    window.onload = loadData
+    setInterval(loadData, 5000)
+
+    function switchOn(com) {
+        let state = ''
+        if (com) {
+            state = 'on'
+        } else {
+            state = 'off'
+        }
+        let command = {
+            command: state
+        }
+        fetch(`${window.origin}/switch`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+                // 'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: JSON.stringify(command)
+        }).then(function (response) {
+            if (response.status !== 200) {
+                alert(`Bad response from api: ${response.status}`)
+                return;
+            }
+            setTimeout(function () {
+                location.reload()
+            }, 500)
+        });
+    }
+
 </script>
-<script src="https://kit.fontawesome.com/9e3e1cce54.js" crossorigin="anonymous"></script>
-</body>
-</html>
+{% endblock scripts %}
