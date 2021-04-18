@@ -6,7 +6,7 @@ import pigpio
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 
-SENSOR_IP = 'http://192.168.1.88/'
+SENSOR_IP = 'http://192.168.1.88/'  # Local IP of temperature sensor API
 
 
 class HeatingSystem:
@@ -17,28 +17,30 @@ class HeatingSystem:
         """Create connection with temperature api and load settings from conf"""
         self.pi = pigpio.pi()
         self.measurements = requests.get(SENSOR_IP).json()
-        try:
-            with open(self.config_file, 'r') as f:
-                self.conf = json.load(f)
-        except:
-            with open(self.config_file, 'w') as f:
-                json.dump({
-                    "target": "20",
-                    "program": {
-                        "on_1": "08:30",
-                        "off_1": "10:30",
-                        "on_2": "18:30",
-                        "off_2": "22:30",
-                    },
-                    "program_on": True
-                }, f)
-            with open(self.config_file, 'r') as f:
-                self.conf = json.load(f)
+        self.conf = self.get_or_create_config()
         self.scheduler.add_job(self.main_loop, 'interval', minutes=1, id='main_loop')
         self.scheduler.start(paused=True)
         if self.conf['program_on']:
             self.program_on()
-            # logging.debug(' Program restarted on init')
+
+    def get_or_create_config(self):
+        try:
+            with open(self.config_file, 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            conf = {
+                "target": "20",
+                "program": {
+                    "on_1": "08:30",
+                    "off_1": "10:30",
+                    "on_2": "18:30",
+                    "off_2": "22:30",
+                },
+                "program_on": True
+            }
+            with open(self.config_file, 'w') as f:
+                json.dump(conf, f)
+            return conf
 
     def get_measurements(self):
         self.measurements = requests.get(SENSOR_IP).json()
@@ -48,21 +50,19 @@ class HeatingSystem:
         self.main_loop()
         self.scheduler.resume()
         self.save_state()
-        # logging.debug(' Program switched on')
 
     def program_off(self):
         self.conf['program_on'] = False
         self.switch_off_relay()
         self.scheduler.pause()
         self.save_state()
-        # logging.debug(' Program switched off')
 
     def check_temp(self):
         self.get_measurements()
         target = self.conf['target']
         current = self.measurements['temperature']
         msg = f'\ntarget: {target}\ncurrent: {current}'
-        # logging.debug(msg)
+        logging.debug(msg)
         if (float(target) - 0.4) > float(current):
             return True
         elif float(target) < float(current):
@@ -87,8 +87,6 @@ class HeatingSystem:
         """If time is within range, turn on relay if temp is below range, turn off if above range."""
         if self.check_time():
             temp = self.check_temp()
-            msg = f' Temp below target: {temp}'
-            # logging.debug(msg)
             if temp is True:
                 self.switch_on_relay()
             elif temp is False:
