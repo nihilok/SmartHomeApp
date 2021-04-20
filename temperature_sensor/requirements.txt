@@ -1,0 +1,5 @@
+smbus2~=0.4.1
+picamera~=1.13
+pigpio~=1.78
+pimoroni-bme280~=0.1.1
+Flask~=1.1.2
