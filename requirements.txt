@@ -1,5 +1,0 @@
-pigpio~=1.78
-python-mpv~=0.5.2
-requests~=2.25.1
-gkeepapi~=0.13.4
-Flask~=1.1.2
