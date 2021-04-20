@@ -1,8 +1,4 @@
 /package-lock.json
-/test.py
 /.idea/
 /venv/
 /node_modules/
-/src/tailwind.css
-/static/node_modules/
-/static/src/tailwind.css
