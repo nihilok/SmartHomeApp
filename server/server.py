@@ -26,7 +26,7 @@ from models import Task, TaskPydantic, TaskPydanticIn, \
     HouseholdMember, HouseholdMemberPydantic, HouseholdMemberPydanticIn
 
 TESTING = False
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+SECRET_KEY = "arandomstringofcharacters"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 10080
 
@@ -35,8 +35,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 origins = [
-    'https://smarthome.mjfullstack.com',
-    'http://localhost:4000'
+    '*'
 ]
 
 app.add_middleware(
@@ -50,7 +49,7 @@ app.add_middleware(
 if not TESTING:
     from central_heating import HeatingSystem, HeatingConf
 
-    PUBLIC_IP = '86.139.66.84'
+    PUBLIC_IP = 'YOUR PUBLIC IP' # new user can only be created from host IP address.
 else:
     class HeatingSystem:
         conf = {}
