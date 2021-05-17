@@ -2,12 +2,25 @@ import json
 import time
 import logging
 from datetime import datetime
+from typing import Optional
 
 import pigpio
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
+from fastapi.encoders import jsonable_encoder
+from pydantic import BaseModel
+from typing_extensions import TypedDict
 
 logging.basicConfig(level=logging.INFO)
+
+
+class HeatingConf(BaseModel):
+    on_1: str
+    off_1: str
+    on_2: Optional[str] = None
+    off_2: Optional[str] = None
+    target: int = 20
+    program_on: bool = True
 
 
 class HeatingSystem:
@@ -22,7 +35,7 @@ class HeatingSystem:
         self.conf = self.get_or_create_config()
         self.scheduler.add_job(self.main_loop, 'interval', minutes=1, id='main_loop')
         self.scheduler.start(paused=True)
-        if self.conf['program_on']:
+        if self.conf.program_on:
             self.program_on()
 
     def main_loop(self):
@@ -38,31 +51,29 @@ class HeatingSystem:
             self.switch_off_relay()
 
     def program_on(self):
-        self.conf['program_on'] = True
+        self.conf.program_on = True
         self.main_loop()
         self.scheduler.resume()
         self.save_state()
 
     def program_off(self):
-        self.conf['program_on'] = False
+        self.conf.program_on = False
         self.switch_off_relay()
         self.scheduler.pause()
         self.save_state()
 
     def get_or_create_config(self):
-        conf = {
-            "target": "20",
-            "program": {
-                "on_1": "08:30",
-                "off_1": "10:30",
-                "on_2": "18:30",
-                "off_2": "22:30",
-            },
-            "program_on": True
-        }
+        conf = HeatingConf(
+            target="20",
+            on_1= "08:30",
+            off_1= "10:30",
+            on_2= "18:30",
+            off_2= "22:30",
+            program_on= True
+        )
         try:
             with open(self.config_file, 'r') as f:
-                conf = json.load(f)
+                conf = HeatingConf(**json.load(f).dict(exclude_unset=True))
         except FileNotFoundError:
             with open(self.config_file, 'w') as f:
                 json.dump(conf, f)
@@ -74,7 +85,7 @@ class HeatingSystem:
 
     def check_temp(self):
         self.get_measurements()
-        target = self.conf['target']
+        target = self.conf.target
         current = self.measurements['temperature']
         msg = f'\ntarget: {target}\ncurrent: {current}'
         logging.debug(msg)
@@ -90,30 +101,28 @@ class HeatingSystem:
 
     def check_time(self):
         time_now = datetime.fromtimestamp(time.mktime(time.localtime())).time()
-        if self.parse_time(self.conf['program']['off_1']) > time_now > self.parse_time(self.conf['program']['on_1']):
+        if self.parse_time(self.conf.off_1) > time_now > self.parse_time(self.conf.on_1):
             return True
-        elif self.conf['program']['on_2']:
-            if self.parse_time(self.conf['program']['off_2']) > time_now > self.parse_time(
-                    self.conf['program']['on_2']):
+        elif self.conf.on_2:
+            if self.parse_time(self.conf.off_2) > time_now > self.parse_time(
+                    self.conf.on_2):
                 return True
         return False
 
     def save_state(self):
         with open(self.config_file, 'w') as f:
-            json.dump(self.conf, f)
+            json.dump(jsonable_encoder(self.conf), f)
 
     def change_times(self, on1, off1, on2=None, off2=None):
         """Accept times in format HH:MM or None for set 2"""
-        self.conf['program'] = {
-            'on_1': on1,
-            'off_1': off1,
-            'on_2': on2,
-            'off_2': off2,
-        }
+        self.conf.on_1 = on1
+        self.conf.off_1 = off1
+        self.conf.on_2 = on2
+        self.conf.off_2 = off2
         self.save_state()
 
     def change_temp(self, temp: int):
-        self.conf['target'] = temp
+        self.conf.target = temp
         self.save_state()
 
     def switch_on_relay(self):

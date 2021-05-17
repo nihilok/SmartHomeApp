@@ -1,32 +1,43 @@
 import concurrent.futures
 import json
+import time
+from hashlib import md5
 import uvicorn
 import requests
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, status
+from starlette.exceptions import HTTPException
+from starlette.requests import Request
+from starlette.responses import Response
 from tortoise.contrib.fastapi import register_tortoise
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from passlib.hash import bcrypt
 import urllib.parse as urlparse
+from datetime import datetime, timedelta
+from typing import Optional
+from typing_extensions import TypedDict
+from fastapi.encoders import jsonable_encoder
 
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from pydantic import BaseModel
 from models import Task, TaskPydantic, TaskPydanticIn, \
     ShoppingListItem, ShoppingListItemPydantic, ShoppingListItemPydanticIn, \
     Recipe, RecipePydantic, RecipePydanticIn, \
     HouseholdMember, HouseholdMemberPydantic, HouseholdMemberPydanticIn
 
-from central_heating import HeatingSystem
-from utils import parse_tasks
+TESTING = False
+SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 10080
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
-origins = [
-    "http://127.0.0.1:4000",
-    "http://localhost:4000",
-    "http://localhost",
-    "https://smarthome.mjfullstack.com",
-    '*'
-]
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+origins = [
+    'https://smarthome.mjfullstack.com',
+    'http://localhost:4000'
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,7 +47,153 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+if not TESTING:
+    from central_heating import HeatingSystem, HeatingConf
+
+    PUBLIC_IP = '86.139.66.84'
+else:
+    class HeatingSystem:
+        conf = {}
+
+        @staticmethod
+        def check_state():
+            return True
+
+
+    origins += ['*']
+    PUBLIC_IP = '127.0.0.1'
+
 hs = HeatingSystem()
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+
+def verify_password(password, hash):
+    return pwd_context.verify(password, hash)
+
+
+async def authenticate_user(username: str, password: str):
+    user = await HouseholdMemberPydantic.from_queryset_single(HouseholdMember.get(name=username))
+    try:
+        if not verify_password(password, user.password_hash):
+            return False
+        return user
+    except:
+        return None
+
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+def decode_jwt(token: str) -> dict:
+    try:
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return decoded_token if decoded_token["expires"] >= time.time() else None
+    except:
+        return {}
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except JWTError:
+        raise credentials_exception
+    user = HouseholdMember.get_user(name=token_data.username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+async def get_current_active_user(current_user: HouseholdMember = Depends(get_current_user)):
+    current_user = HouseholdMemberPydantic.from_queryset_single(HouseholdMember.get(id=current_user.id))
+    # if current_user.disabled:
+    #     raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+
+@app.post("/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = await authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.name}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+async def get_local_token():
+    dt = datetime.now()
+    monday = dt - timedelta(days=dt.weekday())
+    pre_hash = "mjf" + monday.strftime('%Y-%m-%d') + "smarthome"
+    return md5(pre_hash.encode('utf-8')).digest()
+
+
+async def check_local_token(request: Request):
+    cookie_token = request.cookies.get('token')
+    actual_token = str(await get_local_token())
+    print(f'''
+    cookie token: {cookie_token}
+    actual token: {actual_token}
+    ''')
+    if request.cookies.get('token') == str(await get_local_token()):
+        return True
+
+
+@app.post('/check_ip')
+async def check_ip(request: Request, response: Response):
+    host_ip = request.client.host
+    if host_ip == PUBLIC_IP:
+        token = str(await get_local_token())
+        response.set_cookie(key="token", value=token, max_age=604800)
+        return token
+    elif await check_local_token(request):
+        return request.cookies.get('token')
+
+
+@app.post('/users')
+async def create_user(user: HouseholdMemberPydanticIn, local_auth: str = Depends(check_ip)):
+    if local_auth:
+        user_obj = HouseholdMember(name=user.name, password_hash=get_password_hash(user.password_hash))
+        await user_obj.save()
+        return await HouseholdMemberPydantic.from_tortoise_orm(user_obj)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect location",
+        )
+
 
 CONNECTIONS = 100
 TIMEOUT = 5
@@ -72,8 +229,8 @@ def get_data():
 
 
 # Central heating endpoints
-@app.get('/heating/info')
-def api():
+@app.get('/heating/info/')
+async def api():
     out = get_data()
     temp_url = urlparse.urlparse(urls[0]).netloc
     ip_url = urlparse.urlparse(urls[1]).netloc
@@ -99,21 +256,34 @@ def api():
     return info
 
 
-@app.get('/heating/conf')
+@app.get('/heating/conf/')
 async def heating():
     return hs.conf
 
 
-@app.post('/heating')
-async def heating_conf(conf: dict):
-    if hs.conf != conf['form']:
-        for key in conf['form'].keys():
-            hs.conf[key] = conf['form'][key]
+@app.post('/heating/')
+async def heating_conf(conf: HeatingConf):
+    if hs.conf != conf:
+        hs.conf.__dict__.update(**conf.dict(exclude_unset=True))
         hs.save_state()
+        hs.main_loop()
     return hs.conf
 
 
 # Tasks endpoints
+async def parse_tasks():
+    resp = {
+        'Les': [],
+        'Mike': []
+    }
+    for task in await TaskPydantic.from_queryset(Task.all()):
+        if task.name == 'Les':
+            resp['Les'].append((task.id, task.task))
+        elif task.name == 'Mike':
+            resp['Mike'].append((task.id, task.task))
+    return resp
+
+
 @app.get('/tasks')
 async def get_tasks():
     return await parse_tasks()
@@ -121,14 +291,8 @@ async def get_tasks():
 
 @app.post('/tasks')
 async def add_task(task: TaskPydanticIn):
-    print(task)
     await Task.create(**task.dict(exclude_unset=True))
     return await parse_tasks()
-
-
-@app.get('/tasks/{task_id}')
-async def get_task(task_id: int):
-    return await TaskPydantic.from_queryset_single(Task.get(id=task_id))
 
 
 @app.delete('/tasks/{task_id}')
@@ -145,16 +309,10 @@ async def get_shopping_list():
 
 @app.post('/shopping')
 async def add_shopping_item(item: ShoppingListItemPydanticIn):
-    print(item)
     try:
         await ShoppingListItem.create(**item.dict(exclude_unset=True))
     finally:
         return await get_shopping_list()
-
-
-@app.get('/shopping/{item_id}')
-async def get_shopping_item(item_id: int):
-    return await ShoppingListItemPydantic.from_queryset_single(ShoppingListItem.get(id=item_id))
 
 
 @app.delete('/shopping/{item_id}')
@@ -181,7 +339,8 @@ async def get_recipe(recipe_id: int):
 
 
 @app.post('/recipe/{recipe_id}')
-async def edit_recipe(recipe_id: int, new_recipe: RecipePydanticIn):
+async def edit_recipe(recipe_id: int, new_recipe: RecipePydanticIn,
+                      current_user: HouseholdMember = Depends(get_current_user)):
     recipe = await ShoppingListItem.get(id=recipe_id)
     print(new_recipe)
     recipe.meal_name, recipe.ingredients, recipe.notes = new_recipe.meal_name, new_recipe.ingredients, new_recipe.notes
@@ -203,24 +362,6 @@ register_tortoise(
     generate_schemas=True,
     add_exception_handlers=True
 )
-
-
-# Test endpoints
-@app.post('/token')
-async def token(form_data: OAuth2PasswordRequestForm = Depends()):
-    return {'access_token': form_data.username + 'token'}
-
-
-@app.get('/')
-async def index(token: str = Depends(oauth2_scheme)):
-    return {'token': token}
-
-
-@app.post('/users')
-async def create_user(user: HouseholdMemberPydanticIn):
-    user_obj = HouseholdMember(name=user.name, password_hash=bcrypt.hash(user.password_hash))
-    await user_obj.save()
-    return await HouseholdMemberPydantic.from_tortoise_orm(user_obj)
 
 if __name__ == '__main':
     uvicorn.run(app, port=8000)

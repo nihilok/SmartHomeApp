@@ -1,23 +1,31 @@
 import React, {useEffect, useState} from 'react';
+import {AuthContext} from "../App";
+
 
 export const HeatingSettings = ({setFormHidden}) => {
-    const [settings, setSettings] = useState({
-        'target': 20,
-        'program': {}
-    })
+
     const [target, setTarget] = useState(20)
     const [timeOn1, setTimeOn1] = useState('')
     const [timeOff1, setTimeOff1] = useState('')
     const [timeOn2, setTimeOn2] = useState('')
     const [timeOff2, setTimeOff2] = useState('')
+    const [settings, setSettings] = useState({
+        target: 20,
+        on_1: timeOn1,
+        off_1: timeOff1,
+        on_2: timeOn2,
+        off_2: timeOff2,
+        program_on: true
+    })
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true)
+    const {state: authState} = React.useContext(AuthContext);
 
 
     async function GetSettings() {
         try {
             setLoading(true);
-            const resp = await fetch(`https://server.smarthome.mjfullstack.com/heating/conf`, {
+            await fetch(`https://server.smarthome.mjfullstack.com/heating/conf/`, {
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -25,9 +33,8 @@ export const HeatingSettings = ({setFormHidden}) => {
             })
                 .then(response =>
                     response.json().then((data) => {
-                        return data
+                        setSettings(data);
                     }));
-            setSettings(resp);
         } catch (e) {
             setError(e);
         } finally {
@@ -35,35 +42,37 @@ export const HeatingSettings = ({setFormHidden}) => {
         }
     }
 
-    async function PostSettings(form) {
+    async function PostSettings() {
+        console.log(settings)
         await fetch(`https://server.smarthome.mjfullstack.com/heating/`, {
             headers: {
                 'Content-Type': 'application/json'
+                // 'Authorization': `Bearer ${authState.token}`
             },
             method: 'POST',
-            body: JSON.stringify({form})
+            body: JSON.stringify({
+                target: target,
+                on_1: timeOn1,
+                off_1: timeOff1,
+                on_2: timeOn2,
+                off_2: timeOff2,
+                program_on: true
+            })
         })
-            .then(() => {
-                GetSettings();
-            });
+            .then((response) => response.json().then((data) => {
+                setSettings(data);
+            }))
     }
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        let formData = {
-            program: {
-                on_1: timeOn1,
-                off_1: timeOff1,
-                on_2: timeOn2,
-                off_2: timeOff2
-            },
+        setSettings({
+            ...settings,
             target: target,
-            program_on: true
-        };
-        PostSettings(formData);
+        })
+        PostSettings(settings);
         setFormHidden(true);
     }
-
 
     const handleTargetChange = (e) => {
         setTarget(e.target.value);
@@ -73,15 +82,31 @@ export const HeatingSettings = ({setFormHidden}) => {
         switch (e.target.name) {
             case 'on_1':
                 setTimeOn1(e.target.value);
+                setSettings(() => ({
+                    ...settings,
+                    on_1: timeOn1
+                }))
                 break;
             case 'on_2':
                 setTimeOn2(e.target.value);
+                setSettings(() => ({
+                    ...settings,
+                    off_1: timeOff1
+                }))
                 break;
             case 'off_1':
                 setTimeOff1(e.target.value);
+                setSettings(() => ({
+                    ...settings,
+                    on_2: timeOn2
+                }))
                 break;
             case 'off_2':
                 setTimeOff2(e.target.value);
+                setSettings(() => ({
+                    ...settings,
+                    off_2: timeOff2
+                }))
                 break;
             default:
                 break;
@@ -92,23 +117,23 @@ export const HeatingSettings = ({setFormHidden}) => {
     useEffect(() => {
         GetSettings();
         setTarget(settings.target);
-        setTimeOn1(settings.program.on_1);
-        setTimeOff1(settings.program.off_1);
-        setTimeOn2(settings.program.on_2);
-        setTimeOff2(settings.program.off_2);
-    }, [settings.target, settings.program.on_1, settings.program.off_1, settings.program.on_2, settings.program.off_2])
+        setTimeOn1(settings.on_1);
+        setTimeOff1(settings.off_1);
+        setTimeOn2(settings.on_2);
+        setTimeOff2(settings.off_2);
+    }, [settings.target, settings.on_1, settings.off_1, settings.on_2, settings.off_2])
 
     if (error) {
         return <div className="bg-red-500 text-black">{error.message}</div>
     }
     return (loading ? <div className="centerCol w-full">
-                    <div className="lds-ellipsis">
-                        <div/>
-                        <div/>
-                        <div/>
-                        <div/>
-                    </div>
-                </div> : <div className="centerCol text-white">
+        <div className="lds-ellipsis">
+            <div/>
+            <div/>
+            <div/>
+            <div/>
+        </div>
+    </div> : <div className="centerCol text-white">
         <ul>
             <li>Target: {target}°C</li>
         </ul>
@@ -141,12 +166,10 @@ export const HeatingBlock = ({props}) => {
     async function GetInfo() {
         try {
             setLoading(true);
-            const resp = await fetch(`https://server.smarthome.mjfullstack.com/heating/info`).then(response =>
+            await fetch(`https://server.smarthome.mjfullstack.com/heating/info/`).then(response =>
                 response.json().then((data) => {
-                    console.log(data);
-                    return data
+                    setInfo(data);
                 }));
-            setInfo(resp);
         } catch (e) {
             setError(e);
         } finally {
@@ -156,12 +179,11 @@ export const HeatingBlock = ({props}) => {
 
     async function UpdateInfo() {
         try {
-            const resp = await fetch(`https://server.smarthome.mjfullstack.com/heating/info`).then(response =>
+            await fetch(`https://server.smarthome.mjfullstack.com/heating/info/`).then(response =>
                 response.json().then((data) => {
                     data.on ? setColour('red') : setColour('white');
-                    return data
+                    setInfo(data);
                 }));
-            setInfo(resp);
         } catch (e) {
             setError(e);
         }
@@ -169,6 +191,7 @@ export const HeatingBlock = ({props}) => {
 
     useEffect(() => {
         GetInfo();
+        UpdateInfo();
         const interval = setInterval(() => {
             UpdateInfo();
         }, 3000);
