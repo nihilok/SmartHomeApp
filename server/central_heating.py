@@ -9,7 +9,6 @@ import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from typing_extensions import TypedDict
 
 logging.basicConfig(level=logging.INFO)
 
@@ -31,7 +30,7 @@ class HeatingSystem:
     def __init__(self):
         """Create connection with temperature api and load settings from config file"""
         self.pi = pigpio.pi()
-        self.measurements = requests.get(self.SENSOR_IP).json()
+        self.measurements = self.get_measurements()
         self.conf = self.get_or_create_config()
         self.scheduler.add_job(self.main_loop, 'interval', minutes=1, id='main_loop')
         self.scheduler.start(paused=True)
@@ -46,7 +45,7 @@ class HeatingSystem:
                 self.switch_on_relay()
             elif temp is False:
                 self.switch_off_relay()
-            pass
+            # if temp is None do nothing
         else:
             self.switch_off_relay()
 
@@ -82,6 +81,7 @@ class HeatingSystem:
 
     def get_measurements(self):
         self.measurements = requests.get(self.SENSOR_IP).json()
+        return self.measurements
 
     def check_temp(self):
         self.get_measurements()
@@ -93,11 +93,6 @@ class HeatingSystem:
             return True
         elif float(target) < float(current):
             return False
-        return None
-
-    @staticmethod
-    def parse_time(time):
-        return datetime.strptime(time, '%H:%M').time()
 
     def check_time(self):
         time_now = datetime.fromtimestamp(time.mktime(time.localtime())).time()
@@ -109,7 +104,23 @@ class HeatingSystem:
                 return True
         return False
 
+    @staticmethod
+    def parse_time(time):
+        return datetime.strptime(time, '%H:%M').time()
+    
+    def check_state(self):
+        return self.pi.read(27)
+
+    def switch_on_relay(self):
+        if not self.check_state():
+            self.pi.write(27, 1)
+
+    def switch_off_relay(self):
+        if self.check_state():
+            self.pi.write(27, 0)
+    
     def save_state(self):
+        """Save config object as JSON"""
         with open(self.config_file, 'w') as f:
             json.dump(jsonable_encoder(self.conf), f)
 
@@ -124,14 +135,4 @@ class HeatingSystem:
     def change_temp(self, temp: int):
         self.conf.target = temp
         self.save_state()
-
-    def switch_on_relay(self):
-        if not self.check_state():
-            self.pi.write(27, 1)
-
-    def switch_off_relay(self):
-        if self.check_state():
-            self.pi.write(27, 0)
-
-    def check_state(self):
-        return self.pi.read(27)
+    
