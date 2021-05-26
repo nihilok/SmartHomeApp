@@ -193,8 +193,7 @@ async def create_user(user: HouseholdMemberPydanticIn, local_auth: str = Depends
             detail="Incorrect location",
         )
 
-
-CONNECTIONS = 100
+        
 TIMEOUT = 5
 urls = ['https://api.smarthome.mjfullstack.com',
         'http://api.ipstack.com/check?access_key=cbcc8b556db35ab071f29e75d7ae32f6&output=json&fields=ip',
@@ -213,9 +212,13 @@ def load_url(url, timeout):
     return url, decode_json(ans.text)
 
 
-def get_data():
+def parse_url(url):
+    return urlparse.urlparse(url).netloc
+
+
+async def get_data():
     out = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=CONNECTIONS) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(urls)) as executor:
         future_to_url = (executor.submit(load_url, url, TIMEOUT) for url in urls)
         for future in concurrent.futures.as_completed(future_to_url):
             try:
@@ -223,17 +226,17 @@ def get_data():
             except Exception as exc:
                 data = ('error', str(type(exc)))
             finally:
-                out[urlparse.urlparse(data[0]).netloc] = [data[1]]
+                out[parse_url(data[0])] = [data[1]]
     return out
 
 
 # Central heating endpoints
 @app.get('/heating/info/')
 async def api():
-    out = get_data()
-    temp_url = urlparse.urlparse(urls[0]).netloc
-    ip_url = urlparse.urlparse(urls[1]).netloc
-    weather_url = urlparse.urlparse(urls[2]).netloc
+    out = await get_data()
+    temp_url = parse_url(urls[0])
+    ip_url = parse_url(urls[1])
+    weather_url = parse_url(urls[2])
     try:
         info = {
             'indoor_temp': str('{0:.1f}'.format(out[temp_url][0]['temperature'])) + '°C',
