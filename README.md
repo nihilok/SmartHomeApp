@@ -3,11 +3,8 @@
 
 ###### Recent changes:
 
-- `apscheduler` for heating programmer
-- simplified/optimised API (Flask)
-- more 'ACID-like' transactions for heating settings changes
-- `mpv` integration for music over bluetooth
-- Keep notes integration (for shopping list etc.) with `gkeepapi`
+- FastAPI backend
+- React frontend
 
 ### Installation:
 
@@ -17,13 +14,10 @@ My setup involves 2 physical machines, a Raspberry Pi 3B, running Ubuntu Server 
 
 ###### Main server
 1. Clone the repository
-2. Create log file at `/var/log/smarthome/heating.log` and make sure the intended user (e.g. main user/web-server user) has `rw` permissions.
-3. Create a simple shared password for the main app screen and generate an MD5 hash to store in `credentials_funcs.py` (This is how the password will be sent from the frontend and will need to match the hash)
-4. To use keep notes functionality edit `Creds` class in `credentials_funcs.py` and run this script as `'__main__'` to encrypt/store password using my poor but passable password encryption (feel free to adjust the `encode_pw`/`decode_pw` functions in `credentials_funcs.py`).
-5. Install requirements: `pip install -r requirements.txt`
-6. Run as module from outside the main folder: `python3 -m SmartHomeApp.smarthome_server` or `gunicorn -k SmartHomeApp/gunicorn.conf.py SmartHomeApp.smarthome_server:app`
+2. Install requirements: `pip install -r requirements.txt`
+3. run server with uvicorn, eg. `uvicorn server:app`
 
-__N.B.__ Music over bluetooth (`mpv`) functionality currently only works when running with Flask dev server (werkzeug) in the foreground (i.e. not working when run through `Supervisord` / `Gunicorn` / `Nginx` etc -- work in progress), and your main server machine must already be connected to your bluetooth speaker device.
+__N.B.__ Music over bluetooth (`mpv`) functionality currently in development.
 Additional requirement: `sudo apt install libmpv-dev` or similar depending on your distro.
 
 ###### Temperature sensor
