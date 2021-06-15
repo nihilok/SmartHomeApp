@@ -9,7 +9,6 @@ import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from typing_extensions import TypedDict
 
 logging.basicConfig(level=logging.INFO)
 
@@ -29,17 +28,22 @@ class HeatingSystem:
     SENSOR_IP = 'http://192.168.1.88/'  # Local IP of temperature sensor API
 
     def __init__(self):
-        """Create connection with temperature api and load settings from config file"""
+        """Create connection with temperature api and load settings
+        from config file"""
         self.pi = pigpio.pi()
         self.measurements = requests.get(self.SENSOR_IP).json()
         self.conf = self.get_or_create_config()
-        self.scheduler.add_job(self.main_loop, 'interval', minutes=1, id='main_loop')
+        self.scheduler.add_job(self.main_loop,
+                               'interval',
+                               minutes=1,
+                               id='main_loop')
         self.scheduler.start(paused=True)
         if self.conf.program_on:
             self.program_on()
 
     def main_loop(self):
-        """If time is within range, turn on relay if temp is below range, turn off if above range."""
+        """If time is within range, turn on relay if temp is below range,
+        turn off if above range."""
         if self.check_time():
             temp = self.check_temp()
             if temp is True:
@@ -101,7 +105,8 @@ class HeatingSystem:
 
     def check_time(self):
         time_now = datetime.fromtimestamp(time.mktime(time.localtime())).time()
-        if self.parse_time(self.conf.off_1) > time_now > self.parse_time(self.conf.on_1):
+        if (self.parse_time(self.conf.off_1) >
+                time_now > self.parse_time(self.conf.on_1)):
             return True
         elif self.conf.on_2:
             if self.parse_time(self.conf.off_2) > time_now > self.parse_time(
@@ -134,4 +139,4 @@ class HeatingSystem:
             self.pi.write(27, 0)
 
     def check_state(self):
-        return self.pi.read(27)
+        return True if self.pi.read(27) else False

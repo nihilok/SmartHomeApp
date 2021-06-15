@@ -4,7 +4,7 @@ import {Header} from './Header';
 function Cams(props) {
     return (
         <>
-        <Header text='Cams' back={true}/>
+        <Header text='Cams' back={'/'}/>
         <div className={"flex flex-col justify-center items-center h-full"}>
             <img src={"https://api.smarthome.mjfullstack.com/cam"} className={"rounded-3xl"} alt={"cam_feed"}/>
         </div>

@@ -1,17 +1,40 @@
 import React from 'react';
+import {ADD, useToastContext} from "../contexts/ToastContext";
 
 
-export const AddNewItem = ({handleSubmit, newItem, setNewItem}) => {
+export const AddNewItem = ({handleSubmit, newItem, setNewItem, placeholderText, options, setID, disabled}) => {
+
+    const {toastDispatch} = useToastContext()
+
+    const handleOptionChange = (e) => {
+        const val = e.target.value
+        setID(val);
+    }
+
+    const fakeSubmit = (e) => {
+        e.preventDefault();
+        toastDispatch({
+            type: ADD,
+            payload: {
+                content: 'This feature is not currently supported',
+                type: 'danger'
+            }
+        });
+    }
+
     return (
-        <form onSubmit={handleSubmit} className="centerCol w-full">
+        <form onSubmit={!disabled ? handleSubmit : fakeSubmit} className="Add-item">
+            {options ? <div className="Option-radios">{options.map((name) => <label htmlFor={name[0] + 'Radio'} key={name[0]+'rad'}
+                                                                          className="Radio-container">{name[1]}<input
+                type="radio" id={name[0] + 'Radio'}
+                key={name[0]+'rad'}
+                name="name" value={name[0]} required
+                onChange={handleOptionChange}/><span
+                className="checkmark"/></label>)}</div> : ''}
             <input type="text"
-                   className="w-5/6 rounded-2xl mt-10 py-1 px-3 text-center outline-none shadow-md inner-shadow border border-gray-400"
                    onChange={e => setNewItem(e.target.value)}
-                   value={newItem}/>
-            <button type="submit"
-                    className="plusBtn mt-2 outline-none focus:outline-none">
-                +
-            </button>
+                   value={newItem}
+                   placeholder={placeholderText}/>
         </form>
     );
 };

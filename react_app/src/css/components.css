@@ -1,0 +1,448 @@
+.Header {
+    height: 64px;
+    color: var(--text-light);
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    text-align: center;
+    background-color: var(--primary-color);
+    box-shadow: var(--shadow);
+}
+
+.header-text {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: max-content;
+}
+
+.header-buttons {
+    padding: 0 .5rem;
+    font-size: 2rem;
+    height: 100%;
+}
+
+.Header a {
+    margin: 2rem auto;
+    color: var(--primary-light);
+    text-decoration: none;
+    user-select: none;
+    padding: .2rem .5rem;
+    border-radius: 15px;
+}
+
+.Header a:visited {
+    color: var(--primary-light);
+}
+
+.Header a:hover {
+    color: var(--text-light);
+}
+
+.Header a:focus {
+    color: var(--text-light);
+    /*box-shadow: 0 0 0 3px var(--primary-light);*/
+    background-color: var(--primary-light);
+    outline: none;
+}
+
+.Login-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.Menu-buttons {
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+}
+
+.Menu-buttons a {
+    font-size: 6em;
+    margin: 7vh auto;
+    color: var(--primary-color);
+    text-decoration: none;
+    user-select: none;
+    padding: .2rem 1rem;
+    border-radius: 15px;
+}
+
+.Menu-buttons a:visited {
+    color: var(--primary-color);
+}
+
+.Menu-buttons a:hover {
+    color: var(--primary-light);
+}
+
+.Menu-buttons a:focus {
+    color: var(--text-light);
+    /*box-shadow: 0 0 0 3px var(--primary-light);*/
+    background-color: var(--primary-light);
+    outline: none;
+}
+
+.Heating-settings {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.Heating-form * {
+
+}
+
+.Heating-form input[type="range"] {
+    margin: 2rem 0;
+    width: 100%;
+}
+
+.Heating-form input[type="range"]:focus {
+    box-shadow: 0 0 0 5px var(--background-color),
+    0 0 0 10px var(--primary-light);
+    border-radius: 10px;
+}
+
+.Heating-form input[type="time"] {
+    border: 2px solid var(--primary-light);
+    border-radius: 5px;
+    font-size: 1.2rem;
+    margin: 1rem 0;
+}
+
+.Heating-form input[type="time"]:focus {
+    outline: none;
+    border-color: var(--primary-light);
+}
+
+.Heating-form input[type="submit"] {
+    margin: 2rem 0
+}
+
+.Heating-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    height: 100%;
+}
+
+.Heating-display {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: max-content;
+}
+
+.Heating-display div {
+    margin: .5em 0;
+}
+
+.Indoor-temp {
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+.Heating-display .Other-info {
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.Heating-display .value {
+    color: var(--primary-light);
+}
+
+.clock {
+    color: var(--primary-light);
+    z-index: 99;
+    font-size: 1.8rem;
+    margin: .8rem;
+}
+
+.inactive {
+    color: var(--text-light);
+}
+
+
+.Task-blocks {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    margin: 5vh auto 25vh auto;
+}
+
+.Task-blocks * {
+    margin: 0 1rem;
+}
+
+.Task-block {
+    height: 100%;
+}
+
+/*.Tasks {*/
+/*    height: 100vh;*/
+/*}*/
+
+
+.Option-radios {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 15rem;
+    margin: 1rem auto;
+}
+
+.Radio-container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 22px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.Radio-container:hover input ~ .checkmark {
+    background-color: var(--text-light);
+}
+
+.Radio-container input:checked ~ .checkmark {
+    background-color: var(--primary-color);
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+    border-radius: 50%;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.Radio-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.Radio-container .checkmark:after {
+    top: 9px;
+    left: 9px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: white;
+}
+
+/*.Add-item input[type="submit"] {*/
+/*    margin: 0 0 0 1rem;*/
+/*}*/
+
+.Add-item {
+    /*margin-top: 3rem;*/
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, .7);
+    z-index: 99;
+    min-height: 20vh;
+    background-color: var(--primary-light);
+}
+
+.Add-item input[type="text"] {
+    background-color: var(--background-color);
+    border: 0;
+    border-bottom: 2px solid var(--primary-color);
+    border-radius: 10px 10px 0 0;
+    font-size: 20px;
+    padding: 1rem;
+    text-align: center;
+    margin: 1rem auto;
+    z-index: 999;
+    width: clamp(20ch, 90vw, 50ch);
+    box-shadow: 0 -1px 5px 1px inset rgba(0, 0, 0, .7)
+}
+
+.Add-item input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.Add-item input[type="radio"]:focus {
+    margin: 0 0 0 .5rem;
+    box-shadow: none;
+}
+
+.Outer {
+    width: 100vw;
+    /*display: flex;*/
+    /*flex-direction: column;*/
+    /*justify-content: center;*/
+    /*align-items: center;*/
+}
+
+.List {
+    /*overflow-y: auto;*/
+
+    height: auto;
+    padding-top: 1rem;
+    padding-bottom: 20vh;
+    max-width: 60ch;
+    min-width: 20ch;
+    margin: 0 auto;
+}
+
+.List-item {
+    margin: 10px 0;
+    width: 100%;
+    user-select: none;
+    background-color: white;
+    padding: 4px 4px;
+    border-radius: 5px;
+    box-shadow: var(--shadow);
+}
+
+.Recipe {
+    padding: 2rem;
+}
+
+
+.completed {
+    text-decoration: line-through;
+}
+
+.Delete-icon {
+    color: var(--primary-light);
+    margin: 0 1rem;
+    font-size: 22px;
+    user-select: none
+}
+
+.Recipe-card {
+    height: 100vh;
+    width: 100vw;
+    background-color: rgba(0, 0, 0, .8);
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 8000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0
+}
+
+.Recipe-card-inner {
+    min-height: 75%;
+    width: 80%;
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .5), rgba(255, 255, 255, .8), rgba(255, 255, 255, .6));
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 10px;
+    border-top: 2px solid rgba(255, 255, 255, .8);
+    border-right: 2px solid rgba(255, 255, 255, .8);
+    box-shadow: var(--shadow);
+    animation: onFromTop .5s ease-in-out forwards;
+}
+
+.Recipe-card-content {
+    height: 100%;
+    padding: 1rem 1rem 3rem 1rem;
+    text-align: center;
+}
+
+.Recipe-card-content h1, h4, p {
+    background-color: rgba(255, 255, 255, .3);
+    box-shadow: 0 0 15px 5px rgba(255, 255, 255, .3);
+    border-radius: 2rem;
+    padding: 1rem 1rem;
+}
+
+.Recipe-card-inner h1 {
+    margin: 1.5rem;
+}
+
+.Recipe-card-inner h4 {
+    margin: 1rem;
+}
+
+.Recipe-card-inner .close-button {
+    font-size: 2rem;
+    padding: 1rem 1rem;
+    font-weight: 1000;
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.close-button div {
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .Task-blocks {
+        grid-template-columns: 1fr;
+        justify-content: flex-start;
+        align-items: center;
+        margin: 0 auto 10vh auto;
+        height: auto;
+    }
+
+    .Task-block {
+        height: 100%;
+        width: 100%;
+        margin: 1rem auto;
+    }
+
+    .List-item {
+        /*width: clamp(30ch, 50%, 70ch);*/
+        background-color: white;
+        padding: 4px 8px;
+        border-radius: 5px;
+    }
+
+    .Recipe {
+        padding: 2rem 1rem;
+    }
+
+    /*.list-text-md {*/
+    /*    padding-left: 1rem;*/
+    /*}*/
+    .Login-form {
+        margin: 0 2rem;
+    }
+}
+

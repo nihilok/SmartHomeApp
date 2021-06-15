@@ -2,11 +2,12 @@ import React from 'react';
 import {MenuButton} from './MenuButton';
 import {Header} from "./Header";
 
-export const MenuScreen = () => {
+const MenuScreen = () => {
     return (
-        <><Header text="smarthome.app"/>
-            <div className="flex justify-center items-center h-full">
-                <div className="grid grid-cols-3 gap-10 px-5 w-full h-full">
+        <>
+            <Header text="smarthome.app" settings={'/config'}/>
+            <div className="container flex-col-center">
+                <nav className="Menu-buttons grid-3">
                     <MenuButton
                         route="/heating"
                         icon="fire-alt"/>
@@ -23,10 +24,12 @@ export const MenuScreen = () => {
                         route="/cam"
                         icon="video"/>
                     <MenuButton
-                        route="/"
-                        icon="money-bill-wave"/>
-                </div>
+                        route="/recipes"
+                        icon="pizza-slice"/>
+                </nav>
             </div>
         </>
     );
 };
+
+export default MenuScreen;

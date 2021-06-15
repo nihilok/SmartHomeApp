@@ -1,34 +1,28 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {FontAwesomeIcon as Fa} from '@fortawesome/react-fontawesome';
-import {AddNewItem} from "./AddNew";
 
-export const TaskBlock = ({name, tasks, DeleteFunc, AddFunc}) => {
+export const TaskBlock = ({name, tasks, DeleteFunc}) => {
 
-    const [newTask, setNewTask] = useState('')
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (newTask) {
-            AddFunc(name, newTask);
-            setNewTask('');
-        }
-    }
+  const theirTasks = tasks.filter(task => task.name === name)
+  // console.log(theirTasks)
 
-    return (<>
-        <div
-            className="taskBlock max-h-96 overflow-y-auto">
-            {tasks.length ? tasks.map((task, index) => {
-                return (
-                    <div key={'div' + index}
-                         className="task pt-1">
-                        <h1 key={'h1' + index} className="font-semibold ml-2 pt-1">{task[1]}</h1>
-                        <Fa key={'icon' + index} icon="check-circle" onDoubleClick={() => DeleteFunc(task[0])}
-                            className="deleteIcon mt-1"/>
-                    </div>
-                )
-            }) : <div className="text-white">Nothing here!</div>}
+  return (<>
+    <div
+        className="Task-block">
+      <h2>{name}</h2>
+      {tasks ? theirTasks.map((task) => {
+        return (
+            <div key={'div-' + task.id}
+                 className="List-item flex-row-between">
+              <h3 key={'h1-' + task.id} className="list-text-md">{task.task}</h3>
+              <Fa key={'icon-' + task.id} icon="check-circle" onDoubleClick={() => DeleteFunc(task.id, task.name)}
+                  className="Delete-icon"/>
+            </div>
+        )
+      }) : <div className="text-white">Nothing here!</div>}
 
-        </div>
-        <AddNewItem handleSubmit={handleSubmit} newItem={newTask} setNewItem={setNewTask}/>
-    </>)
+    </div>
+
+  </>)
 };

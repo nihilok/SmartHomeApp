@@ -2,84 +2,88 @@ import React, {useEffect, useState} from 'react';
 import {Header} from './Header';
 import {TaskBlock} from './TaskBlock';
 import {AddNewItem} from "./AddNew";
+import {AuthContext} from "../contexts/AuthContext";
+import Loader from "./Loader";
+import FetchAuthService from "../service/FetchService";
+import {useToastContext} from "../contexts/ToastContext";
+
 
 export const Tasks = () => {
-    const names = ['Les', 'Mike']
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(true)
-    const [tasks, setTasks] = useState([])
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true)
+  const [tasks, setTasks] = useState({names: [], tasks: []})
+  const {authState} = React.useContext(AuthContext);
+  const [newTask, setNewTask] = useState('')
+  const [iDState, setIDState] = useState(0)
+  const {toastDispatch} = useToastContext()
 
-    async function GetTasks() {
-        try {
-            setLoading(true);
-            return await fetch(`https://server.smarthome.mjfullstack.com/tasks`,{
-                headers: {
-                'Content-Type': 'application/json'
-            },
-                method: 'GET'
-            }).then(response =>
-                response.json().then((data) => {
-                    setTasks(data)
-                }));
-        } catch (e) {
-            setError(e);
-        } finally {
-            setTimeout(() => {setLoading(false)}, 400);
-        }
+  useEffect(() => {
+        // setLoading(true)
+        FetchAuthService(
+            '/tasks/',
+            'GET',
+            authState,
+            setTasks)
+            .catch(e => setError(e))
+            .finally(() => {
+              setLoading(false)
+            })
+      }, [authState]
+  );
+
+  async function addTask(hm_id, task) {
+    await FetchAuthService(
+        `/tasks/`,
+        'POST',
+        authState,
+        setTasks,
+        JSON.stringify({hm_id, task}))
+  }
+
+  async function deleteTask(id, name) {
+    setTasks(prevTasks => ({
+      ...prevTasks,
+      name: tasks.tasks.filter(x => x.id !== id)
+    }))
+    await FetchAuthService(
+        `/tasks/${id}`,
+        'DELETE',
+        authState,
+        setTasks,
+        JSON.stringify({id}),
+        toastDispatch)
+        .catch(e => setError(e))
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (newTask) {
+      addTask(iDState, newTask);
+      setNewTask('');
     }
+  }
 
-    async function addTask(name, task) {
-        await fetch(`https://server.smarthome.mjfullstack.com/tasks`, {
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            method: 'POST',
-            body: JSON.stringify({name, task})
-        })
-            .then(response =>
-                response.json().then((data) => {
-                    setTasks(data)
-                }));
-    }
 
-    async function deleteTask(id) {
-        await fetch(`https://server.smarthome.mjfullstack.com/tasks/${id}`, {
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            method: 'DELETE',
-            body: JSON.stringify({id})
-        })
-            .then(response =>
-                response.json().then((data) => {
-                    setTasks(data)
-                }));
-    }
+  return <div className="Outer">
+    <Header text={'Tasks'} back={'/'}/>
+    <div className="container">
+      {error ? "Failed to load tasks; are you authorised to view them?" : loading ?
 
-    useEffect(() => {
-        GetTasks();
-    }, []);
+          <Loader classname="Loader Loader-trans"/> :
 
-    if (error) return "Failed to load tasks: " + error.message;
-    return <div className="max-h-screen w-screen overflow-hidden">
-        <Header text={'Tasks'} back={true}/>
-        <hr className="mt-5"/>
-        <div className="flex flex-row h-full justify-center">
-            {names.map((name) => {
-                return (
-                    <div className="flex flex-col justify-start items-center w-full mt-5">
+          <div className="Task-blocks">
+            {tasks ? tasks.names.map((name) => {
+              return (
 
-                            <div className="font-bold text-white text-4xl">{name}</div>
-                            {loading ? <div className="centerCol w-full"><div className="lds-ellipsis">
-                                <div/>
-                                <div/>
-                                <div/>
-                                <div/>
-                            </div>
-                            <AddNewItem newItem={addTask} /></div> : <TaskBlock name={name} tasks={tasks[name]} DeleteFunc={deleteTask} AddFunc={addTask}/>}
-                    </div>
-                )
-            })}
-        </div>
-    </div>
+                  <div className="Task-block flex-col-center" key={name + 'mb'}>
+                    <TaskBlock name={name[1]} tasks={tasks.tasks} key={name + 'tb'} DeleteFunc={deleteTask}
+                               AddFunc={addTask}/>
+                  </div>
+              )
+            }) : ''}</div>}
+
+      <AddNewItem handleSubmit={handleSubmit} newItem={newTask} setNewItem={setNewTask}
+                  placeholderText={"Add a New Task"} options={tasks.names} setID={setIDState}/></div>
+  </div>
+
 }

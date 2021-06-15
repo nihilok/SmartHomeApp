@@ -1,0 +1,92 @@
+.success {
+    --background-color: #79a079;
+}
+
+.info {
+    --background-color: #af90fd;
+}
+
+.danger {
+    --background-color: #ff47c4;
+}
+
+.toast {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    max-height: 80vh;
+    overflow: hidden;
+    height: auto;
+    font-family: monospace;
+    z-index: 98;
+    margin: 0 0 20vh 0;
+    pointer-events: none;
+}
+
+/*.toast-container {*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*    width: 90%;*/
+/*    margin: auto;*/
+/*}*/
+
+.toast-container-item {
+    border: var(--primary-color) solid 1px;
+    margin: .5rem auto;
+    padding: 2rem;
+    border-radius: 7px;
+    width: 80vw;
+    min-height: 3rem;
+    word-wrap: break-word;
+    box-shadow: var(--shadow);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    animation: onFromTop .5s ease-in-out forwards;
+    background-color: var(--background-color);
+    pointer-events: auto;
+    opacity: 1;
+    transition: .5s;
+}
+
+.fade-out {
+    animation: offToTop .5s ease-in-out forwards;
+}
+
+.toast-text {
+    max-width: 100%;
+    flex-wrap: wrap;
+}
+
+.toast-close {
+    cursor: pointer;
+    margin-left: auto;
+    /*margin-right: 10px;*/
+    margin-top: -1.5rem;
+    margin-bottom: 2rem;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+
+@keyframes onFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(200%);
+    }
+    to {transform: translateY(0); opacity: 1;}
+}
+
+@keyframes offToTop {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {transform: translateY(200%); opacity: 0;}
+}
