@@ -1,9 +1,6 @@
-import concurrent.futures
-import json
 import os
 from typing import Optional, List
 from .cache.redis_funcs import set_weather, get_weather
-import uvicorn
 import requests
 from dataclasses import dataclass
 from fastapi import FastAPI, Depends, status
@@ -17,6 +14,7 @@ from .db.models import Task, TaskPydantic, TaskPydanticIn, \
     ShoppingListItem, ShoppingListItemPydantic, ShoppingListItemPydanticIn, \
     Recipe, RecipePydantic, RecipePydanticIn, \
     HouseholdMember, HouseholdMemberPydantic
+from .utils.concurrent_calls import get_data, urls
 
 TESTING = False
 
@@ -67,55 +65,12 @@ else:
 
 hs = HeatingSystem()
 
-CONNECTIONS = 100
-TIMEOUT = 5
-urls = ['https://api.smarthome.mjfullstack.com',            # temperature readings
-        'https://api.smarthome.mjfullstack.com/ip',         # remote IP
-        'https://api.openweathermap.org/data/2.5/onecall?lat=51.6862&lon=-1.4129&exclude=minutely,hourly'
-        '&units=metric&appid=<YOUR-API-KEY>']               # Open Weather Map
-
-
-def decode_json(data):
-    if data.startswith('{'):
-        data = json.loads(data)
-    return data
-
-
-def load_url(url, timeout):
-    ans = requests.get(url, timeout=timeout)
-    return url, decode_json(ans.text)
-
-
-def get_data() -> dict:
-    out = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=CONNECTIONS) as executor:
-        future_to_url = (executor.submit(load_url, url, TIMEOUT) for url in urls)
-        for future in concurrent.futures.as_completed(future_to_url):
-            try:
-                data = future.result()
-            except Exception as exc:
-                data = ('error', str(type(exc)))
-            finally:
-                out[urlparse.urlparse(data[0]).netloc + urlparse.urlparse(data[0]).path] = [data[1]]
-    return out
-
 
 class WeatherReport(BaseModel):
     # keys = ['dt', 'sunrise', 'sunset', 'temp', 'feels_like', 'pressure', 'humidity', 'dew_point', 'uvi', 'clouds',
     #         'visibility', 'wind_speed', 'wind_deg', 'weather']
     current: dict
     daily: List[dict]
-
-
-@app.get('/weather/')
-async def weather() -> WeatherReport:
-    weather_dict = await get_weather()
-    if not weather_dict:
-        url = urls[2]
-        r = requests.get(url).json()
-        weather_dict = {'current': r['current'], 'daily': r['daily']}
-        await set_weather(weather_dict)
-    return WeatherReport(**weather_dict)
 
 
 class ApiInfo(BaseModel):
@@ -127,12 +82,23 @@ class ApiInfo(BaseModel):
     ip: Optional[str] = None
 
 
+@app.get('/weather/')
+async def weather() -> WeatherReport:
+    weather_dict = await get_weather()
+    if not weather_dict:
+        url = urls['weather']
+        r = requests.get(url).json()
+        weather_dict = {'current': r['current'], 'daily': r['daily']}
+        await set_weather(weather_dict)
+    return WeatherReport(**weather_dict)
+
+
 # Central heating endpoints
 @app.get('/heating/info/', response_model=ApiInfo)
 async def api():
     out = get_data()
-    temp_url = urlparse.urlparse(urls[0]).netloc + urlparse.urlparse(urls[0]).path
-    ip_url = urlparse.urlparse(urls[1]).netloc + urlparse.urlparse(urls[1]).path
+    temp_url = urlparse.urlparse(urls['temperature']).netloc + urlparse.urlparse(urls['temperature']).path
+    ip_url = urlparse.urlparse(urls['ip']).netloc + urlparse.urlparse(urls['ip']).path
     weather_report = await weather()
     return ApiInfo(indoor_temp=str('{0:.1f}'.format(out[temp_url][0]['temperature'])) + '°C',
                    outdoor_temp=str('{0:.1f}'.format(weather_report.current['temp'])) + '°C',
@@ -144,7 +110,7 @@ async def api():
 
 @app.get('/heating/info/temperature/', response_model=ApiInfo)
 async def temp_only():
-    r = requests.get('https://api.smarthome.mjfullstack.com')
+    r = requests.get(urls['temperature'])
     return ApiInfo(indoor_temp=str('{0:.1f}'.format(r.json()['temperature'])) + '°C',
                    on=hs.check_state(),
                    program_on=hs.conf.program_on)
@@ -274,6 +240,3 @@ register_tortoise(
     generate_schemas=True,
     add_exception_handlers=True
 )
-
-if __name__ == '__main':
-    uvicorn.run(app, port=8000)
