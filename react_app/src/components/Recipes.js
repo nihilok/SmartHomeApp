@@ -80,8 +80,6 @@ export const Recipes = () => {
       }, [getRecipes]);
 
       const handleSubmit = (e) => {
-        console.log(editing)
-        console.log(editing)
         e.preventDefault();
         const data = {
           meal_name,

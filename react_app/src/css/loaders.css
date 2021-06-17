@@ -156,6 +156,23 @@
     background-color: rgba(0, 0, 0, 0);
 }
 
+.Loader-block {
+    position: relative;
+    width: 100%;
+    height: auto;
+    background-color: rgba(0, 0, 0, 0);
+    animation: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin-left: 3rem;
+}
+
+.Loader-block div:nth-child(1) {
+}
+
 @keyframes fadeInModal {
     from {
         background-color: rgba(0, 0, 0, .1);

@@ -54,23 +54,25 @@ const Login = () => {
     };
 
     return (
-        <form ref={form} onSubmit={handleSubmit} className={"Login-form"}>
-            <div className="form-control">
-                <input name="username" type="text"
-                       placeholder="Username"
-                       value={data.username}
-                       onChange={handleInputChange}
-                       className={"timeInput text-center"}
-                />
-                <input name="password" type="password" placeholder="Password"
-                       value={data.password}
-                       onChange={handleInputChange}
-                       className={"timeInput text-center"}/>
-            </div>
-            <input type="submit" value="Sign In"
-                   className={"btn"}/>
-            {data.isSubmitting ? <Loader /> : ''}
-        </form>
+        <div className="Login-screen container">
+            <form ref={form} onSubmit={handleSubmit} className={"Login-form"}>
+                <div className="form-control">
+                    <input name="username" type="text"
+                           placeholder="Username"
+                           value={data.username}
+                           onChange={handleInputChange}
+                           className={"timeInput text-center"}
+                    />
+                    <input name="password" type="password" placeholder="Password"
+                           value={data.password}
+                           onChange={handleInputChange}
+                           className={"timeInput text-center"}/>
+                </div>
+                <input type="submit" value="Sign In"
+                       className={"btn"}/>
+                {data.isSubmitting ? <Loader/> : ''}
+            </form>
+        </div>
     )
 };
 

@@ -53,6 +53,10 @@
     outline: none;
 }
 
+.Login-screen {
+
+}
+
 .Login-form {
     display: flex;
     flex-direction: column;
@@ -91,14 +95,29 @@
     outline: none;
 }
 
+.cam-screen {
+    background-color: black;
+    height: 45vh;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 15px;
+    padding: 1rem 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .Heating-settings {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-}
-
-.Heating-form * {
+    background-color: var(--background-light);
+    padding: 2rem;
+    margin-top: 1rem;
+    border-radius: 4px;
+    box-shadow: 0 0 4px inset rgba(0, 0, 0, .5);
+    border: 1px solid var(--primary-color)
 
 }
 
@@ -115,7 +134,7 @@
 
 .Heating-form input[type="time"] {
     font-size: 1.2rem;
-    margin: 1rem 0;
+    margin: 4px 0;
 }
 
 .Heating-form input[type="time"]:focus {
@@ -132,7 +151,7 @@
     flex-direction: column;
     justify-content: space-evenly;
     align-items: center;
-    height: 100%;
+    /*height: 100%;*/
 }
 
 .Heating-display {
@@ -148,7 +167,24 @@
     padding: 1rem 4rem 2rem 3rem;
     border-radius: 5px;
     box-shadow: 0 0 4px inset rgba(0, 0, 0, .5);
-    border: 1px solid var(--primary-color)
+    border: 1px solid var(--primary-color);
+    min-height: 16rem;
+    min-width: 18rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.Display-screen .Loader-block {
+    margin-left: 6px;
+}
+
+.Display-screen-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
 }
 
 .Heating-display div {
@@ -165,6 +201,10 @@
     color: var(--primary-color);
     font-weight: bold;
     font-size: 1.2rem;
+}
+
+.Heating-display .Other-info .small {
+    font-size: .8rem;
 }
 
 .Heating-display .value {
@@ -369,6 +409,7 @@
     cursor: pointer;
     text-decoration: underline;
 }
+
 .remove-recipe div:nth-child(1) {
     color: var(--text-primary);
 }
@@ -511,6 +552,10 @@
     border-radius: 10px;
 }
 
+.btn {
+    width: 100%;
+}
+
 .New-recipe textarea {
     height: 5rem;
 }
@@ -536,6 +581,10 @@
 
     .Login-form {
         margin: 0 2rem;
+    }
+
+    .Display-screen {
+        min-height: 19rem;
     }
 }
 

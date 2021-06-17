@@ -19,7 +19,7 @@
     --text-muted: hsla(202, 33%, 70%, 0.52);
     --background-color: hsl(200, 90%, 8%);
     --background-light: hsl(200, 90%, 15%);
-    --background-lighter: hsl(200, 90%, 25%);
+    --background-lighter: hsl(202, 63%, 44%);
 
     --heat-gradient: linear-gradient(90deg, var(--primary-color), #950000);
     --shadow: 0 0 5px rgba(0, 0, 0, .8)
@@ -54,7 +54,7 @@ code {
 .App {
     max-width: 100vw;
     min-height: 100vh;
-    padding: 64px 0;
+    padding: 64px 0 0 0;
     background-color: var(--background-color);
     display: flex;
     flex-direction: column;
@@ -212,7 +212,7 @@ input, textarea ::placeholder {
 
 
 input[type=time] {
-    padding: 6px .7rem 5px .7rem;
+    padding: 6px .7rem 5px 1rem;
     text-align: center;
     justify-content: center;
     width: 100%;
