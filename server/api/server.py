@@ -1,15 +1,15 @@
+TESTING = True      # Uses benign heating system when True
+# API will fail if no heating system in place when False
+
+
 import os
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from tortoise.contrib.fastapi import register_tortoise
 from fastapi.middleware.cors import CORSMiddleware
 from .auth import authentication
 from .db.endpoints import crud_endpoints
 from .auth.constants import origins
 from .heating.endpoints import heating_endpoints
-
-
-TESTING = True      # Uses benign heating system when True
-# API will fail if no heating system in place when False
 
 
 # Create ASGI app:
