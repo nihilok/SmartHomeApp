@@ -61,7 +61,7 @@ function App() {
               !authState.isAuthenticated ? <Login/> :
                   <>
                     <Route exact path="/" component={MenuScreen}/>
-                    <Route path="/settings" component={() => (<HeatingSettings />)}/>
+                    <Route path="/settings" component={HeatingSettings}/>
                     <Route path="/config" component={Settings}/>
                     <Route path="/heating" component={Heating}/>
                     <Route path="/tasks" component={Tasks}/>
