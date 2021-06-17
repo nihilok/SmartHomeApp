@@ -30,7 +30,7 @@ def load_url(url, timeout):
 def get_data() -> dict:
     out = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=CONNECTIONS) as executor:
-        future_to_url = (executor.submit(load_url, url, TIMEOUT) for key, url in urls.values() if key != 'weather')
+        future_to_url = (executor.submit(load_url, url, TIMEOUT) for key, url in urls.items() if key != 'weather')
         for future in concurrent.futures.as_completed(future_to_url):
             try:
                 data = future.result()
