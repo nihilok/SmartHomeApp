@@ -1,6 +1,7 @@
 import os
 from typing import Optional, List
 from .cache.redis_funcs import set_weather, get_weather
+import uvicorn
 import requests
 from dataclasses import dataclass
 from fastapi import FastAPI, Depends, status
@@ -8,21 +9,20 @@ from tortoise.contrib.fastapi import register_tortoise
 from fastapi.middleware.cors import CORSMiddleware
 import urllib.parse as urlparse
 from . import authentication
-from .authentication import get_current_user, get_current_active_user
+from .db.endpoints import crud_endpoints
+from .authentication import get_current_active_user
 from pydantic import BaseModel
-from .db.models import Task, TaskPydantic, TaskPydanticIn, \
-    ShoppingListItem, ShoppingListItemPydantic, ShoppingListItemPydanticIn, \
-    Recipe, RecipePydantic, RecipePydanticIn, \
-    HouseholdMember, HouseholdMemberPydantic
+from .db.models import HouseholdMemberPydantic
 from .utils.concurrent_calls import get_data, urls
 
 TESTING = False
 
 app = FastAPI()
 app.include_router(authentication.router)
+app.include_router(crud_endpoints.router)
 
 origins = [
-    'https://example.com',
+    'https://smarthome.mjfullstack.com',
     'http://localhost:4000',
 ]
 
@@ -140,98 +140,6 @@ async def heating_on_off(user: HouseholdMemberPydantic = Depends(get_current_act
     return await heating()
 
 
-class TaskResponseSingle(BaseModel):
-    id: int
-    name: str
-    task: str
-
-
-class TasksResponse(BaseModel):
-    names: List[tuple]
-    tasks: List[TaskResponseSingle]
-
-
-# Tasks endpoints
-async def parse_tasks() -> TasksResponse:
-    tasks = await Task.all()
-    hms = await HouseholdMember.all()
-    names = dict(zip([hm.id for hm in hms if hm.id not in authentication.GUEST_IDS], [(hm.id, hm.name) for hm in hms]))
-    resp = []
-    for task in tasks:
-        resp.append(TaskResponseSingle(id=task.id, name=names[task.hm_id][1], task=task.task))
-    return TasksResponse(names=list(names.values()), tasks=resp)
-
-
-@app.get('/tasks/')
-async def get_tasks(user: HouseholdMemberPydantic = Depends(get_current_user)):
-    return await parse_tasks()
-
-
-@app.post('/tasks/')
-async def add_task(task: TaskPydanticIn, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
-    await Task.create(**task.dict(exclude_unset=True))
-    return await parse_tasks()
-
-
-@app.delete('/tasks/{id}/')
-async def delete_task(id: int, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
-    await Task.filter(id=id).delete()
-    return await get_tasks()
-
-
-# Shopping list endpoints
-@app.get('/shopping/')
-async def get_shopping_list():
-    return await ShoppingListItemPydantic.from_queryset(ShoppingListItem.all().order_by('id'))
-
-
-@app.post('/shopping/')
-async def add_shopping_item(item: ShoppingListItemPydanticIn,
-                            user: HouseholdMemberPydantic = Depends(get_current_active_user)):
-    try:
-        await ShoppingListItem.create(**item.dict(exclude_unset=True))
-    finally:
-        return await get_shopping_list()
-
-
-@app.delete('/shopping/{item_id}/')
-async def delete_shopping_item(item_id: int, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
-    await ShoppingListItem.filter(id=item_id).delete()
-    return await get_shopping_list()
-
-
-# Recipe endpoints
-@app.get('/recipes/')
-async def get_recipes():
-    return await RecipePydantic.from_queryset(Recipe.all())
-
-
-@app.post('/recipes/')
-async def add_recipe(recipe: RecipePydanticIn, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
-    await Recipe.create(**recipe.dict(exclude_unset=True))
-    return await get_recipes()
-
-
-@app.get('/recipes/{recipe_id}/')
-async def get_recipe(recipe_id: int, user: HouseholdMemberPydantic = Depends(get_current_user)):
-    return await RecipePydantic.from_queryset_single(Recipe.get(id=recipe_id))
-
-
-@app.post('/recipes/{recipe_id}/')
-async def edit_recipe(recipe_id: int, new_recipe: RecipePydanticIn,
-                      current_user: HouseholdMember = Depends(get_current_active_user)):
-    recipe = await Recipe.get(id=recipe_id)
-    recipe.meal_name, recipe.ingredients, recipe.notes = new_recipe.meal_name, new_recipe.ingredients, new_recipe.notes
-    await recipe.save()
-    return await get_recipes()
-
-
-@app.delete('/recipes/{recipe_id}/')
-async def delete_recipe(recipe_id: int, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
-    await Recipe.filter(id=recipe_id).delete()
-    return await get_recipes()
-
-
 # Register tortoise models
 register_tortoise(
     app,
@@ -240,3 +148,6 @@ register_tortoise(
     generate_schemas=True,
     add_exception_handlers=True
 )
+
+if __name__ == '__main':
+    uvicorn.run(app, port=8000)
