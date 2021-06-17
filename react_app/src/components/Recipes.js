@@ -80,6 +80,8 @@ export const Recipes = () => {
       }, [getRecipes]);
 
       const handleSubmit = (e) => {
+        console.log(editing)
+        console.log(editing)
         e.preventDefault();
         const data = {
           meal_name,
@@ -92,6 +94,7 @@ export const Recipes = () => {
               .catch(e => setError(e))
               .finally(() => {
                 setLoading(false)
+                setEditing(false)
               })
         } else {
           addItem(data)
@@ -103,8 +106,9 @@ export const Recipes = () => {
         resetMealName()
         resetIngredients()
         resetNotes()
-        getRecipes()
+        // getRecipes()
         setNewRecipe(false)
+        recipeRef.current = null
       }
 
       async function addItem(data) {
@@ -132,6 +136,7 @@ export const Recipes = () => {
             .finally(() => {
               setLoading(false)
             })
+        recipeRef.current = null
       }
 
       async function editItem(data) {
@@ -160,9 +165,11 @@ export const Recipes = () => {
               <div className="note on-from-bottom">
                 <div className="close-button" onClick={() => {
                   setNewRecipe(false);
+                  setEditing(false)
                   resetMealName()
                   resetIngredients()
                   resetNotes()
+                  recipeRef.current = null
                 }}>&times;</div>
 
                 <div className="note-top">
