@@ -1,20 +1,22 @@
 import os
-import requests
-import urllib.parse as urlparse
+from datetime import datetime
 from typing import Optional, List
+from .cache.redis_funcs import set_weather, get_weather
+import uvicorn
+import requests
 from dataclasses import dataclass
-from fastapi import FastAPI, Depends, status
+from fastapi import FastAPI, Depends
 from tortoise.contrib.fastapi import register_tortoise
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+import urllib.parse as urlparse
 from . import authentication
 from .db.endpoints import crud_endpoints
 from .authentication import get_current_active_user
+from pydantic import BaseModel
 from .db.models import HouseholdMemberPydantic
-from .cache.redis_funcs import set_weather, get_weather
 from .utils.concurrent_calls import get_data, urls
 
-TESTING = False
+TESTING = True
 
 app = FastAPI()
 app.include_router(authentication.router)
@@ -75,6 +77,7 @@ class ApiInfo(BaseModel):
     indoor_temp: str
     outdoor_temp: str = '- -' + '°C'
     weather: str = '- -'
+    last_updated: str = '--:--:--'
     on: bool = hs.check_state()
     program_on: bool = hs.conf.program_on
     ip: Optional[str] = None
@@ -98,9 +101,11 @@ async def api():
     temp_url = urlparse.urlparse(urls['temperature']).netloc + urlparse.urlparse(urls['temperature']).path
     ip_url = urlparse.urlparse(urls['ip']).netloc + urlparse.urlparse(urls['ip']).path
     weather_report = await weather()
+    print(datetime.fromtimestamp(weather_report.current['dt']).strftime('%H:%M:%S'))
     return ApiInfo(indoor_temp=str('{0:.1f}'.format(out[temp_url][0]['temperature'])) + '°C',
                    outdoor_temp=str('{0:.1f}'.format(weather_report.current['temp'])) + '°C',
                    weather=weather_report.current['weather'][0]['description'],
+                   last_updated=datetime.fromtimestamp(weather_report.current['dt']).strftime('%H:%M'),
                    on=hs.check_state(),
                    program_on=hs.conf.program_on,
                    ip=out[ip_url][0]['ip'])

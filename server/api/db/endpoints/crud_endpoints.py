@@ -18,6 +18,7 @@ class TaskResponseSingle(BaseModel):
     id: int
     name: str
     task: str
+    completed: bool
 
 
 class TasksResponse(BaseModel):
@@ -32,7 +33,7 @@ async def parse_tasks() -> TasksResponse:
     names = dict(zip([hm.id for hm in hms if hm.id not in authentication.GUEST_IDS], [(hm.id, hm.name) for hm in hms]))
     resp = []
     for task in tasks:
-        resp.append(TaskResponseSingle(id=task.id, name=names[task.hm_id][1], task=task.task))
+        resp.append(TaskResponseSingle(id=task.id, name=names[task.hm_id][1], task=task.task, completed=task.completed))
     return TasksResponse(names=list(names.values()), tasks=resp)
 
 
@@ -50,6 +51,14 @@ async def add_task(task: TaskPydanticIn, user: HouseholdMemberPydantic = Depends
 @router.delete('/tasks/{id}/')
 async def delete_task(id: int, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
     await Task.filter(id=id).delete()
+    return await get_tasks()
+
+
+@router.post('/tasks/{id}/')
+async def mark_completed(id: int, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
+    task_obj = await Task.get(id=id)
+    task_obj.completed = True if not task_obj.completed else False
+    await task_obj.save()
     return await get_tasks()
 
 

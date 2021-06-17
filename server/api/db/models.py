@@ -28,6 +28,7 @@ class Task(Model):
     id = fields.IntField(pk=True)
     task = fields.CharField(255)
     hm = fields.ForeignKeyField('models.HouseholdMember', related_name='tasks')
+    completed = fields.BooleanField(default=False)
 
     class Meta:
         unique_together = ("hm_id", "task")
