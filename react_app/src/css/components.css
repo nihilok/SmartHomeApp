@@ -105,20 +105,25 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    box-shadow: var(--shadow);
+
 }
 
-.Heating-settings {
+.Heating-screen {
+    background-color: var(--background-light);
+    border-radius: 4px;
+    box-shadow: 0 0 7px inset rgba(0, 0, 0, .5), var(--shadow);
+    border: 1px solid var(--primary-color);
+    color: var(--text-primary);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: var(--background-light);
+}
+
+.Heating-settings {
     padding: 2rem;
     margin-top: 1rem;
-    border-radius: 4px;
-    box-shadow: 0 0 4px inset rgba(0, 0, 0, .5);
-    border: 1px solid var(--primary-color)
-
 }
 
 .Heating-form input[type="range"] {
@@ -163,21 +168,14 @@
 }
 
 .Display-screen {
-    background-color: var(--background-light);
     padding: 1rem 4rem 2rem 3rem;
     border-radius: 5px;
-    box-shadow: 0 0 4px inset rgba(0, 0, 0, .5);
-    border: 1px solid var(--primary-color);
     min-height: 16rem;
     min-width: 18rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
 }
 
 .Display-screen .Loader-block {
-    margin-left: 6px;
+    margin-left: .5rem;
 }
 
 .Display-screen-inner {
