@@ -21,7 +21,6 @@ app.include_router(authentication.router)
 app.include_router(crud_endpoints.router)
 
 origins = [
-    'https://smarthome.mjfullstack.com',
     'http://localhost:4000',
 ]
 
