@@ -2,3 +2,4 @@
 /.idea/
 /venv/
 /node_modules/
+/server/api/db/db.sqlite3
