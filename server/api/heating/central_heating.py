@@ -1,4 +1,5 @@
 import json
+import os
 import time
 import logging
 from datetime import datetime
@@ -23,9 +24,9 @@ class HeatingConf(BaseModel):
 
 
 class HeatingSystem:
-    config_file = 'heating.conf'
+    config_file = os.path.abspath(os.getcwd()) + '/api/heating/heating.conf'
     scheduler = BackgroundScheduler()
-    SENSOR_IP = 'http://192.168.1.88/'  # Local IP of temperature sensor API
+    SENSOR_IP = 'https://api.smarthome.mjfullstack.com/'  # Local IP of temperature sensor API
 
     def __init__(self):
         """Create connection with temperature api and load settings
@@ -68,17 +69,18 @@ class HeatingSystem:
 
     def get_or_create_config(self):
         conf = HeatingConf(
-            target="20",
-            on_1= "08:30",
-            off_1= "10:30",
-            on_2= "18:30",
-            off_2= "22:30",
-            program_on= True
+            target="18",
+            on_1="06:30",
+            off_1="08:30",
+            on_2="20:30",
+            off_2="22:30",
+            program_on=True
         )
         try:
             with open(self.config_file, 'r') as f:
-                conf = HeatingConf(**json.load(f).dict(exclude_unset=True))
-        except FileNotFoundError:
+                file_dict = json.load(f)
+                conf = HeatingConf(**file_dict)
+        except (FileNotFoundError, TypeError):
             with open(self.config_file, 'w') as f:
                 json.dump(conf, f)
         finally:

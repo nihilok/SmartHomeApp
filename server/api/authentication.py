@@ -6,16 +6,16 @@ from starlette.requests import Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
 from typing import Optional
-from utils import superusers
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from models import HouseholdMember, HouseholdMemberPydantic, HouseholdMemberPydanticIn
+from .db.models import HouseholdMember, HouseholdMemberPydantic, HouseholdMemberPydanticIn
+from .db.utils import superusers
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-SECRET_KEY = "SOMETHINGsEcReT!"
+SECRET_KEY = "SoMeThInGsUpErSeCrEt!"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 10080
 GUEST_IDS = [3]
@@ -81,7 +81,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = await HouseholdMemberPydantic.from_queryset_single(HouseholdMember.get(name=username))
+    user = await HouseholdMemberPydantic.from_queryset_single(HouseholdMember.get(name=token_data.username))
     if user is None:
         raise credentials_exception
     return user
@@ -137,18 +137,7 @@ async def check_token(token: Token) -> Token:
         return token
 
 
-# @router.post('/check_ip')
-# async def check_ip(request: Request, response: Response):
-#     host_ip = request.client.host
-#     if host_ip == PUBLIC_IP:
-#         token = str(await get_local_token())
-#         response.set_cookie(key="token", value=token, max_age=604800)
-#         return token
-#     elif await check_local_token(request):
-#         return request.cookies.get('token')
-
-
-@router.post('/check_superuser/')
+# @router.post('/check_superuser/')
 async def check_superuser(user: HouseholdMemberPydantic =
                           Depends(get_current_user)) -> Optional[HouseholdMemberPydantic]:
     if user.id in superusers:

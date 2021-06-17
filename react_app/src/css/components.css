@@ -360,14 +360,17 @@
 .remove-recipe {
     width: 100%;
     display: flex;
-    justify-content: flex-end;
-    padding: 0 1rem 1rem 0;
+    justify-content: space-between;
+    padding: 1rem;
     color: firebrick;
-    cursor: pointer;
 }
 
-.remove-recipe:hover {
+.remove-recipe div:hover {
+    cursor: pointer;
     text-decoration: underline;
+}
+.remove-recipe div:nth-child(1) {
+    color: var(--text-primary);
 }
 
 
@@ -377,15 +380,11 @@
 
 .Delete-icon {
     color: var(--primary-light);
-    margin: 0;
+    margin: 0 0 0 1rem;
     font-size: 22px;
     user-select: none;
     cursor: pointer;
 }
-
-/*.Delete-icon:hover {*/
-/*    color: var(--primary-color);*/
-/*}*/
 
 .sure {
     background-color: var(--background-light);

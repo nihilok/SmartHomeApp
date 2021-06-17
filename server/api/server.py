@@ -1,7 +1,8 @@
 import concurrent.futures
 import json
+import os
 from typing import Optional, List
-from redis_funcs import set_weather, get_weather
+from .cache.redis_funcs import set_weather, get_weather
 import uvicorn
 import requests
 from dataclasses import dataclass
@@ -9,10 +10,10 @@ from fastapi import FastAPI, Depends, status
 from tortoise.contrib.fastapi import register_tortoise
 from fastapi.middleware.cors import CORSMiddleware
 import urllib.parse as urlparse
-import authentication
-from authentication import get_current_user, get_current_active_user
+from . import authentication
+from .authentication import get_current_user, get_current_active_user
 from pydantic import BaseModel
-from models import Task, TaskPydantic, TaskPydanticIn, \
+from .db.models import Task, TaskPydantic, TaskPydanticIn, \
     ShoppingListItem, ShoppingListItemPydantic, ShoppingListItemPydanticIn, \
     Recipe, RecipePydantic, RecipePydanticIn, \
     HouseholdMember, HouseholdMemberPydantic
@@ -23,7 +24,7 @@ app = FastAPI()
 app.include_router(authentication.router)
 
 origins = [
-    'https://smarthome.mjfullstack.com',
+    'https://example.com',
     'http://localhost:4000',
 ]
 
@@ -36,9 +37,9 @@ app.add_middleware(
 )
 
 if not TESTING:
-    from central_heating import HeatingSystem, HeatingConf
+    from .heating.central_heating import HeatingSystem, HeatingConf
 else:
-    from central_heating import HeatingConf
+    from .heating.central_heating import HeatingConf
 
 
     @dataclass
@@ -71,7 +72,7 @@ TIMEOUT = 5
 urls = ['https://api.smarthome.mjfullstack.com',            # temperature readings
         'https://api.smarthome.mjfullstack.com/ip',         # remote IP
         'https://api.openweathermap.org/data/2.5/onecall?lat=51.6862&lon=-1.4129&exclude=minutely,hourly'
-        '&units=metric&appid=<API-KEY>']                    # openweathermap
+        '&units=metric&appid=<YOUR-API-KEY>']               # Open Weather Map
 
 
 class WeatherReport(BaseModel):
@@ -115,7 +116,6 @@ def get_data() -> dict:
             except Exception as exc:
                 data = ('error', str(type(exc)))
             finally:
-                print(urlparse.urlparse(data[0]).netloc + urlparse.urlparse(data[0]).path)
                 out[urlparse.urlparse(data[0]).netloc + urlparse.urlparse(data[0]).path] = [data[1]]
     return out
 
@@ -194,7 +194,6 @@ async def parse_tasks() -> TasksResponse:
     names = dict(zip([hm.id for hm in hms if hm.id not in authentication.GUEST_IDS], [(hm.id, hm.name) for hm in hms]))
     resp = []
     for task in tasks:
-        print(task.task)
         resp.append(TaskResponseSingle(id=task.id, name=names[task.hm_id][1], task=task.task))
     return TasksResponse(names=list(names.values()), tasks=resp)
 
@@ -206,7 +205,6 @@ async def get_tasks(user: HouseholdMemberPydantic = Depends(get_current_user)):
 
 @app.post('/tasks/')
 async def add_task(task: TaskPydanticIn, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
-    print(task)
     await Task.create(**task.dict(exclude_unset=True))
     return await parse_tasks()
 
@@ -232,7 +230,7 @@ async def add_shopping_item(item: ShoppingListItemPydanticIn,
         return await get_shopping_list()
 
 
-@app.delete('/shopping/{item_id}')
+@app.delete('/shopping/{item_id}/')
 async def delete_shopping_item(item_id: int, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
     await ShoppingListItem.filter(id=item_id).delete()
     return await get_shopping_list()
@@ -250,22 +248,21 @@ async def add_recipe(recipe: RecipePydanticIn, user: HouseholdMemberPydantic = D
     return await get_recipes()
 
 
-@app.get('/recipes/{recipe_id}')
-async def get_recipe(recipe_id: int, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
+@app.get('/recipes/{recipe_id}/')
+async def get_recipe(recipe_id: int, user: HouseholdMemberPydantic = Depends(get_current_user)):
     return await RecipePydantic.from_queryset_single(Recipe.get(id=recipe_id))
 
 
-@app.post('/recipe/{recipe_id}')
+@app.post('/recipes/{recipe_id}/')
 async def edit_recipe(recipe_id: int, new_recipe: RecipePydanticIn,
                       current_user: HouseholdMember = Depends(get_current_active_user)):
     recipe = await Recipe.get(id=recipe_id)
-    print(new_recipe)
     recipe.meal_name, recipe.ingredients, recipe.notes = new_recipe.meal_name, new_recipe.ingredients, new_recipe.notes
     await recipe.save()
-    return await RecipePydantic.from_queryset_single(recipe)
+    return await get_recipes()
 
 
-@app.delete('/recipes/{recipe_id}')
+@app.delete('/recipes/{recipe_id}/')
 async def delete_recipe(recipe_id: int, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
     await Recipe.filter(id=recipe_id).delete()
     return await get_recipes()
@@ -274,8 +271,8 @@ async def delete_recipe(recipe_id: int, user: HouseholdMemberPydantic = Depends(
 # Register tortoise models
 register_tortoise(
     app,
-    db_url='sqlite://db.sqlite3',
-    modules={'models': ['models']},
+    db_url=f'sqlite://{os.path.abspath(os.getcwd())}/api/db/db.sqlite3',
+    modules={'models': ['api.db.models']},
     generate_schemas=True,
     add_exception_handlers=True
 )
