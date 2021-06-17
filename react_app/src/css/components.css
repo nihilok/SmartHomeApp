@@ -112,7 +112,7 @@
 .Heating-screen {
     background-color: var(--background-light);
     border-radius: 4px;
-    box-shadow: 0 0 7px inset rgba(0, 0, 0, .5), var(--shadow);
+    box-shadow: 0 0 3px inset var(--primary-light), 0 0 8px var(--primary-light);
     border: 1px solid var(--primary-color);
     color: var(--text-primary);
     display: flex;
@@ -124,6 +124,9 @@
 .Heating-settings {
     padding: 2rem;
     margin-top: 1rem;
+    min-height: 28rem;
+    min-width: 18rem;
+    transition: .5s ease-out;
 }
 
 .Heating-form input[type="range"] {
