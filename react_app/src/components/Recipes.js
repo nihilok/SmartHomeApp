@@ -16,13 +16,24 @@ export const Recipes = () => {
       // const [newItem, setNewItem] = useState('')
       const [currentRecipe, setCurrentRecipe] = useState(null)
       const [newRecipe, setNewRecipe] = useState(false)
-      const {value: meal_name, bind: bindMealName, reset: resetMealName} = useInput('');
-      const {value: ingredients, bind: bindIngredients, reset: resetIngredients} = useInput('');
-      const {value: notes, bind: bindNotes, reset: resetNotes} = useInput('');
+      const [editing, setEditing] = useState(false)
+      const {value: meal_name, setValue: setMealName, bind: bindMealName, reset: resetMealName} = useInput('');
+      const {value: ingredients, setValue: setIngredients, bind: bindIngredients, reset: resetIngredients} = useInput('');
+      const {value: notes, setValue: setNotes, bind: bindNotes, reset: resetNotes} = useInput('');
       const {authState} = React.useContext(AuthContext);
       const [sure, setSure] = useState(false)
       const recipeRef = useRef(null)
       const {toastDispatch} = useToastContext()
+
+      const handleEdit = () => {
+        setEditing(true)
+        recipeRef.current = currentRecipe
+        setMealName(recipeRef.current.meal_name)
+        setIngredients(recipeRef.current.ingredients)
+        setNotes(recipeRef.current.notes)
+        setNewRecipe(true)
+      }
+
       const renderRecipeCard = () => {
         return (
 
@@ -41,7 +52,10 @@ export const Recipes = () => {
                     <p>{currentRecipe.ingredients}</p>
                     {currentRecipe.notes ? <><h4>Notes:</h4>
                       <p>{currentRecipe.notes}</p></> : ''}</div>
-                  <div className="remove-recipe" onClick={handleDelete}>Remove Recipe</div>
+                  <div className="remove-recipe">
+                    <div onClick={handleEdit}>Edit Recipe</div>
+                    <div onClick={handleDelete}>Remove Recipe</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -73,6 +87,27 @@ export const Recipes = () => {
           notes
         }
         setLoading(true)
+        if (editing) {
+          editItem(data)
+              .catch(e => setError(e))
+              .finally(() => {
+                setLoading(false)
+              })
+        } else {
+          addItem(data)
+              .catch(e => setError(e))
+              .finally(() => {
+                setLoading(false)
+              })
+        }
+        resetMealName()
+        resetIngredients()
+        resetNotes()
+        getRecipes()
+        setNewRecipe(false)
+      }
+
+      async function addItem(data) {
         FetchAuthService(
             '/recipes/',
             'POST',
@@ -83,11 +118,6 @@ export const Recipes = () => {
             .finally(() => {
               setLoading(false)
             })
-        resetMealName()
-        resetIngredients()
-        resetNotes()
-        getRecipes()
-        setNewRecipe(false)
       }
 
       async function deleteItem() {
@@ -97,6 +127,20 @@ export const Recipes = () => {
             authState,
             setInfo,
             JSON.stringify({id: recipeRef.current.id}),
+            toastDispatch)
+            .catch(e => setError(e))
+            .finally(() => {
+              setLoading(false)
+            })
+      }
+
+      async function editItem(data) {
+        FetchAuthService(
+            `/recipes/${recipeRef.current.id}/`,
+            'POST',
+            authState,
+            setInfo,
+            JSON.stringify(data),
             toastDispatch)
             .catch(e => setError(e))
             .finally(() => {
@@ -114,18 +158,25 @@ export const Recipes = () => {
             <div className="Recipe-card">
 
               <div className="note on-from-bottom">
-                <div className="close-button" onClick={() => setNewRecipe(false)}>&times;</div>
+                <div className="close-button" onClick={() => {
+                  setNewRecipe(false);
+                  resetMealName()
+                  resetIngredients()
+                  resetNotes()
+                }}>&times;</div>
 
                 <div className="note-top">
-                  <div><h1>Add a Recipe..</h1></div>
+                  <div><h1>{meal_name ? 'Edit' : 'Add a'} Recipe..</h1></div>
                   <div/>
                 </div>
 
                 <div className="note-bottom">
                   <div className="Recipe-card-content">
                     <form className="New-recipe flex-col-center" onSubmit={handleSubmit}>
-                      <div className="form-control"><input type="text" placeholder="Meal Name" {...bindMealName} required/></div>
-                      <div className="form-control"><textarea placeholder="Ingredients" {...bindIngredients} required/></div>
+                      <div className="form-control"><input type="text" placeholder="Meal Name" {...bindMealName} required/>
+                      </div>
+                      <div className="form-control"><textarea placeholder="Ingredients" {...bindIngredients} required/>
+                      </div>
                       <div className="form-control"><textarea placeholder="Notes" {...bindNotes}/></div>
                       <input type="submit" value="Save" className="btn-outline"/>
                     </form>

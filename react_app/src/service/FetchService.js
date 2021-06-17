@@ -1,6 +1,6 @@
 import {ADD} from "../contexts/ToastContext";
 
-export const apiBaseUrl = 'http://localhost:8000'   // server url
+export const apiBaseUrl = 'http://localhost:8000'
 
 async function FetchAuthService(url,
                                 method,
@@ -32,6 +32,7 @@ async function FetchAuthService(url,
             });
           }
           throw new Error('Bad response')
+
         } else {
           return res.json()
         }
