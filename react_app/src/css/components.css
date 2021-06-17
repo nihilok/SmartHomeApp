@@ -53,7 +53,11 @@
     outline: none;
 }
 
-.Login-screen {
+.Login-screen .login-btn {
+    display: flex;
+    width: 100%;
+    margin: 0 4rem;
+    position: static;
 
 }
 
@@ -367,6 +371,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
+}
+
+.Plus-button:hover {
+    font-weight: 500;
+    font-size: 3.5rem;
+    box-shadow: 0 0 4px inset rgba(0, 0, 0, .7);
 }
 
 .Outer {
@@ -551,10 +562,6 @@
     margin-top: 1rem;
     font-family: Lato, sans-serif;
     border-radius: 10px;
-}
-
-.btn {
-    width: 100%;
 }
 
 .New-recipe textarea {

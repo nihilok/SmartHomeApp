@@ -32,7 +32,10 @@ const HeatingBlock = ({props}) => {
             setError(null)
           }
           setInfo(data);
-        })).catch(e => setError(e)).then(() => setLoading(false));
+        })).catch(e => setError(e)).finally(() => {
+      setLoading(false);
+      UpdateInfo().catch(e => setError(e));
+    });
   }
 
   async function UpdateInfo() {
@@ -89,7 +92,7 @@ const HeatingBlock = ({props}) => {
   return (
       <div className="Heating-display">
         {error ? <p>Can't update heating info: ${error.message}</p> : ''}
-        <div className="Display-screen">
+        <div className="Display-screen Heating-screen">
           {loading ? <div><RippleLoader classname={"Loader-block"}/></div> :
               <div className="Display-screen-inner">
                 <div className="Indoor-temp" style={{color: colour}}>{info.indoor_temp}</div>

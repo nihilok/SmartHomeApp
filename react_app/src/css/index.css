@@ -10,7 +10,8 @@
     --background-light: hsl(202, 33%, 90%);
     --background-lighter: hsl(202, 33%, 95%);
     --heat-gradient: linear-gradient(90deg, var(--primary-color), #950000);
-    --shadow: 0 0 5px rgba(0, 0, 0, .7)
+    --shadow: 0 0 5px rgba(0, 0, 0, .7);
+    --input-border-base: 2px solid var(--primary-light);
 }
 
 .dark-mode {
@@ -30,8 +31,7 @@
 }
 
 * {
-    box-sizing: border-box;
-    margin: 0;
+
     padding: 0;
 }
 
@@ -136,13 +136,24 @@ code {
 
 /* component classes */
 .btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background-color: var(--primary-color);
-    width: max-content;
+    width: 100%;
     padding: .5rem 2em;
     font-size: 16px;
     margin: .5rem auto;
     color: white;
     border-radius: 8px;
+    height: 2.5rem;
+}
+
+.btn:hover {
+    font-weight: bold;
+    font-size: .9rem;
+    padding-top: .6rem;
+    box-shadow: 0 0 4px inset black;
 }
 
 .btn-outline {
@@ -160,20 +171,23 @@ code {
     padding: .5rem 1em;
 }
 
+input {
+    -moz-box-sizing: border-box;
+}
+
 .form-control {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 100%;
-
+    /*width: 100%;*/
 }
 
 .form-control input[type=text], input[type=password] {
     text-align: center;
     margin: .5rem auto;
-    /*background-color: var(--background-light)*/
-    border: 2px solid var(--primary-color)
+    font-size: 1.8rem;
+
 }
 
 ::-moz-focus-inner {
@@ -185,10 +199,10 @@ input:focus, textarea:focus {
     box-shadow: 0 0 0 5px var(--primary-light);
 }
 
-input, textarea ::placeholder {
-    font-family: Lato, sans-serif;
-    color: var(--text-muted)
-}
+/*input[type=text], typ, textarea ::placeholder {*/
+/*    font-family: Lato, sans-serif;*/
+/*    !*color: var(--text-muted)*!*/
+/*}*/
 
 ::-webkit-input-placeholder {
     font-family: Lato, sans-serif;
@@ -221,21 +235,12 @@ input[type=time] {
     font-size: 1.8rem;
 }
 
-input[type=text], input[type=password] {
-    font-size: 1.8rem;
-    max-width: 100%;
-}
-
 input[type=text], input[type=password], input[type=time], textarea {
-    border: 2px solid var(--primary-light);
+    border: var(--input-border-base);
     border-radius: 5px;
     color: var(--text-primary);
 }
 
 input[type=submit] {
     border: 0;
-}
-
-input[type=submit]:hover {
-    font-weight: bold;
 }
