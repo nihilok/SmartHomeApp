@@ -1,18 +1,17 @@
 import os
-from typing import Optional, List
-from .cache.redis_funcs import set_weather, get_weather
-import uvicorn
 import requests
+import urllib.parse as urlparse
+from typing import Optional, List
 from dataclasses import dataclass
 from fastapi import FastAPI, Depends, status
 from tortoise.contrib.fastapi import register_tortoise
 from fastapi.middleware.cors import CORSMiddleware
-import urllib.parse as urlparse
+from pydantic import BaseModel
 from . import authentication
 from .db.endpoints import crud_endpoints
 from .authentication import get_current_active_user
-from pydantic import BaseModel
 from .db.models import HouseholdMemberPydantic
+from .cache.redis_funcs import set_weather, get_weather
 from .utils.concurrent_calls import get_data, urls
 
 TESTING = False
@@ -148,6 +147,3 @@ register_tortoise(
     generate_schemas=True,
     add_exception_handlers=True
 )
-
-if __name__ == '__main':
-    uvicorn.run(app, port=8000)
