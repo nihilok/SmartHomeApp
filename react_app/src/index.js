@@ -4,6 +4,7 @@ import './css/index.css';
 import './css/components.css';
 import './css/toast.css';
 import './css/loaders.css';
+import './css/note.css';
 import './css/check-slider.css';
 import './css/custom-range-input.css';
 import App from './App';

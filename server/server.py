@@ -1,6 +1,5 @@
 import concurrent.futures
 import json
-from collections import defaultdict, Counter
 from typing import Optional, List
 from redis_funcs import set_weather, get_weather
 import uvicorn
@@ -26,7 +25,6 @@ app.include_router(authentication.router)
 origins = [
     'https://smarthome.mjfullstack.com',
     'http://localhost:4000',
-    '*'
 ]
 
 app.add_middleware(
@@ -70,15 +68,15 @@ hs = HeatingSystem()
 
 CONNECTIONS = 100
 TIMEOUT = 5
-urls = ['https://api.smarthome.mjfullstack.com',
-        'https://api.smarthome.mjfullstack.com/ip',
+urls = ['https://api.smarthome.mjfullstack.com',            # temperature readings
+        'https://api.smarthome.mjfullstack.com/ip',         # remote IP
         'https://api.openweathermap.org/data/2.5/onecall?lat=51.6862&lon=-1.4129&exclude=minutely,hourly'
-        '&units=metric&appid=7f7e3e09711e104a772825504f022e6b']
+        '&units=metric&appid=<API-KEY>']                    # openweathermap
 
 
 class WeatherReport(BaseModel):
-    keys = ['dt', 'sunrise', 'sunset', 'temp', 'feels_like', 'pressure', 'humidity', 'dew_point', 'uvi', 'clouds',
-            'visibility', 'wind_speed', 'wind_deg', 'weather']
+    # keys = ['dt', 'sunrise', 'sunset', 'temp', 'feels_like', 'pressure', 'humidity', 'dew_point', 'uvi', 'clouds',
+    #         'visibility', 'wind_speed', 'wind_deg', 'weather']
     current: dict
     daily: List[dict]
 
@@ -89,10 +87,10 @@ async def weather() -> WeatherReport:
     if not weather_dict:
         url = 'https://api.openweathermap.org/data/2.5/' \
               'onecall?lat=51.6862&lon=-1.4129&exclude=minutely,hourly' \
-              '&units=metric&appid=7f7e3e09711e104a772825504f022e6b'
+              '&units=metric&appid=c036e042094fff2a3115b037654c6ce9'
         r = requests.get(url).json()
-        weather_dict = WeatherReport(current=r['current'], daily=r['daily'])
-        await set_weather(weather.dict())
+        weather_dict = {'current': r['current'], 'daily': r['daily']}
+        await set_weather(weather_dict)
     return WeatherReport(**weather_dict)
 
 
@@ -122,7 +120,7 @@ def get_data() -> dict:
     return out
 
 
-class APIinfo(BaseModel):
+class ApiInfo(BaseModel):
     indoor_temp: str
     outdoor_temp: str = '- -' + '°C'
     weather: str = '- -'
@@ -132,33 +130,24 @@ class APIinfo(BaseModel):
 
 
 # Central heating endpoints
-@app.get('/heating/info/', response_model=APIinfo)
+@app.get('/heating/info/', response_model=ApiInfo)
 async def api():
     out = get_data()
     temp_url = urlparse.urlparse(urls[0]).netloc + urlparse.urlparse(urls[0]).path
     ip_url = urlparse.urlparse(urls[1]).netloc + urlparse.urlparse(urls[1]).path
-    weather_url = urlparse.urlparse(urls[2]).netloc + urlparse.urlparse(urls[2]).path
-    try:
-        info = APIinfo(indoor_temp=str('{0:.1f}'.format(out[temp_url][0]['temperature'])) + '°C',
-                       outdoor_temp=str(out[weather_url][0]['current']['temp']) + '°C',
-                       weather=out[weather_url][0]['current']['weather'][0]['description'],
-                       on=hs.check_state(),
-                       program_on=hs.conf.program_on,
-                       ip=out[ip_url][0]['ip'])
-
-    except KeyError:
-        info = APIinfo(
-            indoor_temp=str('{0:.1f}'.format(out[temp_url][0]['temperature'])) + '°C',
-            on=hs.check_state(),
-            program_on=hs.conf.program_on
-        )
-    return info
+    weather_report = await weather()
+    return ApiInfo(indoor_temp=str('{0:.1f}'.format(out[temp_url][0]['temperature'])) + '°C',
+                   outdoor_temp=str('{0:.1f}'.format(weather_report.current['temp'])) + '°C',
+                   weather=weather_report.current['weather'][0]['description'],
+                   on=hs.check_state(),
+                   program_on=hs.conf.program_on,
+                   ip=out[ip_url][0]['ip'])
 
 
-@app.get('/heating/info/temperature/', response_model=APIinfo)
+@app.get('/heating/info/temperature/', response_model=ApiInfo)
 async def temp_only():
     r = requests.get('https://api.smarthome.mjfullstack.com')
-    return APIinfo(indoor_temp=str('{0:.1f}'.format(r.json()['temperature'])) + '°C',
+    return ApiInfo(indoor_temp=str('{0:.1f}'.format(r.json()['temperature'])) + '°C',
                    on=hs.check_state(),
                    program_on=hs.conf.program_on)
 
@@ -201,8 +190,8 @@ class TasksResponse(BaseModel):
 # Tasks endpoints
 async def parse_tasks() -> TasksResponse:
     tasks = await Task.all()
-    hms = [await HouseholdMember.get(id=task.hm_id) for task in tasks]
-    names = dict(zip([hm.id for hm in hms], [(hm.id, hm.name) for hm in hms]))
+    hms = await HouseholdMember.all()
+    names = dict(zip([hm.id for hm in hms if hm.id not in authentication.GUEST_IDS], [(hm.id, hm.name) for hm in hms]))
     resp = []
     for task in tasks:
         print(task.task)
@@ -222,16 +211,16 @@ async def add_task(task: TaskPydanticIn, user: HouseholdMemberPydantic = Depends
     return await parse_tasks()
 
 
-@app.delete('/tasks/{task_id}/')
-async def delete_task(task_id: int, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
-    await Task.filter(id=task_id).delete()
+@app.delete('/tasks/{id}/')
+async def delete_task(id: int, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
+    await Task.filter(id=id).delete()
     return await get_tasks()
 
 
 # Shopping list endpoints
 @app.get('/shopping/')
 async def get_shopping_list():
-    return await ShoppingListItemPydantic.from_queryset(ShoppingListItem.all().order_by('-id'))
+    return await ShoppingListItemPydantic.from_queryset(ShoppingListItem.all().order_by('id'))
 
 
 @app.post('/shopping/')
@@ -250,36 +239,36 @@ async def delete_shopping_item(item_id: int, user: HouseholdMemberPydantic = Dep
 
 
 # Recipe endpoints
-@app.get('/recipes')
+@app.get('/recipes/')
 async def get_recipes():
     return await RecipePydantic.from_queryset(Recipe.all())
 
 
-@app.post('/recipes')
-async def add_recipe(recipe: RecipePydanticIn, user: HouseholdMemberPydantic = Depends(get_current_user)):
-    task_obj = await Recipe.create(**recipe.dict(exclude_unset=True))
-    return await RecipePydantic.from_tortoise_orm(task_obj)
+@app.post('/recipes/')
+async def add_recipe(recipe: RecipePydanticIn, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
+    await Recipe.create(**recipe.dict(exclude_unset=True))
+    return await get_recipes()
 
 
 @app.get('/recipes/{recipe_id}')
-async def get_recipe(recipe_id: int):
+async def get_recipe(recipe_id: int, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
     return await RecipePydantic.from_queryset_single(Recipe.get(id=recipe_id))
 
 
 @app.post('/recipe/{recipe_id}')
 async def edit_recipe(recipe_id: int, new_recipe: RecipePydanticIn,
                       current_user: HouseholdMember = Depends(get_current_active_user)):
-    recipe = await ShoppingListItem.get(id=recipe_id)
+    recipe = await Recipe.get(id=recipe_id)
     print(new_recipe)
     recipe.meal_name, recipe.ingredients, recipe.notes = new_recipe.meal_name, new_recipe.ingredients, new_recipe.notes
     await recipe.save()
-    return await ShoppingListItemPydantic.from_queryset_single(recipe)
+    return await RecipePydantic.from_queryset_single(recipe)
 
 
 @app.delete('/recipes/{recipe_id}')
 async def delete_recipe(recipe_id: int, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
     await Recipe.filter(id=recipe_id).delete()
-    return {}
+    return await get_recipes()
 
 
 # Register tortoise models

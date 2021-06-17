@@ -5,8 +5,9 @@ function Cams(props) {
     return (
         <>
         <Header text='Cams' back={'/'}/>
-        <div className={"flex flex-col justify-center items-center h-full"}>
-            <img src={"https://api.smarthome.mjfullstack.com/cam"} className={"rounded-3xl"} alt={"cam_feed"}/>
+        <div className={"flex-col-center container"}>
+            <div className="cam-title"><h3>Driveway:</h3></div>
+            <img src={"https://api.smarthome.mjfullstack.com/cam"} className={"cam-feed"} alt={"cam_feed"}/>
         </div>
         </>
     );

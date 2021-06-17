@@ -9,7 +9,6 @@ const Heating = () => {
         <>
             <Header text={'Central Heating'} back={'/'} settings={'/settings'}/>
             <div className="container flex-col-center">
-
                 <HeatingBlock/>
             </div>
         </>

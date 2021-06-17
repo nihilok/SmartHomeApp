@@ -114,8 +114,6 @@
 }
 
 .Heating-form input[type="time"] {
-    border: 2px solid var(--primary-light);
-    border-radius: 5px;
     font-size: 1.2rem;
     margin: 1rem 0;
 }
@@ -145,6 +143,14 @@
     height: max-content;
 }
 
+.Display-screen {
+    background-color: var(--background-light);
+    padding: 1rem 4rem 2rem 3rem;
+    border-radius: 5px;
+    box-shadow: 0 0 4px inset rgba(0, 0, 0, .5);
+    border: 1px solid var(--primary-color)
+}
+
 .Heating-display div {
     margin: .5em 0;
 }
@@ -152,6 +158,7 @@
 .Indoor-temp {
     font-size: 3rem;
     font-weight: bold;
+    font-family: monospace;
 }
 
 .Heating-display .Other-info {
@@ -162,6 +169,7 @@
 
 .Heating-display .value {
     color: var(--primary-light);
+    font-family: monospace;
 }
 
 .clock {
@@ -184,19 +192,16 @@
     height: 100%;
     width: 100%;
     margin: 5vh auto 25vh auto;
+    transition: 1s;
 }
 
-.Task-blocks * {
-    margin: 0 1rem;
-}
+/*.Task-blocks * {*/
+/*    margin: 0 1rem;*/
+/*}*/
 
 .Task-block {
     height: 100%;
 }
-
-/*.Tasks {*/
-/*    height: 100vh;*/
-/*}*/
 
 
 .Option-radios {
@@ -244,6 +249,7 @@
     display: none;
 }
 
+
 .Radio-container input:checked ~ .checkmark:after {
     display: block;
 }
@@ -257,16 +263,11 @@
     background: white;
 }
 
-/*.Add-item input[type="submit"] {*/
-/*    margin: 0 0 0 1rem;*/
-/*}*/
-
 .Add-item {
     /*margin-top: 3rem;*/
     position: fixed;
     bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -288,7 +289,12 @@
     margin: 1rem auto;
     z-index: 999;
     width: clamp(20ch, 90vw, 50ch);
-    box-shadow: 0 -1px 5px 1px inset rgba(0, 0, 0, .7)
+    box-shadow: 0 -1px 5px 1px inset rgba(0, 0, 0, .7);
+    color: var(--text-primary)
+}
+
+.Add-item input[type="text"]::placeholder {
+    color: var(--text-muted)
 }
 
 .Add-item input[type="radio"] {
@@ -304,17 +310,29 @@
     box-shadow: none;
 }
 
+.Plus-button {
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    height: 5rem;
+    width: 5rem;
+    position: fixed;
+    z-index: 999;
+    bottom: 2rem;
+    right: 2rem;
+    font-size: 4rem;
+    color: var(--text-light);
+    box-shadow: var(--shadow);
+    border: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .Outer {
     width: 100vw;
-    /*display: flex;*/
-    /*flex-direction: column;*/
-    /*justify-content: center;*/
-    /*align-items: center;*/
 }
 
 .List {
-    /*overflow-y: auto;*/
-
     height: auto;
     padding-top: 1rem;
     padding-bottom: 20vh;
@@ -327,14 +345,29 @@
     margin: 10px 0;
     width: 100%;
     user-select: none;
-    background-color: white;
-    padding: 4px 4px;
+    background-color: var(--background-light);
+    padding: 4px 8px;
     border-radius: 5px;
     box-shadow: var(--shadow);
+    color: var(--text-primary);
 }
 
 .Recipe {
     padding: 2rem;
+    color: var(--text-primary);
+}
+
+.remove-recipe {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 1rem 1rem 0;
+    color: firebrick;
+    cursor: pointer;
+}
+
+.remove-recipe:hover {
+    text-decoration: underline;
 }
 
 
@@ -344,9 +377,26 @@
 
 .Delete-icon {
     color: var(--primary-light);
-    margin: 0 1rem;
+    margin: 0;
     font-size: 22px;
-    user-select: none
+    user-select: none;
+    cursor: pointer;
+}
+
+/*.Delete-icon:hover {*/
+/*    color: var(--primary-color);*/
+/*}*/
+
+.sure {
+    background-color: var(--background-light);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    border-radius: 2px;
+}
+
+.sure button {
+    margin: 1rem 0;
 }
 
 .Recipe-card {
@@ -371,24 +421,31 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    border-radius: 10px;
-    border-top: 2px solid rgba(255, 255, 255, .8);
-    border-right: 2px solid rgba(255, 255, 255, .8);
-    box-shadow: var(--shadow);
     animation: onFromTop .5s ease-in-out forwards;
+    position: relative;
+}
+
+.Recipe-card-bottom-bg {
+    background-color: white;
+    width: 100%;
+    height: calc(100% - 80px);
+    position: absolute;
+    top: 80px;
+    z-index: -1;
 }
 
 .Recipe-card-content {
     height: 100%;
-    padding: 1rem 1rem 3rem 1rem;
-    text-align: center;
+    padding: 1rem 2rem 3rem 2rem;
+    text-align: left;
 }
 
-.Recipe-card-content h1, h4, p {
-    background-color: rgba(255, 255, 255, .3);
-    box-shadow: 0 0 15px 5px rgba(255, 255, 255, .3);
-    border-radius: 2rem;
-    padding: 1rem 1rem;
+.Recipe-card-content h4 {
+    padding: 1.5rem 0 .2rem 0;
+}
+
+.Recipe-card-content p {
+    padding: 0 0 .2rem 0;
 }
 
 .Recipe-card-inner h1 {
@@ -401,15 +458,62 @@
 
 .Recipe-card-inner .close-button {
     font-size: 2rem;
-    padding: 1rem 1rem;
+    padding: 1rem 0;
     font-weight: 1000;
     display: flex;
     justify-content: flex-end;
     width: 100%;
 }
 
-.close-button div {
+.note .close-button {
+    position: absolute;
+    left: 10px;
+    top: 0;
     cursor: pointer;
+    color: var(--text-primary);
+    font-size: 2rem;
+}
+
+.note .close-button:hover {
+    font-weight: bold;
+}
+
+.New-recipe {
+    width: 100%;
+}
+
+.Recipe-card-content input, textarea {
+    border: 2px solid var(--primary-light);
+    border-radius: 5px;
+    color: var(--text-primary);
+    background-color: var(--background-lighter);
+}
+
+.Recipe-card-content input[type=text] {
+    font-size: 1.5rem
+}
+
+.cam-title {
+    width: 100%;
+    padding: 1rem 0
+}
+
+.cam-feed {
+    border-radius: 5px;
+    max-width: 100%;
+}
+
+.New-recipe input, textarea {
+    min-width: 100%;
+    max-width: 100%;
+    padding: .5rem 1rem;
+    margin-top: 1rem;
+    font-family: Lato, sans-serif;
+    border-radius: 10px;
+}
+
+.New-recipe textarea {
+    height: 5rem;
 }
 
 @media (max-width: 768px) {
@@ -422,25 +526,15 @@
     }
 
     .Task-block {
-        height: 100%;
+        height: auto;
         width: 100%;
         margin: 1rem auto;
-    }
-
-    .List-item {
-        /*width: clamp(30ch, 50%, 70ch);*/
-        background-color: white;
-        padding: 4px 8px;
-        border-radius: 5px;
     }
 
     .Recipe {
         padding: 2rem 1rem;
     }
 
-    /*.list-text-md {*/
-    /*    padding-left: 1rem;*/
-    /*}*/
     .Login-form {
         margin: 0 2rem;
     }

@@ -79,6 +79,7 @@
     from {
         opacity: 0;
         transform: translateY(200%);
+
     }
     to {transform: translateY(0); opacity: 1;}
 }

@@ -156,7 +156,7 @@ const HeatingSettings = () => {
 
     return (
         <>
-            <Header text={'Heating Settings'} back={'/heating'}/>
+            <Header text={'Heating Settings'} back={'/heating'} settings={'/config'}/>
             {loading ? <Loader classname="Loader Loader-trans"/> :
                 error ? "Something went wrong" :
                     <>
@@ -167,17 +167,17 @@ const HeatingSettings = () => {
                             <form className="Heating-form" onSubmit={handleSubmit}>
                                 <div><input name="target" type="range" min="6" max="26" onChange={handleTargetChange}
                                             value={settings.target}
-                                            className="mb-5"/></div>
+                                            className=""/></div>
                                 <div className={"grid-2"}>
-                                    <label>ON 1 </label><input name="on_1" type="time" className="timeInput text-black"
+                                    <label>ON 1 </label><input name="on_1" type="time" className="timeInput"
                                                                value={settings.on_1} onChange={handleTimeChange}/>
                                     <label>OFF 1 </label><input name="off_1" type="time"
-                                                                className="timeInput text-black"
+                                                                className="timeInput"
                                                                 value={settings.off_1} onChange={handleTimeChange}/>
-                                    <label>ON 2 </label><input name="on_2" type="time" className="timeInput text-black"
+                                    <label>ON 2 </label><input name="on_2" type="time" className="timeInput"
                                                                value={settings.on_2} onChange={handleTimeChange}/>
                                     <label>OFF 2 </label><input name="off_2" type="time"
-                                                                className="timeInput text-black"
+                                                                className="timeInput"
                                                                 value={settings.off_2} onChange={handleTimeChange}/>
                                 </div>
                                 <div><input type="submit" className="btn" value="SAVE"/></div>

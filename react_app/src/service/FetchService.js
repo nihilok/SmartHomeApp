@@ -1,7 +1,6 @@
 import {ADD} from "../contexts/ToastContext";
 
-export const apiBaseUrl = 'https://server.smarthome.mjfullstack.com'
-// export const apiBaseUrl = 'http://localhost:8000'
+export const apiBaseUrl = 'http://localhost:8000'   // server url
 
 async function FetchAuthService(url,
                                 method,
@@ -21,23 +20,25 @@ async function FetchAuthService(url,
     }
   }
   await fetch(apiBaseUrl + url, fetchInit)
-      .then((res) => res.json()
-          .then(data => {
-            if (res.status > 400) {
-              if (toastDispatch) {
-                toastDispatch({
-                        type: ADD,
-                        payload: {
-                            content: 'You are not authorised to do that!',
-                            type: 'danger'
-                        }
-                    });
+      .then((res) => {
+        if (res.status !== 200) {
+          if (toastDispatch) {
+            toastDispatch({
+              type: ADD,
+              payload: {
+                content: 'You are not authorised to do that!',
+                type: 'danger'
               }
-              return
-            }
-            setFetchData(data)
-          })
-      )
+            });
+          }
+          throw new Error('Bad response')
+        } else {
+          return res.json()
+        }
+      })
+      .then(data => {
+        setFetchData(data)
+      }).catch(e => console.log(e));
 }
 
 export default FetchAuthService;

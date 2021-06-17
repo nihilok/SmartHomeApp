@@ -7,7 +7,7 @@ import Loader from "./Loader";
 import FetchAuthService from "../service/FetchService";
 import {useToastContext} from "../contexts/ToastContext";
 
-export const Shopping = () => {
+const Shopping = () => {
   const [list, setList] = useState([])
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true)
@@ -65,3 +65,6 @@ export const Shopping = () => {
       </div>
   );
 };
+
+
+export default Shopping;

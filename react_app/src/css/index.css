@@ -4,14 +4,23 @@
     --primary-color: hsl(202, 33%, 29%);
     --primary-light: hsl(202, 33%, 45%);
     --text-light: hsl(0, 0%, 100%);
+    --text-primary: hsl(202, 33%, 29%);
+    --text-muted: hsla(202, 33%, 40%, 0.52);
     --background-color: hsl(34, 78%, 91%);
+    --background-light: hsl(202, 33%, 90%);
+    --background-lighter: hsl(202, 33%, 95%);
     --heat-gradient: linear-gradient(90deg, var(--primary-color), #950000);
     --shadow: 0 0 5px rgba(0, 0, 0, .7)
 }
 
 .dark-mode {
     --text-light: hsl(227, 100%, 89%);
+    --text-primary: hsl(204, 48%, 62%);
+    --text-muted: hsla(202, 33%, 70%, 0.52);
     --background-color: hsl(200, 90%, 8%);
+    --background-light: hsl(200, 90%, 15%);
+    --background-lighter: hsl(200, 90%, 25%);
+
     --heat-gradient: linear-gradient(90deg, var(--primary-color), #950000);
     --shadow: 0 0 5px rgba(0, 0, 0, .8)
 }
@@ -51,6 +60,7 @@ code {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
 }
 
 @media (max-width: 472px) {
@@ -112,12 +122,15 @@ code {
     grid-template-columns: repeat(4, 1fr);
 }
 
+.on-from-bottom {
+    animation: onFromTop .5s ease-in-out forwards;
+}
 
 .container {
     width: 100%;
     max-width: 1100px;
     margin: auto;
-    height: auto;
+    /*height: auto;*/
     padding: 0 2rem;
 }
 
@@ -153,26 +166,76 @@ code {
     justify-content: center;
     align-items: center;
     width: 100%;
+
 }
 
 .form-control input[type=text], input[type=password] {
-    width: 100%;
     text-align: center;
     margin: .5rem auto;
-    color: var(--primary-color);
-    border-radius: 10px;
-    font-size: 2rem;
+    /*background-color: var(--background-light)*/
+    border: 2px solid var(--primary-color)
 }
 
 ::-moz-focus-inner {
     border: 0;
 }
 
-input:focus {
+input:focus, textarea:focus {
     outline: none;
     box-shadow: 0 0 0 5px var(--primary-light);
 }
 
-input[type="time"], input[type="text"], input[type="password"] {
+input, textarea ::placeholder {
+    font-family: Lato, sans-serif;
+    color: var(--text-muted)
+}
+
+::-webkit-input-placeholder {
+    font-family: Lato, sans-serif;
+    color: var(--text-muted)
+}
+
+:-moz-placeholder {
+    font-family: Lato, sans-serif;
+    color: var(--text-muted)
+}
+
+::-moz-placeholder {
+    font-family: Lato, sans-serif;
+    color: var(--text-muted)
+}
+
+:-ms-input-placeholder {
+    font-family: Lato, sans-serif;
+    color: var(--text-muted)
+}
+
+
+input[type=time] {
     padding: 6px .7rem 5px .7rem;
+    text-align: center;
+    justify-content: center;
+    width: 100%;
+    color: var(--text-primary);
+    background-color: var(--background-light);
+    font-size: 1.8rem;
+}
+
+input[type=text], input[type=password] {
+    font-size: 1.8rem;
+    max-width: 100%;
+}
+
+input[type=text], input[type=password], input[type=time], textarea {
+    border: 2px solid var(--primary-light);
+    border-radius: 5px;
+    color: var(--text-primary);
+}
+
+input[type=submit] {
+    border: 0;
+}
+
+input[type=submit]:hover {
+    font-weight: bold;
 }

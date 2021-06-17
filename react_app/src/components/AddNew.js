@@ -23,7 +23,7 @@ export const AddNewItem = ({handleSubmit, newItem, setNewItem, placeholderText, 
     }
 
     return (
-        <form onSubmit={!disabled ? handleSubmit : fakeSubmit} className="Add-item">
+        <form onSubmit={!disabled ? handleSubmit : fakeSubmit} className="Add-item on-from-bottom">
             {options ? <div className="Option-radios">{options.map((name) => <label htmlFor={name[0] + 'Radio'} key={name[0]+'rad'}
                                                                           className="Radio-container">{name[1]}<input
                 type="radio" id={name[0] + 'Radio'}

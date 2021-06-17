@@ -1,13 +1,14 @@
 import React from 'react'
+import {apiBaseUrl} from "../service/FetchService";
 
-export const AuthContext = React.createContext(); // added this
+export const AuthContext = React.createContext();
+
 
 export const initialState = {
     isAuthenticated: false,
     // user: null,
     token: localStorage.getItem('token'),
-    apiBaseUrl: `https://server.smarthome.mjfullstack.com`,
-    // apiBaseUrl: `http://localhost:8000`
+    apiBaseUrl: apiBaseUrl,
 };
 
 export const reducer = (state, action) => {

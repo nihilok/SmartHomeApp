@@ -8,7 +8,7 @@ import FetchAuthService from "../service/FetchService";
 import {useToastContext} from "../contexts/ToastContext";
 
 
-export const Tasks = () => {
+const Tasks = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true)
   const [tasks, setTasks] = useState({names: [], tasks: []})
@@ -16,6 +16,7 @@ export const Tasks = () => {
   const [newTask, setNewTask] = useState('')
   const [iDState, setIDState] = useState(0)
   const {toastDispatch} = useToastContext()
+  const refObj = {}
 
   useEffect(() => {
         // setLoading(true)
@@ -31,13 +32,48 @@ export const Tasks = () => {
       }, [authState]
   );
 
+  function arr_diff(a1, a2) {
+
+      let a = [], diff = [];
+
+      for (let i = 0; i < a1.length; i++) {
+        a[a1[i]] = true;
+      }
+
+      for (let i = 0; i < a2.length; i++) {
+        if (a[a2[i]]) {
+          delete a[a2[i]];
+        } else {
+          a[a2[i]] = true;
+        }
+      }
+
+      for (let k in a) {
+        diff.push(k);
+      }
+
+      return diff;
+    }
+
   async function addTask(hm_id, task) {
+    const taskCheck = tasks
     await FetchAuthService(
         `/tasks/`,
         'POST',
         authState,
         setTasks,
-        JSON.stringify({hm_id, task}))
+        JSON.stringify({hm_id, task}),
+        toastDispatch)
+    console.log(taskCheck)
+    console.log(tasks)
+    const diff = arr_diff(taskCheck.tasks, tasks.tasks)
+    if (diff) {
+      console.log(diff)
+      for (let i = 0; i < diff.length; i++) {
+        console.log(diff[i].name)
+      }
+    }
+
   }
 
   async function deleteTask(id, name) {
@@ -83,7 +119,9 @@ export const Tasks = () => {
             }) : ''}</div>}
 
       <AddNewItem handleSubmit={handleSubmit} newItem={newTask} setNewItem={setNewTask}
-                  placeholderText={"Add a New Task"} options={tasks.names} setID={setIDState}/></div>
+                  placeholderText={"New Task"} options={tasks.names} setID={setIDState}/></div>
   </div>
 
 }
+
+export default Tasks;

@@ -1,6 +1,5 @@
 import {useReducer, useEffect, useRef} from "react";
-
-export const apiBaseUrl = 'https://server.smarthome.mjfullstack.com'
+import {apiBaseUrl} from "../service/FetchService";
 
 const initialState = {
   status: 'idle',
