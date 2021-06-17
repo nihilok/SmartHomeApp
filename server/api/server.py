@@ -75,26 +75,6 @@ urls = ['https://api.smarthome.mjfullstack.com',            # temperature readin
         '&units=metric&appid=<YOUR-API-KEY>']               # Open Weather Map
 
 
-class WeatherReport(BaseModel):
-    # keys = ['dt', 'sunrise', 'sunset', 'temp', 'feels_like', 'pressure', 'humidity', 'dew_point', 'uvi', 'clouds',
-    #         'visibility', 'wind_speed', 'wind_deg', 'weather']
-    current: dict
-    daily: List[dict]
-
-
-@app.get('/weather/')
-async def weather() -> WeatherReport:
-    weather_dict = await get_weather()
-    if not weather_dict:
-        url = 'https://api.openweathermap.org/data/2.5/' \
-              'onecall?lat=51.6862&lon=-1.4129&exclude=minutely,hourly' \
-              '&units=metric&appid=c036e042094fff2a3115b037654c6ce9'
-        r = requests.get(url).json()
-        weather_dict = {'current': r['current'], 'daily': r['daily']}
-        await set_weather(weather_dict)
-    return WeatherReport(**weather_dict)
-
-
 def decode_json(data):
     if data.startswith('{'):
         data = json.loads(data)
@@ -118,6 +98,24 @@ def get_data() -> dict:
             finally:
                 out[urlparse.urlparse(data[0]).netloc + urlparse.urlparse(data[0]).path] = [data[1]]
     return out
+
+
+class WeatherReport(BaseModel):
+    # keys = ['dt', 'sunrise', 'sunset', 'temp', 'feels_like', 'pressure', 'humidity', 'dew_point', 'uvi', 'clouds',
+    #         'visibility', 'wind_speed', 'wind_deg', 'weather']
+    current: dict
+    daily: List[dict]
+
+
+@app.get('/weather/')
+async def weather() -> WeatherReport:
+    weather_dict = await get_weather()
+    if not weather_dict:
+        url = urls[2]
+        r = requests.get(url).json()
+        weather_dict = {'current': r['current'], 'daily': r['daily']}
+        await set_weather(weather_dict)
+    return WeatherReport(**weather_dict)
 
 
 class ApiInfo(BaseModel):
