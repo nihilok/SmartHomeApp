@@ -8,6 +8,7 @@ async function FetchWithToken(url,
                               setFetchData = null,
                               body = null,
                               toastDispatch = null) {
+
   const rejectedToast = (message) => {
     toastDispatch({
       type: ADD,
