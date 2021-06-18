@@ -4,7 +4,7 @@ import {TaskBlock} from './TaskBlock';
 import {AddNewItem} from "./AddNew";
 import {AuthContext} from "../contexts/AuthContext";
 import Loader from "./Loader";
-import FetchAuthService from "../service/FetchService";
+import FetchWithToken from "../service/FetchService";
 import {useToastContext} from "../contexts/ToastContext";
 
 
@@ -20,10 +20,9 @@ const Tasks = () => {
 
   useEffect(() => {
         // setLoading(true)
-        FetchAuthService(
+        FetchWithToken(
             '/tasks/',
             'GET',
-            authState,
             setTasks)
             .catch(e => setError(e))
             .finally(() => {
@@ -57,10 +56,9 @@ const Tasks = () => {
 
   async function addTask(hm_id, task) {
     // const taskCheck = tasks
-    await FetchAuthService(
+    await FetchWithToken(
         `/tasks/`,
         'POST',
-        authState,
         setTasks,
         JSON.stringify({hm_id, task}),
         toastDispatch)
@@ -75,10 +73,9 @@ const Tasks = () => {
   }
 
   async function markComplete(task_id) {
-    await FetchAuthService(
+    await FetchWithToken(
         `/tasks/${task_id}/`,
         'POST',
-        authState,
         setTasks,
         null,
         toastDispatch)
@@ -90,10 +87,9 @@ const Tasks = () => {
       ...prevTasks,
       name: tasks.tasks.filter(x => x.id !== id)
     }))
-    await FetchAuthService(
+    await FetchWithToken(
         `/tasks/${id}/`,
         'DELETE',
-        authState,
         setTasks,
         JSON.stringify({id}),
         toastDispatch)

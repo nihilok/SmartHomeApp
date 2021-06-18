@@ -4,7 +4,7 @@ import {ShoppingListBlock} from "./ShoppingListBlock";
 import {AddNewItem} from "./AddNew";
 import {AuthContext} from "../contexts/AuthContext";
 import Loader from "./Loader";
-import FetchAuthService from "../service/FetchService";
+import FetchWithToken from "../service/FetchService";
 import {useToastContext} from "../contexts/ToastContext";
 
 const Shopping = () => {
@@ -17,16 +17,15 @@ const Shopping = () => {
 
   useEffect(() => {
     setLoading(true)
-    FetchAuthService('/shopping/', 'GET', authState, setList)
+    FetchWithToken('/shopping/', 'GET', setList)
         .catch(e => setError(e)).finally(() => setLoading(false))
         .finally(() => setLoading(false))
   }, [authState]);
 
 
   async function addItem(item_name) {
-    await FetchAuthService(`/shopping/`,
+    await FetchWithToken(`/shopping/`,
         'POST',
-        authState,
         setList,
         JSON.stringify({item_name}),
         toastDispatch)
@@ -45,9 +44,8 @@ const Shopping = () => {
 
   async function deleteItem(id) {
     setList(list.filter(x => x.id !== id))
-    await FetchAuthService(`/shopping/${id}`,
+    await FetchWithToken(`/shopping/${id}`,
         'DELETE',
-        authState,
         setList,
         JSON.stringify({id}),
         toastDispatch

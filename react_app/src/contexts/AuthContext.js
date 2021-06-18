@@ -1,5 +1,6 @@
 import React from 'react'
-import {apiBaseUrl} from "../service/FetchService";
+
+export const apiBaseUrl = 'http://localhost:8000'
 
 export const AuthContext = React.createContext();
 

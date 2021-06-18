@@ -3,7 +3,7 @@ import {Header} from './Header';
 import {AuthContext} from "../contexts/AuthContext";
 import {RecipeBlock} from "./RecipeBlock";
 import Loader from "./Loader";
-import FetchAuthService from "../service/FetchService";
+import FetchWithToken from "../service/FetchService";
 import PlusButton from "./PlusButton";
 import {useInput} from "../hooks/input-hook";
 import AreYouSure from "./AreYouSure";
@@ -64,10 +64,9 @@ export const Recipes = () => {
 
       const getRecipes = useCallback(() => {
         setLoading(true)
-        FetchAuthService(
+        FetchWithToken(
             '/recipes/',
             'GET',
-            authState,
             setInfo)
             .catch(e => setError(e))
             .finally(() => {
@@ -110,10 +109,9 @@ export const Recipes = () => {
       }
 
       async function addItem(data) {
-        FetchAuthService(
+        FetchWithToken(
             '/recipes/',
             'POST',
-            authState,
             setInfo,
             JSON.stringify(data))
             .catch(e => setError(e))
@@ -123,10 +121,9 @@ export const Recipes = () => {
       }
 
       async function deleteItem() {
-        FetchAuthService(
+        FetchWithToken(
             `/recipes/${recipeRef.current.id}/`,
             'DELETE',
-            authState,
             setInfo,
             JSON.stringify({id: recipeRef.current.id}),
             toastDispatch)
@@ -138,10 +135,9 @@ export const Recipes = () => {
       }
 
       async function editItem(data) {
-        FetchAuthService(
+        FetchWithToken(
             `/recipes/${recipeRef.current.id}/`,
             'POST',
-            authState,
             setInfo,
             JSON.stringify(data),
             toastDispatch)
