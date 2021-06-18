@@ -16,7 +16,7 @@ export const TaskBlock = ({name, tasks, DeleteFunc, markComplete}) => {
       {theirTasks ? theirTasks.map((task) => {
         task.text = task.task
         return (
-            <ListItem item={task} deleteItem={DeleteFunc} markComplete={markComplete}/>
+            <ListItem item={task} deleteItem={DeleteFunc} markComplete={markComplete} key={task.id}/>
         )
       }) : <div className="text-white">Nothing here!</div>}
 

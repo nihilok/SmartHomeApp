@@ -67,6 +67,7 @@ export const Recipes = () => {
         FetchWithToken(
             '/recipes/',
             'GET',
+            authState,
             setInfo)
             .catch(e => setError(e))
             .finally(() => {
@@ -84,46 +85,51 @@ export const Recipes = () => {
           meal_name,
           ingredients,
           notes
-        }
-        setLoading(true)
+        };
+        setLoading(true);
         if (editing) {
           editItem(data)
               .catch(e => setError(e))
               .finally(() => {
-                setLoading(false)
-                setEditing(false)
-              })
+                setLoading(false);
+              });
         } else {
           addItem(data)
               .catch(e => setError(e))
               .finally(() => {
-                setLoading(false)
-              })
+                setLoading(false);
+              });
         }
-        resetMealName()
-        resetIngredients()
-        resetNotes()
+
         // getRecipes()
-        setNewRecipe(false)
-        recipeRef.current = null
+        setTimeout(() => {
+          setNewRecipe(false);
+          setEditing(false);
+          resetMealName();
+          resetIngredients();
+          resetNotes();
+        }, 400);
+        recipeRef.current = null;
       }
 
       async function addItem(data) {
         FetchWithToken(
             '/recipes/',
             'POST',
+            authState,
             setInfo,
             JSON.stringify(data))
             .catch(e => setError(e))
             .finally(() => {
               setLoading(false)
-            })
+            });
       }
 
       async function deleteItem() {
         FetchWithToken(
             `/recipes/${recipeRef.current.id}/`,
             'DELETE',
+            authState,
             setInfo,
             JSON.stringify({id: recipeRef.current.id}),
             toastDispatch)
@@ -138,6 +144,7 @@ export const Recipes = () => {
         FetchWithToken(
             `/recipes/${recipeRef.current.id}/`,
             'POST',
+            authState,
             setInfo,
             JSON.stringify(data),
             toastDispatch)
@@ -167,7 +174,7 @@ export const Recipes = () => {
                 }}>&times;</div>
 
                 <div className="note-top">
-                  <div><h1>{meal_name ? 'Edit' : 'Add a'} Recipe..</h1></div>
+                  <div><h1>{editing ? 'Edit' : 'Add a'} Recipe..</h1></div>
                   <div/>
                 </div>
 
@@ -175,11 +182,11 @@ export const Recipes = () => {
                   <div className="Recipe-card-content">
                     <form className="New-recipe flex-col-center" onSubmit={handleSubmit}>
                       <div className="form-control"><input type="text" placeholder="Meal Name" {...bindMealName} required/>
-                      </div>
-                      <div className="form-control"><textarea placeholder="Ingredients" {...bindIngredients} required/>
-                      </div>
-                      <div className="form-control"><textarea placeholder="Notes" {...bindNotes}/></div>
-                      <input type="submit" value="Save" className="btn-outline"/>
+
+                        <textarea placeholder="Ingredients" {...bindIngredients} rows="4" required/>
+
+                        <textarea placeholder="Notes" {...bindNotes} rows="4"/></div>
+                      <input type="submit" value="Save" className="btn btn-outline"/>
                     </form>
                   </div>
                 </div>

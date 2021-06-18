@@ -5,6 +5,7 @@ import {AuthContext} from "../contexts/AuthContext";
 
 async function FetchWithToken(url,
                               method,
+                              authState = null,
                               setFetchData = null,
                               body = null,
                               toastDispatch = null) {
@@ -19,7 +20,6 @@ async function FetchWithToken(url,
     });
   }
 
-  const {authState} = useContext(AuthContext)
   const headers = new Headers({
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${authState.token}`

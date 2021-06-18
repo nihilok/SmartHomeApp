@@ -23,6 +23,7 @@ const Tasks = () => {
         FetchWithToken(
             '/tasks/',
             'GET',
+            authState,
             setTasks)
             .catch(e => setError(e))
             .finally(() => {
@@ -60,6 +61,7 @@ const Tasks = () => {
         `/tasks/`,
         'POST',
         setTasks,
+        authState,
         JSON.stringify({hm_id, task}),
         toastDispatch)
     // const diff = arr_diff(taskCheck.tasks, tasks.tasks)
@@ -77,6 +79,7 @@ const Tasks = () => {
         `/tasks/${task_id}/`,
         'POST',
         setTasks,
+        authState,
         null,
         toastDispatch)
         .catch(e => setError(e))
@@ -90,6 +93,7 @@ const Tasks = () => {
     await FetchWithToken(
         `/tasks/${id}/`,
         'DELETE',
+        authState,
         setTasks,
         JSON.stringify({id}),
         toastDispatch)

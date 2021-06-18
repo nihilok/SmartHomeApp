@@ -17,7 +17,7 @@ const Shopping = () => {
 
   useEffect(() => {
     setLoading(true)
-    FetchWithToken('/shopping/', 'GET', setList)
+    FetchWithToken('/shopping/', 'GET', authState, setList)
         .catch(e => setError(e)).finally(() => setLoading(false))
         .finally(() => setLoading(false))
   }, [authState]);
@@ -26,6 +26,7 @@ const Shopping = () => {
   async function addItem(item_name) {
     await FetchWithToken(`/shopping/`,
         'POST',
+        authState,
         setList,
         JSON.stringify({item_name}),
         toastDispatch)
@@ -44,8 +45,9 @@ const Shopping = () => {
 
   async function deleteItem(id) {
     setList(list.filter(x => x.id !== id))
-    await FetchWithToken(`/shopping/${id}`,
+    await FetchWithToken(`/shopping/${id}/`,
         'DELETE',
+        authState,
         setList,
         JSON.stringify({id}),
         toastDispatch
