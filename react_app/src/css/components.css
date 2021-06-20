@@ -48,9 +48,16 @@
 
 .Header a:focus {
     color: var(--text-light);
-    /*box-shadow: 0 0 0 3px var(--primary-light);*/
     background-color: var(--primary-light);
     outline: none;
+}
+
+.Login-screen .login-btn {
+    display: flex;
+    width: 100%;
+    margin: 0 4rem;
+    position: static;
+
 }
 
 .Login-form {
@@ -91,15 +98,44 @@
     outline: none;
 }
 
-.Heating-settings {
+.cam-screen {
+    background-color: black;
+    height: 45vh;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 15px;
+    padding: 1rem 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: var(--shadow);
+
+}
+
+.Heating-screen {
+    background-color: var(--background-light);
+    border-radius: 4px;
+    box-shadow: 0 0 3px inset var(--primary-light), 0 0 8px var(--primary-light);
+    border: 1px solid var(--primary-color);
+    color: var(--text-primary);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-.Heating-form * {
+.Heating-screen .value {
+    display: inline-block;
+    max-width: 15ch;
+}
 
+
+.Heating-settings {
+    padding: 2rem;
+    margin-top: 1rem;
+    min-height: 28rem;
+    min-width: 18rem;
+    transition: .5s ease-out;
 }
 
 .Heating-form input[type="range"] {
@@ -115,7 +151,7 @@
 
 .Heating-form input[type="time"] {
     font-size: 1.2rem;
-    margin: 1rem 0;
+    margin: 4px 0;
 }
 
 .Heating-form input[type="time"]:focus {
@@ -132,7 +168,7 @@
     flex-direction: column;
     justify-content: space-evenly;
     align-items: center;
-    height: 100%;
+    /*height: 100%;*/
 }
 
 .Heating-display {
@@ -144,11 +180,21 @@
 }
 
 .Display-screen {
-    background-color: var(--background-light);
     padding: 1rem 4rem 2rem 3rem;
     border-radius: 5px;
-    box-shadow: 0 0 4px inset rgba(0, 0, 0, .5);
-    border: 1px solid var(--primary-color)
+    min-height: 16rem;
+    min-width: 18rem;
+}
+
+.Display-screen .Loader-block {
+    margin-left: .5rem;
+}
+
+.Display-screen-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
 }
 
 .Heating-display div {
@@ -167,6 +213,10 @@
     font-size: 1.2rem;
 }
 
+.Heating-display .Other-info .small {
+    font-size: .8rem;
+}
+
 .Heating-display .value {
     color: var(--primary-light);
     font-family: monospace;
@@ -181,6 +231,10 @@
 
 .inactive {
     color: var(--text-light);
+}
+
+.settings {
+    width: 20rem;
 }
 
 
@@ -326,6 +380,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
+}
+
+.Plus-button:hover {
+    font-weight: 500;
+    font-size: 3.5rem;
+    box-shadow: 0 0 4px inset rgba(0, 0, 0, .7);
 }
 
 .Outer {
@@ -369,6 +430,7 @@
     cursor: pointer;
     text-decoration: underline;
 }
+
 .remove-recipe div:nth-child(1) {
     color: var(--text-primary);
 }
@@ -412,31 +474,12 @@
     padding: 0
 }
 
-.Recipe-card-inner {
-    min-height: 75%;
-    width: 80%;
-    background-image: linear-gradient(45deg, rgba(255, 255, 255, .5), rgba(255, 255, 255, .8), rgba(255, 255, 255, .6));
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    animation: onFromTop .5s ease-in-out forwards;
-    position: relative;
-}
-
-.Recipe-card-bottom-bg {
-    background-color: white;
-    width: 100%;
-    height: calc(100% - 80px);
-    position: absolute;
-    top: 80px;
-    z-index: -1;
-}
 
 .Recipe-card-content {
     height: 100%;
     padding: 1rem 2rem 3rem 2rem;
     text-align: left;
+    position: static;
 }
 
 .Recipe-card-content h4 {
@@ -445,23 +488,6 @@
 
 .Recipe-card-content p {
     padding: 0 0 .2rem 0;
-}
-
-.Recipe-card-inner h1 {
-    margin: 1.5rem;
-}
-
-.Recipe-card-inner h4 {
-    margin: 1rem;
-}
-
-.Recipe-card-inner .close-button {
-    font-size: 2rem;
-    padding: 1rem 0;
-    font-weight: 1000;
-    display: flex;
-    justify-content: flex-end;
-    width: 100%;
 }
 
 .note .close-button {
@@ -477,21 +503,6 @@
     font-weight: bold;
 }
 
-.New-recipe {
-    width: 100%;
-}
-
-.Recipe-card-content input, textarea {
-    border: 2px solid var(--primary-light);
-    border-radius: 5px;
-    color: var(--text-primary);
-    background-color: var(--background-lighter);
-}
-
-.Recipe-card-content input[type=text] {
-    font-size: 1.5rem
-}
-
 .cam-title {
     width: 100%;
     padding: 1rem 0
@@ -502,25 +513,12 @@
     max-width: 100%;
 }
 
-.New-recipe input, textarea {
-    min-width: 100%;
-    max-width: 100%;
-    padding: .5rem 1rem;
-    margin-top: 1rem;
-    font-family: Lato, sans-serif;
-    border-radius: 10px;
-}
-
-.New-recipe textarea {
-    height: 5rem;
-}
-
 @media (max-width: 768px) {
     .Task-blocks {
         grid-template-columns: 1fr;
         justify-content: flex-start;
         align-items: center;
-        margin: 0 auto 10vh auto;
+        margin: 0 auto 25vh auto;
         height: auto;
     }
 
@@ -536,6 +534,10 @@
 
     .Login-form {
         margin: 0 2rem;
+    }
+
+    .Display-screen {
+        min-height: 19rem;
     }
 }
 

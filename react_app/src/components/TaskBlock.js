@@ -3,7 +3,7 @@ import {FontAwesomeIcon as Fa} from '@fortawesome/react-fontawesome';
 import Task from "./Task";
 import ListItem from "./ListItem";
 
-export const TaskBlock = ({name, tasks, DeleteFunc}) => {
+export const TaskBlock = ({name, tasks, DeleteFunc, markComplete}) => {
 
 
   const theirTasks = tasks.filter(task => task.name === name)
@@ -16,11 +16,11 @@ export const TaskBlock = ({name, tasks, DeleteFunc}) => {
       {theirTasks ? theirTasks.map((task) => {
         task.text = task.task
         return (
-            <ListItem item={task} deleteItem={DeleteFunc}/>
+            <ListItem item={task} deleteItem={DeleteFunc} markComplete={markComplete} key={task.id}/>
         )
       }) : <div className="text-white">Nothing here!</div>}
 
-    </div>
+        </div>
 
-  </>)
-};
+        </>)
+      };

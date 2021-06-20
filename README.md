@@ -1,10 +1,11 @@
 # Smarthome App
-### _Central heating system et al._
+### _Central heating system and other tools._
 
 ###### Recent changes:
 
 - FastAPI backend
 - React frontend
+- Redis cache
 
 ### Installation:
 

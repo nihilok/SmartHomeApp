@@ -1,5 +1,7 @@
 #!/bin/bash
 
-source #path/to/env/bin/activate ;
-cd #path/to/server/ ;
-exec uvicorn api.server:app ;
+cd /home/user/apps/smarthome/server ;
+exec python3 -m venv venv ;
+source venv/bin/activate ;
+exec pip3 install -r requirements.txt ;
+exec uvicorn api.api.server:app ;

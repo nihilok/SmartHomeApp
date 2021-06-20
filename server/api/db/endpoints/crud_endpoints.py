@@ -3,13 +3,12 @@ from typing import List
 from fastapi import Depends, APIRouter
 from pydantic import BaseModel
 
-from ... import authentication
-from ...authentication import get_current_user, get_current_active_user
+from ...auth import constants
+from ...auth.authentication import get_current_user, get_current_active_user
 from ..models import Task, TaskPydanticIn, \
     ShoppingListItem, ShoppingListItemPydantic, ShoppingListItemPydanticIn, \
     Recipe, RecipePydantic, RecipePydanticIn, \
     HouseholdMember, HouseholdMemberPydantic
-
 
 router = APIRouter()
 
@@ -18,6 +17,7 @@ class TaskResponseSingle(BaseModel):
     id: int
     name: str
     task: str
+    completed: bool
 
 
 class TasksResponse(BaseModel):
@@ -29,15 +29,37 @@ class TasksResponse(BaseModel):
 async def parse_tasks() -> TasksResponse:
     tasks = await Task.all()
     hms = await HouseholdMember.all()
-    names = dict(zip([hm.id for hm in hms if hm.id not in authentication.GUEST_IDS], [(hm.id, hm.name) for hm in hms]))
+    names = dict(zip([hm.id for hm in hms if hm.id not in constants.GUEST_IDS], [(hm.id, hm.name) for hm in hms]))
     resp = []
     for task in tasks:
-        resp.append(TaskResponseSingle(id=task.id, name=names[task.hm_id][1], task=task.task))
+        resp.append(TaskResponseSingle(id=task.id, name=names[task.hm_id][1], task=task.task, completed=task.completed))
     return TasksResponse(names=list(names.values()), tasks=resp)
+
+
+async def fake_tasks() -> TasksResponse:
+    resp = []
+    fake_task_texts = [
+        'Example task',
+        'As a guest this is all you can see.',
+        'Our tasks are private!',
+        'Click the checkmark to mark completed',
+        'Double click to remove task',
+        'You will get an unauthorised error message as a guest.'
+    ]
+
+    for name, task in zip(['Mike'] * (len(fake_task_texts)//2) + ['Les'] * (len(fake_task_texts) - len(fake_task_texts)//2), enumerate(fake_task_texts)):
+        resp.append(
+            TaskResponseSingle(id=task[0],
+                               name=name,
+                               task=task[1],
+                               completed=False))
+    return TasksResponse(names=[(1, 'Mike'), (2, 'Les')], tasks=resp)
 
 
 @router.get('/tasks/')
 async def get_tasks(user: HouseholdMemberPydantic = Depends(get_current_user)):
+    if user.id in constants.GUEST_IDS:
+        return await fake_tasks()
     return await parse_tasks()
 
 
@@ -50,6 +72,14 @@ async def add_task(task: TaskPydanticIn, user: HouseholdMemberPydantic = Depends
 @router.delete('/tasks/{id}/')
 async def delete_task(id: int, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
     await Task.filter(id=id).delete()
+    return await get_tasks()
+
+
+@router.post('/tasks/{id}/')
+async def mark_completed(id: int, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
+    task_obj = await Task.get(id=id)
+    task_obj.completed = True if not task_obj.completed else False
+    await task_obj.save()
     return await get_tasks()
 
 

@@ -3,14 +3,31 @@ from pydantic import BaseModel
 from tortoise import fields
 from tortoise.models import Model
 from tortoise.contrib.pydantic import pydantic_model_creator
+from tortoise import Tortoise
+
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+class Household(Model):
+    id = fields.IntField(pk=True)
+    week = fields.BinaryField(null=True)
+
+    @classmethod
+    async def get_user(cls, name, **kwargs):
+        return cls.get(name=name)
+
+
+HouseholdPydantic = pydantic_model_creator(Household, name='Household')
+HouseholdPydanticIn = pydantic_model_creator(Household, name='HouseholdIn', exclude_readonly=True)
 
 
 class HouseholdMember(Model):
     id = fields.IntField(pk=True)
     name = fields.CharField(100, unique=True)
     password_hash = fields.CharField(128)
+    household = fields.ForeignKeyField('models.Household', related_name='members')
 
     @classmethod
     async def get_user(cls, name, **kwargs):
@@ -28,6 +45,7 @@ class Task(Model):
     id = fields.IntField(pk=True)
     task = fields.CharField(255)
     hm = fields.ForeignKeyField('models.HouseholdMember', related_name='tasks')
+    completed = fields.BooleanField(default=False)
 
     class Meta:
         unique_together = ("hm_id", "task")

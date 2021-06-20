@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {AuthContext} from "../contexts/AuthContext";
 import {useToastContext, ADD} from "../contexts/ToastContext";
+import {RippleLoader} from "./Loader";
 // import FetchAuthService from '../service/FetchService';
 
 
@@ -8,6 +9,7 @@ const HeatingBlock = ({props}) => {
   const initialState = {
     indoor_temp: '',
     outdoor_temp: '',
+    last_updated: '--:--:--',
     on: false,
     program_on: false
   }
@@ -30,7 +32,10 @@ const HeatingBlock = ({props}) => {
             setError(null)
           }
           setInfo(data);
-        })).catch(e => setError(e)).then(() => setLoading(false));
+        })).catch(e => setError(e)).finally(() => {
+      setLoading(false);
+      UpdateInfo().catch(e => setError(e));
+    });
   }
 
   async function UpdateInfo() {
@@ -77,33 +82,34 @@ const HeatingBlock = ({props}) => {
   }
 
   useEffect(() => {
-    GetInfo().catch(e=>setError(e));
+    GetInfo().catch(e => setError(e));
     const interval = setInterval(() => {
-      UpdateInfo().catch(e=>setError(e));
+      UpdateInfo().catch(e => setError(e));
     }, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  return loading ? <div className="Heating-display">
-        <div className="lds-ripple mt-10">
-          <div/>
-          <div/>
-        </div>
-      </div> :
+  return (
       <div className="Heating-display">
         {error ? <p>Can't update heating info: ${error.message}</p> : ''}
-        <div className="Display-screen">
-          <div className="Indoor-temp" style={{color: colour}}>{info.indoor_temp}</div>
-          <div className="Other-info"><span
-              className="value">{info.outdoor_temp} outdoors</span></div>
-          <div className="Other-info"><span
-              className="value">{info.weather}</span></div>
+        <div className="Display-screen Heating-screen">
+          {loading ? <div><RippleLoader classname={"Loader-block"}/></div> :
+              <div className="Display-screen-inner">
+                <div className="Indoor-temp" style={{color: colour}}>{info.indoor_temp}</div>
+                <div className="Other-info"><span
+                    className="value">{info.outdoor_temp} outdoors</span></div>
+                <div className="Other-info"><span
+                    className="value">{info.weather}</span></div>
+                <div className="Other-info"><span
+                    className="value small">updated: {info.last_updated}</span></div>
+              </div>}
         </div>
         <div className="flex-row-center"><label className="switch">
           <input type="checkbox" name="on_off" onChange={handleSwitch} checked={info.program_on}/>
           <span className="slider round"/>
         </label></div>
-      </div>;
+      </div>
+  );
 }
 
 

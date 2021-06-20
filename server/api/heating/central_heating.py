@@ -11,8 +11,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 
-from server.api.utils.concurrent_calls import urls
-
 logging.basicConfig(level=logging.INFO)
 
 
@@ -28,13 +26,13 @@ class HeatingConf(BaseModel):
 class HeatingSystem:
     config_file = os.path.abspath(os.getcwd()) + '/api/heating/heating.conf'
     scheduler = BackgroundScheduler()
-    SENSOR_URL = urls['temperature']  # Local IP of temperature sensor API
+    SENSOR_IP = 'https://api.smarthome.mjfullstack.com/'  # Local IP of temperature sensor API
 
     def __init__(self):
         """Create connection with temperature api and load settings
         from config file"""
         self.pi = pigpio.pi()
-        self.measurements = requests.get(self.SENSOR_URL).json()
+        self.measurements = requests.get(self.SENSOR_IP).json()
         self.conf = self.get_or_create_config()
         self.scheduler.add_job(self.main_loop,
                                'interval',
@@ -89,7 +87,7 @@ class HeatingSystem:
             return conf
 
     def get_measurements(self):
-        self.measurements = requests.get(self.SENSOR_URL).json()
+        self.measurements = requests.get(self.SENSOR_IP).json()
 
     def check_temp(self):
         self.get_measurements()

@@ -4,7 +4,7 @@ import {TaskBlock} from './TaskBlock';
 import {AddNewItem} from "./AddNew";
 import {AuthContext} from "../contexts/AuthContext";
 import Loader from "./Loader";
-import FetchAuthService from "../service/FetchService";
+import FetchWithToken from "../service/FetchService";
 import {useToastContext} from "../contexts/ToastContext";
 
 
@@ -16,11 +16,11 @@ const Tasks = () => {
   const [newTask, setNewTask] = useState('')
   const [iDState, setIDState] = useState(0)
   const {toastDispatch} = useToastContext()
-  const refObj = {}
+  // const refObj = {}
 
   useEffect(() => {
         // setLoading(true)
-        FetchAuthService(
+        FetchWithToken(
             '/tasks/',
             'GET',
             authState,
@@ -34,46 +34,55 @@ const Tasks = () => {
 
   function arr_diff(a1, a2) {
 
-      let a = [], diff = [];
+    let a = [], diff = [];
 
-      for (let i = 0; i < a1.length; i++) {
-        a[a1[i]] = true;
-      }
-
-      for (let i = 0; i < a2.length; i++) {
-        if (a[a2[i]]) {
-          delete a[a2[i]];
-        } else {
-          a[a2[i]] = true;
-        }
-      }
-
-      for (let k in a) {
-        diff.push(k);
-      }
-
-      return diff;
+    for (let i = 0; i < a1.length; i++) {
+      a[a1[i]] = true;
     }
 
+    for (let i = 0; i < a2.length; i++) {
+      if (a[a2[i]]) {
+        delete a[a2[i]];
+      } else {
+        a[a2[i]] = true;
+      }
+    }
+
+    for (let k in a) {
+      diff.push(k);
+    }
+
+    return diff;
+  }
+
   async function addTask(hm_id, task) {
-    const taskCheck = tasks
-    await FetchAuthService(
+    await FetchWithToken(
         `/tasks/`,
         'POST',
         authState,
         setTasks,
         JSON.stringify({hm_id, task}),
         toastDispatch)
-    console.log(taskCheck)
-    console.log(tasks)
-    const diff = arr_diff(taskCheck.tasks, tasks.tasks)
-    if (diff) {
-      console.log(diff)
-      for (let i = 0; i < diff.length; i++) {
-        console.log(diff[i].name)
-      }
-    }
+    // const taskCheck = tasks
+    // const diff = arr_diff(taskCheck.tasks, tasks.tasks)
+    // if (diff) {
+    //   console.log(diff)
+    //   for (let i = 0; i < diff.length; i++) {
+    //     console.log(diff[i].name)
+    //   }
+    // }
 
+  }
+
+  async function markComplete(task_id) {
+    await FetchWithToken(
+        `/tasks/${task_id}/`,
+        'POST',
+        authState,
+        setTasks,
+        null,
+        null)
+        .catch(e => setError(e))
   }
 
   async function deleteTask(id, name) {
@@ -81,8 +90,8 @@ const Tasks = () => {
       ...prevTasks,
       name: tasks.tasks.filter(x => x.id !== id)
     }))
-    await FetchAuthService(
-        `/tasks/${id}`,
+    await FetchWithToken(
+        `/tasks/${id}/`,
         'DELETE',
         authState,
         setTasks,
@@ -113,7 +122,7 @@ const Tasks = () => {
 
                   <div className="Task-block flex-col-center" key={name + 'mb'}>
                     <TaskBlock name={name[1]} tasks={tasks.tasks} key={name + 'tb'} DeleteFunc={deleteTask}
-                               AddFunc={addTask}/>
+                               AddFunc={addTask} markComplete={markComplete}/>
                   </div>
               )
             }) : ''}</div>}

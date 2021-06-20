@@ -9,16 +9,15 @@ from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from .db.models import HouseholdMember, HouseholdMemberPydantic, HouseholdMemberPydanticIn
-from .db.utils import superusers
+
+from ..api.constants import SECRET_KEY, ALGORITHM, GUEST_IDS, ACCESS_TOKEN_EXPIRE_MINUTES
+from ..db.models import HouseholdMember, HouseholdMemberPydantic, HouseholdMemberPydanticIn
+from ..db.utils import superusers
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-SECRET_KEY = "SoMeThInGsUpErSeCrEt!"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 10080
-GUEST_IDS = [3]
+
 
 credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,

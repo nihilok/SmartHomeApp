@@ -3,7 +3,7 @@ import {Header} from './Header';
 import {AuthContext} from "../contexts/AuthContext";
 import {RecipeBlock} from "./RecipeBlock";
 import Loader from "./Loader";
-import FetchAuthService from "../service/FetchService";
+import FetchWithToken from "../service/FetchService";
 import PlusButton from "./PlusButton";
 import {useInput} from "../hooks/input-hook";
 import AreYouSure from "./AreYouSure";
@@ -64,7 +64,7 @@ export const Recipes = () => {
 
       const getRecipes = useCallback(() => {
         setLoading(true)
-        FetchAuthService(
+        FetchWithToken(
             '/recipes/',
             'GET',
             authState,
@@ -85,30 +85,35 @@ export const Recipes = () => {
           meal_name,
           ingredients,
           notes
-        }
-        setLoading(true)
+        };
+        setLoading(true);
         if (editing) {
           editItem(data)
               .catch(e => setError(e))
               .finally(() => {
-                setLoading(false)
-              })
+                setLoading(false);
+              });
         } else {
           addItem(data)
               .catch(e => setError(e))
               .finally(() => {
-                setLoading(false)
-              })
+                setLoading(false);
+              });
         }
-        resetMealName()
-        resetIngredients()
-        resetNotes()
-        getRecipes()
-        setNewRecipe(false)
+
+        // getRecipes()
+        setTimeout(() => {
+          setNewRecipe(false);
+          setEditing(false);
+          resetMealName();
+          resetIngredients();
+          resetNotes();
+        }, 400);
+        recipeRef.current = null;
       }
 
       async function addItem(data) {
-        FetchAuthService(
+        FetchWithToken(
             '/recipes/',
             'POST',
             authState,
@@ -117,11 +122,11 @@ export const Recipes = () => {
             .catch(e => setError(e))
             .finally(() => {
               setLoading(false)
-            })
+            });
       }
 
       async function deleteItem() {
-        FetchAuthService(
+        FetchWithToken(
             `/recipes/${recipeRef.current.id}/`,
             'DELETE',
             authState,
@@ -132,10 +137,11 @@ export const Recipes = () => {
             .finally(() => {
               setLoading(false)
             })
+        recipeRef.current = null
       }
 
       async function editItem(data) {
-        FetchAuthService(
+        FetchWithToken(
             `/recipes/${recipeRef.current.id}/`,
             'POST',
             authState,
@@ -160,13 +166,15 @@ export const Recipes = () => {
               <div className="note on-from-bottom">
                 <div className="close-button" onClick={() => {
                   setNewRecipe(false);
+                  setEditing(false)
                   resetMealName()
                   resetIngredients()
                   resetNotes()
+                  recipeRef.current = null
                 }}>&times;</div>
 
                 <div className="note-top">
-                  <div><h1>{meal_name ? 'Edit' : 'Add a'} Recipe..</h1></div>
+                  <div><h1>{editing ? 'Edit' : 'Add a'} Recipe..</h1></div>
                   <div/>
                 </div>
 
@@ -174,11 +182,11 @@ export const Recipes = () => {
                   <div className="Recipe-card-content">
                     <form className="New-recipe flex-col-center" onSubmit={handleSubmit}>
                       <div className="form-control"><input type="text" placeholder="Meal Name" {...bindMealName} required/>
-                      </div>
-                      <div className="form-control"><textarea placeholder="Ingredients" {...bindIngredients} required/>
-                      </div>
-                      <div className="form-control"><textarea placeholder="Notes" {...bindNotes}/></div>
-                      <input type="submit" value="Save" className="btn-outline"/>
+
+                        <textarea placeholder="Ingredients" {...bindIngredients} rows="4" required/>
+
+                        <textarea placeholder="Notes" {...bindNotes} rows="4"/></div>
+                      <input type="submit" value="Save" className="btn btn-outline"/>
                     </form>
                   </div>
                 </div>

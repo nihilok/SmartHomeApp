@@ -15,7 +15,7 @@ import Cams from "./components/Cams";
 import Recipes from "./components/Recipes";
 import Settings from "./components/Settings";
 import Loader from "./components/Loader";
-import {apiBaseUrl} from "./service/FetchService";
+import PlannerScreen from "./components/Planner/PlannerScreen";
 
 
 function App() {
@@ -24,10 +24,14 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
+    const token = JSON.parse(localStorage.getItem('token'))
+
+    if (authState.darkMode) {
+        document.body.classList.toggle('dark-mode')
+    }
 
     if (token) {
-      fetch(`${apiBaseUrl}/check_token/`,
+      fetch(`${authState.apiBaseUrl}/check_token/`,
           {method: 'POST', body: JSON.stringify({access_token: token, token_type: 'Bearer'})})
           .then(response => response.json()
               .then(data => {
@@ -61,13 +65,14 @@ function App() {
               !authState.isAuthenticated ? <Login/> :
                   <>
                     <Route exact path="/" component={MenuScreen}/>
-                    <Route path="/settings" component={() => (<HeatingSettings />)}/>
+                    <Route path="/settings" component={HeatingSettings}/>
                     <Route path="/config" component={Settings}/>
                     <Route path="/heating" component={Heating}/>
                     <Route path="/tasks" component={Tasks}/>
                     <Route path="/shopping" component={Shopping}/>
                     <Route path="/cam" component={Cams}/>
                     <Route path="/recipes" component={Recipes}/>
+                    <Route path="/planner" component={PlannerScreen}/>
                   </>}
 
           <Route path="/map" component={() => {

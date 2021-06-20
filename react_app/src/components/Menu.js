@@ -26,6 +26,19 @@ const MenuScreen = () => {
                     <MenuButton
                         route="/recipes"
                         icon="pizza-slice"/>
+                  <div style={{
+                    marginTop: '7rem'
+                  }}>
+                    NEW >>>>>
+                  </div>
+                    <MenuButton
+                        route="/planner"
+                        icon="calendar-alt"/>
+                  <div style={{
+                    marginTop: '7rem'
+                  }}>
+                    {'<<<<< NEW'}
+                  </div>
                 </nav>
             </div>
         </>
