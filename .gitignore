@@ -30,4 +30,4 @@ yarn-error.log*
 /server/api/db/db.sqlite3-shm
 /server/api/db/db.sqlite3-wal
 *.sqlite3
-/bak
+/bakserver/api/utils/concurrent_calls.py
