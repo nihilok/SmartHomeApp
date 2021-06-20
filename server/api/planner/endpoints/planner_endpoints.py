@@ -31,7 +31,7 @@ class Week(BaseModel):
     async def shift_days(self):
         for i in range(len(self.days)-1):
             self.days[i] = self.days[i+1]
-        self.days[-1] = Day(date=(datetime.now()+timedelta(days=7)))
+        self.days[-1] = Day(date=(datetime.now()+timedelta(days=6)))
 
 
 
@@ -57,6 +57,10 @@ async def save_week(week: Week, user: HouseholdMemberPydantic):
 
 @router.get('/this-week/', response_model=Week)
 async def get_week(user: HouseholdMemberPydantic = Depends(get_current_active_user)):
+    w = await get_or_create_week(user)
+    if w.days[0].date < datetime.now().date():
+        await w.shift_days()
+        await save_week(w, user)
     return await get_or_create_week(user)
 
 
