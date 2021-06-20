@@ -56,14 +56,14 @@ const Tasks = () => {
   }
 
   async function addTask(hm_id, task) {
-    // const taskCheck = tasks
     await FetchWithToken(
         `/tasks/`,
         'POST',
-        setTasks,
         authState,
+        setTasks,
         JSON.stringify({hm_id, task}),
         toastDispatch)
+    // const taskCheck = tasks
     // const diff = arr_diff(taskCheck.tasks, tasks.tasks)
     // if (diff) {
     //   console.log(diff)
@@ -78,10 +78,10 @@ const Tasks = () => {
     await FetchWithToken(
         `/tasks/${task_id}/`,
         'POST',
-        setTasks,
         authState,
+        setTasks,
         null,
-        toastDispatch)
+        null)
         .catch(e => setError(e))
   }
 

@@ -9,8 +9,9 @@ const Settings = () => {
   let history = useHistory();
 
   const setDarkMode = () => {
-    console.log(document.body.classList)
-    document.body.classList.toggle('dark-mode')
+    authDispatch({
+      type: "DARKMODE",
+    });
   }
 
 
@@ -25,7 +26,7 @@ const Settings = () => {
   return (
       <div>
         <Header text={"Settings"} back={'/'}/>
-        <div className="flex-col-center">
+        <div className="flex-col-center settings">
           <input type="submit" className="btn" onClick={setDarkMode} value="Dark Mode"/>
           <input type="submit" className="btn" onClick={logOut} value="Log Out"/></div>
       </div>

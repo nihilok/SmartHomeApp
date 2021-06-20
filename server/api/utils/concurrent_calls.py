@@ -8,11 +8,11 @@ CONNECTIONS = 100
 TIMEOUT = 5
 
 urls = {
-    'temperature': 'https://public-url-to-temperature-sensor.com/',
-    'ip': 'https://somewhere-to-get-your-ip.com/',
+    'temperature': 'https://api.smarthome.mjfullstack.com',
+    'ip': 'https://api.smarthome.mjfullstack.com/ip',
     'weather': 'https://api.openweathermap.org/data/2.5/onecall'
                '?lat=51.6862&lon=-1.4129&exclude=minutely,hourly'
-               '&units=metric&appid=<YOUR-API-KEY>'
+               '&units=metric&appid=3e315e2a2614af590c8a7a1d8ede1b9c'
 }
 
 

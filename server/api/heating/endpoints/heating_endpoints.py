@@ -10,15 +10,13 @@ import urllib.parse as urlparse
 from ...auth.authentication import get_current_active_user
 from ...cache.redis_funcs import get_weather, set_weather
 from ...db.models import HouseholdMemberPydantic
-from ...server import TESTING
 from ...utils.concurrent_calls import urls, get_data
+from ..central_heating import HeatingConf
 
+from ...api.constants import TESTING
 if not TESTING:
-    from ..central_heating import HeatingSystem, HeatingConf
+    from ..central_heating import HeatingSystem
 else:
-    from ..central_heating import HeatingConf
-
-
     @dataclass
     class HeatingSystem:
         conf = HeatingConf(
@@ -41,6 +39,7 @@ else:
 
 hs = HeatingSystem()
 router = APIRouter()
+
 
 class WeatherReport(BaseModel):
     # keys = ['dt', 'sunrise', 'sunset', 'temp', 'feels_like', 'pressure', 'humidity', 'dew_point', 'uvi', 'clouds',

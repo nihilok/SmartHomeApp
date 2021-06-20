@@ -1,9 +1,2 @@
-origins = [
-    'https://localhost:4000',
-]
-
 SUPERUSERS = [1]
 GUEST_IDS = [3]
-SECRET_KEY = "SoMeThInGsUpErSeCrEt!"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 10080

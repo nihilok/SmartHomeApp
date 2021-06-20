@@ -1,8 +1,3 @@
-import {ADD} from "../contexts/ToastContext";
-import {useContext} from "react";
-import {AuthContext} from "../contexts/AuthContext";
-
-
 async function FetchWithToken(url,
                               method,
                               authState = null,
@@ -12,7 +7,7 @@ async function FetchWithToken(url,
 
   const rejectedToast = (message) => {
     toastDispatch({
-      type: ADD,
+      type: 'ADD',
       payload: {
         content: message,
         type: 'danger'
@@ -52,6 +47,7 @@ async function FetchWithToken(url,
                 rejectedToast(`Something went wrong ${res.status}`)
             }
           } else {
+            console.log('HERE:')
             console.log(res)
           }
           throw new Error('Bad response')
