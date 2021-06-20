@@ -22,17 +22,15 @@ class Day(BaseModel):
 
 
 class Week(BaseModel):
-    days: List[Day] = []
+    days: dict = {}
 
     async def create_week(self):
         for i in range(7):
-            self.days.append(Day(date=(datetime.now()+timedelta(days=i))))
+            self.days[(datetime.now()+timedelta(days=i)).date()] = Day(date=(datetime.now()+timedelta(days=i)))
 
     async def shift_days(self):
-        for i in range(len(self.days)-1):
-            self.days[i] = self.days[i+1]
-        self.days[-1] = Day(date=(datetime.now()+timedelta(days=6)))
-
+        del self.days[(datetime.now() - timedelta(days=1)).date()]
+        self.days[(datetime.now() + timedelta(days=6)).date()] = Day(date=(datetime.now() + timedelta(days=6)))
 
 
 async def get_or_create_week(user: HouseholdMemberPydantic) -> Week:
@@ -58,9 +56,11 @@ async def save_week(week: Week, user: HouseholdMemberPydantic):
 @router.get('/this-week/', response_model=Week)
 async def get_week(user: HouseholdMemberPydantic = Depends(get_current_active_user)):
     w = await get_or_create_week(user)
-    if w.days[0].date < datetime.now().date():
-        await w.shift_days()
-        await save_week(w, user)
+    for d in w.days.keys():
+        if d < datetime.now().date():
+            await w.shift_days()
+            await save_week(w, user)
+            break
     return await get_or_create_week(user)
 
 
@@ -74,7 +74,7 @@ async def shift_week(week: Week, user: HouseholdMemberPydantic):
 async def add_item(item: AgendaItem, date: date, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
     week = await get_or_create_week(user)
     item = AgendaItem(**item.dict(exclude_unset=True))
-    week.days[(date - datetime.now().date()).days].items.append(item)
+    week.days[date].items.append(item)
     await save_week(week, user)
     return week
 
@@ -82,9 +82,10 @@ async def add_item(item: AgendaItem, date: date, user: HouseholdMemberPydantic =
 @router.delete('/{date}/{item_description}')
 async def delete_item(date: date, item_description: str, user: HouseholdMemberPydantic = Depends(get_current_active_user)):
     week = await get_or_create_week(user)
-    for item in week.days[(date - datetime.now().date()).days].items:
+    for item in week.days[date].items:
         if item.description == item_description:
-            week.days[(date - datetime.now().date()).days].items.remove(item)
+            week.days[date].items.remove(item)
             break
     await save_week(week, user)
     return week
+

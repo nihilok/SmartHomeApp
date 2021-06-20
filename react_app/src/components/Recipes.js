@@ -8,6 +8,7 @@ import PlusButton from "./PlusButton";
 import {useInput} from "../hooks/input-hook";
 import AreYouSure from "./AreYouSure";
 import {useToastContext} from "../contexts/ToastContext";
+import NoteModal from "./NoteModal/NoteModal";
 
 export const Recipes = () => {
       const [list, setInfo] = useState([])
@@ -26,40 +27,35 @@ export const Recipes = () => {
       const {toastDispatch} = useToastContext()
 
       const handleEdit = () => {
-        setEditing(true)
         recipeRef.current = currentRecipe
+        setNewRecipe(true)
+        setEditing(true)
         setMealName(recipeRef.current.meal_name)
         setIngredients(recipeRef.current.ingredients)
         setNotes(recipeRef.current.notes)
-        setNewRecipe(true)
+        setCurrentRecipe(null)
       }
 
       const renderRecipeCard = () => {
-        return (
-
-            <div className="Recipe-card" onClick={() => setCurrentRecipe(null)}>
-
-              <div className="note on-from-bottom">
-                <div className="note-top">
-                  <div><h1>{currentRecipe.meal_name}</h1></div>
-                  <div/>
-                </div>
-
-                <div className="note-bottom">
-                  <div className="Recipe-card-content">
-
-                    <h4>Ingredients:</h4>
-                    <p>{currentRecipe.ingredients}</p>
-                    {currentRecipe.notes ? <><h4>Notes:</h4>
-                      <p>{currentRecipe.notes}</p></> : ''}</div>
-                  <div className="remove-recipe">
-                    <div onClick={handleEdit}>Edit Recipe</div>
-                    <div onClick={handleDelete}>Remove Recipe</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-        )
+        return <NoteModal title={currentRecipe.meal_name}
+                          renderContent={() => {
+                            return (
+                                <>
+                                  <div className="Recipe-card-content">
+                                    <h4>Ingredients:</h4>
+                                    <p>{currentRecipe.ingredients}</p>
+                                    {
+                                      currentRecipe.notes ? <><h4>Notes:</h4>
+                                        <p>{currentRecipe.notes}</p></> : ''
+                                    }
+                                  </div>
+                                  <div className="remove-recipe">
+                                    <div onClick={handleEdit}>Edit Recipe</div>
+                                    <div onClick={handleDelete}>Remove Recipe</div>
+                                  </div>
+                                </>)
+                          }}
+                          setHidden={setCurrentRecipe}/>
       }
 
       const getRecipes = useCallback(() => {
@@ -160,39 +156,32 @@ export const Recipes = () => {
       }
 
       const renderNewRecipeForm = () => {
-        return (
-            <div className="Recipe-card">
+        return <NoteModal title={editing ? 'Edit Recipe..' : 'Add a Recipe..'}
+                          renderContent={() => {
+                            return (
+                                <>
+                                  <div className="Recipe-card-content">
+                                    <form className="New-recipe flex-col-center" onSubmit={handleSubmit}>
+                                      <div className="form-control"><input type="text"
+                                                                           placeholder="Meal Name" {...bindMealName}
+                                                                           required/>
 
-              <div className="note on-from-bottom">
-                <div className="close-button" onClick={() => {
-                  setNewRecipe(false);
-                  setEditing(false)
-                  resetMealName()
-                  resetIngredients()
-                  resetNotes()
-                  recipeRef.current = null
-                }}>&times;</div>
+                                        <textarea placeholder="Ingredients" {...bindIngredients} rows="4" required/>
 
-                <div className="note-top">
-                  <div><h1>{editing ? 'Edit' : 'Add a'} Recipe..</h1></div>
-                  <div/>
-                </div>
-
-                <div className="note-bottom">
-                  <div className="Recipe-card-content">
-                    <form className="New-recipe flex-col-center" onSubmit={handleSubmit}>
-                      <div className="form-control"><input type="text" placeholder="Meal Name" {...bindMealName} required/>
-
-                        <textarea placeholder="Ingredients" {...bindIngredients} rows="4" required/>
-
-                        <textarea placeholder="Notes" {...bindNotes} rows="4"/></div>
-                      <input type="submit" value="Save" className="btn btn-outline"/>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
-        )
+                                        <textarea placeholder="Notes" {...bindNotes} rows="4"/></div>
+                                      <input type="submit" value="Save" className="btn btn-outline"/>
+                                    </form>
+                                  </div>
+                                </>)
+                          }}
+                          setHidden={() => {
+                            setNewRecipe(false);
+                            setEditing(false)
+                            resetMealName()
+                            resetIngredients()
+                            resetNotes()
+                            recipeRef.current = null
+                          }}/>
       }
 
       return (

@@ -1,0 +1,46 @@
+table {
+    width: 80vw;
+    /*margin-top: -6rem;*/
+    margin-bottom: 6rem;
+    border-collapse: collapse;
+}
+
+table thead tr th {
+    font-weight: bold;
+    border-bottom: 1px solid;
+    text-align: left;
+    min-width: 13ch;
+;
+}
+
+table thead tr th:nth-child(2) {
+    text-align: right;
+}
+
+tr td:nth-child(1) {
+    padding: 1rem .5rem;
+}
+
+tr td:nth-child(2) {
+    padding: 1rem 1rem;
+    width: 100%;
+}
+
+.plan-cell {
+    text-align: right;
+    color: var(--text-primary)
+}
+
+.plan-cell ul {
+    list-style-type: none;
+}
+
+.plan-cell li {
+    border-bottom: 1px solid var(--primary-color);
+}
+
+.remove-plan {
+    padding: 0 0 0 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+}

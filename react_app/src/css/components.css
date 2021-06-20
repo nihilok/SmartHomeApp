@@ -133,7 +133,7 @@
 .Heating-settings {
     padding: 2rem;
     margin-top: 1rem;
-    min-height: 28rem;
+    min-height: 30rem;
     min-width: 18rem;
     transition: .5s ease-out;
 }
@@ -180,7 +180,7 @@
 }
 
 .Display-screen {
-    padding: 1rem 4rem 2rem 3rem;
+    padding: 0 1rem 1rem 0;
     border-radius: 5px;
     min-height: 16rem;
     min-width: 18rem;
@@ -280,7 +280,7 @@
 }
 
 .Radio-container:hover input ~ .checkmark {
-    background-color: var(--text-light);
+    background-color: var(--background-lighter);
 }
 
 .Radio-container input:checked ~ .checkmark {
@@ -293,7 +293,8 @@
     left: 0;
     height: 25px;
     width: 25px;
-    background-color: #eee;
+    background-color: var(--background-color);
+
     border-radius: 50%;
 }
 
@@ -381,6 +382,7 @@
     justify-content: center;
     align-items: center;
     cursor: pointer;
+    padding: 0 0 .4rem 0
 }
 
 .Plus-button:hover {
