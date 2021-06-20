@@ -1,0 +1,123 @@
+::-moz-focus-inner {
+    border: 0;
+}
+
+::-webkit-input-placeholder {
+    font-family: Lato, sans-serif;
+    color: var(--text-muted)
+}
+
+:-moz-placeholder {
+    font-family: Lato, sans-serif;
+    color: var(--text-muted)
+}
+
+::-moz-placeholder {
+    font-family: Lato, sans-serif;
+    color: var(--text-muted)
+}
+
+:-ms-input-placeholder {
+    font-family: Lato, sans-serif;
+    color: var(--text-muted)
+}
+
+
+input[type=text], input[type=password] {
+    text-align: center;
+    padding: 2px
+}
+
+input[type=text], input[type=password], textarea {
+    padding: 2px 5px;
+    width: 100%;
+}
+
+
+input[type=text], input[type=password], input[type=time], textarea, input[type=date] {
+    border: var(--input-border-base);
+    border-radius: 5px;
+    color: var(--text-primary);
+    background-color: var(--background-lighter);
+    font-size: 1.8rem;
+}
+
+input[type=text], input[type=password], input[type=time], textarea {
+    margin: .5rem 0 .5rem 0;
+    min-width: 8ch;
+}
+
+input[type=submit] {
+    /*height: 100%;*/
+}
+
+.inline-form-control {
+
+}
+
+/*input[type=date] {*/
+/*    width: auto;*/
+/*    font-size: 3rem;*/
+/*}*/
+
+textarea {
+    font-size: 1rem;
+    width: 100%;
+    flex-grow: 1;
+}
+
+input[type=time], input[type=date] {
+    padding: 7px .6rem 5px 1rem;
+    text-align: center;
+    justify-content: center;
+    width: max-content;
+}
+
+
+/*input[type=submit] {*/
+/*    border: 0;*/
+/*}*/
+
+/*.form-control input[type=text], input[type=password] {*/
+/*    text-align: center;*/
+/*    margin: .5rem auto;*/
+/*    font-size: 1.8rem;*/
+/*}*/
+
+input, textarea, button {
+    font-family: Lato, sans-serif;
+}
+
+input:focus, textarea:focus {
+    outline: none;
+    box-shadow: var(--focus-shadow);
+}
+
+/*input[type=text], typ, textarea ::placeholder {*/
+/*    font-family: Lato, sans-serif;*/
+/*    !*color: var(--text-muted)*!*/
+/*}*/
+
+/*.Recipe-card-content input, textarea {*/
+/*    border: 2px solid var(--primary-light);*/
+/*    border-radius: 5px;*/
+/*    color: var(--text-primary);*/
+/*    background-color: var(--background-lighter);*/
+/*}*/
+
+/*.Recipe-card-content input[type=text] {*/
+/*    font-size: 1.5rem*/
+/*}*/
+
+/*.New-recipe input, textarea {*/
+/*    min-width: 100%;*/
+/*    max-width: 100%;*/
+/*    padding: .5rem 1rem;*/
+/*    margin-top: 1rem;*/
+/*    font-family: Lato, sans-serif;*/
+/*    border-radius: 10px;*/
+/*}*/
+
+/*.New-recipe textarea {*/
+/*    height: 5rem;*/
+/*}*/

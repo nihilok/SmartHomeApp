@@ -1,5 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300&display=swap');
 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
 :root {
     --primary-color: hsl(202, 33%, 29%);
     --primary-light: hsl(202, 33%, 45%);
@@ -12,6 +19,7 @@
     --heat-gradient: linear-gradient(90deg, var(--primary-color), #950000);
     --shadow: 0 0 5px rgba(0, 0, 0, .7);
     --input-border-base: 2px solid var(--primary-light);
+    --focus-shadow: 0 0 0 5px var(--primary-light);
 }
 
 .dark-mode {
@@ -20,19 +28,13 @@
     --text-muted: hsla(202, 33%, 70%, 0.52);
     --background-color: hsl(200, 90%, 8%);
     --background-light: hsl(200, 90%, 15%);
-    --background-lighter: hsl(202, 63%, 44%);
-
+    --background-lighter: hsl(201, 31%, 31%);
     --heat-gradient: linear-gradient(90deg, var(--primary-color), #950000);
     --shadow: 0 0 5px rgba(0, 0, 0, .8)
 }
 
 .h-full {
     height: 100vh;
-}
-
-* {
-
-    padding: 0;
 }
 
 body {
@@ -60,7 +62,6 @@ code {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-
 }
 
 @media (max-width: 472px) {
@@ -156,6 +157,10 @@ code {
     box-shadow: 0 0 4px inset black;
 }
 
+/*.btn:hover:focus {*/
+/*    box-shadow: 0 0 4px inset black, var(--focus-shadow);*/
+/*}*/
+
 .btn-outline {
     background-color: transparent;
     color: var(--primary-color);
@@ -171,76 +176,10 @@ code {
     padding: .5rem 1em;
 }
 
-input {
-    -moz-box-sizing: border-box;
-}
-
 .form-control {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    /*width: 100%;*/
-}
-
-.form-control input[type=text], input[type=password] {
-    text-align: center;
-    margin: .5rem auto;
-    font-size: 1.8rem;
-
-}
-
-::-moz-focus-inner {
-    border: 0;
-}
-
-input:focus, textarea:focus {
-    outline: none;
-    box-shadow: 0 0 0 5px var(--primary-light);
-}
-
-/*input[type=text], typ, textarea ::placeholder {*/
-/*    font-family: Lato, sans-serif;*/
-/*    !*color: var(--text-muted)*!*/
-/*}*/
-
-::-webkit-input-placeholder {
-    font-family: Lato, sans-serif;
-    color: var(--text-muted)
-}
-
-:-moz-placeholder {
-    font-family: Lato, sans-serif;
-    color: var(--text-muted)
-}
-
-::-moz-placeholder {
-    font-family: Lato, sans-serif;
-    color: var(--text-muted)
-}
-
-:-ms-input-placeholder {
-    font-family: Lato, sans-serif;
-    color: var(--text-muted)
-}
-
-
-input[type=time] {
-    padding: 6px .7rem 5px 1rem;
-    text-align: center;
-    justify-content: center;
     width: 100%;
-    color: var(--text-primary);
-    background-color: var(--background-light);
-    font-size: 1.8rem;
-}
-
-input[type=text], input[type=password], input[type=time], textarea {
-    border: var(--input-border-base);
-    border-radius: 5px;
-    color: var(--text-primary);
-}
-
-input[type=submit] {
-    border: 0;
 }
