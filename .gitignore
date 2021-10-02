@@ -1,5 +1,6 @@
 /.idea/
 /venv/
+/dev_venv/
 /server/api/heating/heating.conf
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
