@@ -51,8 +51,9 @@ const PlannerComponent = ({week}) => {
       }
 
       const removePlan = (item_date, description) => {
+        const descriptionB64 = atob(description)
         FetchWithToken(
-            `/planner/${item_date}/${description}`,
+            `/planner/${item_date}/${descriptionB64}/`,
             'DELETE',
             authState,
             setWeekState
