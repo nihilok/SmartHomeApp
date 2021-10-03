@@ -11,6 +11,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 
+from .custom_datetimes import BritishTime
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -106,7 +108,9 @@ class HeatingSystem:
         return datetime.strptime(time, '%H:%M').time()
 
     def check_time(self):
-        time_now = datetime.fromtimestamp(time.mktime(time.localtime())).time()
+        time_now = BritishTime.now()
+        time_now = time_now + time_now.dst()
+        time_now = time_now.time()
         if (self.parse_time(self.conf.off_1) >
                 time_now > self.parse_time(self.conf.on_1)):
             return True

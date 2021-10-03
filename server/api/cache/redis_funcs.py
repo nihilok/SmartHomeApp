@@ -29,7 +29,7 @@ async def set_item(key, value):
 
 
 async def set_weather(weather_dict: dict):
-    await cache.execute('set', 'weather', json.dumps(weather_dict), 'ex', 3600)
+    await cache.execute('set', 'weather', json.dumps(weather_dict), 'ex', 900)
 
 
 async def get_weather():

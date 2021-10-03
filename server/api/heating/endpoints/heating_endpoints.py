@@ -7,6 +7,7 @@ from fastapi import Depends, APIRouter
 from pydantic import BaseModel
 import urllib.parse as urlparse
 
+from ..custom_datetimes import BritishTime
 from ...auth.authentication import get_current_active_user
 from ...cache.redis_funcs import get_weather, set_weather
 from ...db.models import HouseholdMemberPydantic
@@ -76,11 +77,12 @@ async def api():
     temp_url = urlparse.urlparse(urls['temperature']).netloc + urlparse.urlparse(urls['temperature']).path
     ip_url = urlparse.urlparse(urls['ip']).netloc + urlparse.urlparse(urls['ip']).path
     weather_report = await weather()
+    updated = BritishTime.fromtimestamp(weather_report.current['dt'])
     print(datetime.fromtimestamp(weather_report.current['dt']).strftime('%H:%M:%S'))
     return ApiInfo(indoor_temp=str('{0:.1f}'.format(out[temp_url][0]['temperature'])) + '°C',
                    outdoor_temp=str('{0:.1f}'.format(weather_report.current['temp'])) + '°C',
                    weather=weather_report.current['weather'][0]['description'],
-                   last_updated=datetime.fromtimestamp(weather_report.current['dt']).strftime('%H:%M'),
+                   last_updated=(updated + updated.dst()).strftime('%H:%S'),
                    on=hs.check_state(),
                    program_on=hs.conf.program_on,
                    ip=out[ip_url][0]['ip'])
