@@ -38,7 +38,7 @@
     height: 26px;
     width: 26px;
     left: 3px;
-    bottom: 4px;
+    bottom: 3px;
     color: var(--primary-color);
     -webkit-transition: .4s;
     transition: .4s;
@@ -53,9 +53,9 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-    -webkit-transform: translateX(24px);
-    -ms-transform: translateX(24px);
-    transform: translateX(24px);
+    -webkit-transform: translateX(25px);
+    -ms-transform: translateX(25px);
+    transform: translateX(25px);
     color: var(--text-light);
 }
 

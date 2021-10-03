@@ -11,7 +11,7 @@ const HeatingBlock = ({props}) => {
     outdoor_temp: '',
     last_updated: '--:--:--',
     on: false,
-    program_on: false
+    program_on: localStorage.getItem('heating_program_on') || true
   }
   const {authState} = React.useContext(AuthContext);
   const {toastDispatch} = useToastContext()
@@ -72,6 +72,7 @@ const HeatingBlock = ({props}) => {
                 });
               } else {
                 if (info.program_on !== data.program_on) {
+                  localStorage.setItem('heating_program_on', data.program_on);
                   setInfo((info) => ({
                     ...info,
                     program_on: data.program_on
@@ -104,10 +105,12 @@ const HeatingBlock = ({props}) => {
                     className="value small">updated: {info.last_updated}</span></div>
               </div>}
         </div>
-        <div className="flex-row-center"><label className="switch">
-          <input type="checkbox" name="on_off" onChange={handleSwitch} checked={info.program_on}/>
-          <span className="slider round"/>
-        </label></div>
+        <div className="flex-row-center">
+          <label className="switch">
+            <input type="checkbox" name="on_off" onChange={handleSwitch} checked={info.program_on}/>
+            <span className="slider round"/>
+          </label>
+        </div>
       </div>
   );
 }

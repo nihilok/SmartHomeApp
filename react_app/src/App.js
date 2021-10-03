@@ -16,19 +16,17 @@ import Recipes from "./components/Recipes";
 import Settings from "./components/Settings";
 import Loader from "./components/Loader";
 import PlannerScreen from "./components/Planner/PlannerScreen";
+import {Header} from "./components/Header";
 
 
 function App() {
 
   const [authState, authDispatch] = useReducer(authReducer, initialAuthState)
   const [isLoading, setIsLoading] = useState(true)
+  const [darkMode, setDarkMode] = useState(authState.darkMode)
 
   useEffect(() => {
     const token = JSON.parse(localStorage.getItem('token'))
-
-    if (authState.darkMode) {
-        document.body.classList.toggle('dark-mode')
-    }
 
     if (token) {
       fetch(`${authState.apiBaseUrl}/check_token/`,
@@ -46,8 +44,8 @@ function App() {
                 }
 
               })).catch((e) => {
-                authDispatch({type: "LOGOUT"});
-              }).finally(() => setIsLoading(false))
+        authDispatch({type: "LOGOUT"});
+      }).finally(() => setIsLoading(false))
     } else {
       setIsLoading(false)
     }
@@ -60,13 +58,13 @@ function App() {
             authDispatch
           }}>
 
-        <div className="App">
+        <div className={darkMode ? 'App dark-mode' : 'App'}>
           {isLoading ? <Loader/> :
               !authState.isAuthenticated ? <Login/> :
                   <>
                     <Route exact path="/" component={MenuScreen}/>
                     <Route path="/settings" component={HeatingSettings}/>
-                    <Route path="/config" component={Settings}/>
+                    <Route path="/config" component={() => (<Settings setDarkMode={setDarkMode}/>)}/>
                     <Route path="/heating" component={Heating}/>
                     <Route path="/tasks" component={Tasks}/>
                     <Route path="/shopping" component={Shopping}/>
@@ -76,8 +74,18 @@ function App() {
                   </>}
 
           <Route path="/map" component={() => {
-            window.location.href = 'https://goo.gl/maps/SZnfFiGk2VhpDoWV9';
-            return <Redirect to="/" />;
+            const route = JSON.parse(localStorage.getItem('route'))
+            if (route) {
+              window.location.href = route
+              return <Redirect to="/"/>;
+            } else {
+              return (
+                  <>
+                    <Header text="Route" settings="/config" back="/"/>
+                    <h1>No route set, add one in Settings</h1>
+                  </>
+              )
+            }
           }}/>
         </div>
       </AuthContext.Provider>
