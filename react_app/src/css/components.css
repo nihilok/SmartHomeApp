@@ -394,6 +394,7 @@
 
 .Outer {
     width: 100vw;
+    max-width: 900px;
 }
 
 .List {
@@ -545,14 +546,21 @@
 }
 
 .TaskView {
-    height: calc(100vh - 64px);
-    padding-bottom: 6rem;
+    min-height: calc(100vh - 64px);
+    padding-bottom: 25vh;
 }
 
 button {
-    color: var(--primary-light) !important
+    color: var(--text-muted) !important;
+    font-family: inherit !important;
 }
 
 .Mui-selected {
     color: var(--text-primary) !important
+}
+
+.task {
+    margin: 1rem 0;
+    font-size: 1.5rem;
+    cursor: pointer;
 }

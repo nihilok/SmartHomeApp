@@ -17,6 +17,7 @@ import Settings from "./components/Settings";
 import Loader from "./components/Loader";
 import PlannerScreen from "./components/Planner/PlannerScreen";
 import {Header} from "./components/Header";
+import ShoppingView from "./components/ShoppingList/ShoppingView";
 
 
 function App() {
@@ -67,7 +68,7 @@ function App() {
                     <Route path="/config" component={() => (<Settings setDarkMode={setDarkMode}/>)}/>
                     <Route path="/heating" component={Heating}/>
                     <Route path="/tasks" component={TaskView}/>
-                    <Route path="/shopping" component={Shopping}/>
+                    <Route path="/shopping" component={ShoppingView}/>
                     <Route path="/cam" component={Cams}/>
                     <Route path="/recipes" component={Recipes}/>
                     <Route path="/planner" component={PlannerScreen}/>

@@ -1,19 +1,20 @@
-import React, {useEffect, useState} from 'react';
-import {Header} from './Header';
-import {ShoppingListBlock} from "./ShoppingListBlock";
-import {AddNewItem} from "./AddNew";
-import {AuthContext} from "../contexts/AuthContext";
-import Loader from "./Loader";
-import FetchWithToken from "../service/FetchService";
-import {useToastContext} from "../contexts/ToastContext";
+import React, {useEffect, useRef, useState} from 'react';
+import {AddNewItem} from "../AddNew";
+import {Header} from "../Header";
+import FetchWithToken from "../../service/FetchService";
+import {AuthContext} from "../../contexts/AuthContext";
+import {useToastContext} from "../../contexts/ToastContext";
+import ListItem from "./ListItem";
 
-const Shopping = () => {
+const ShoppingView = () => {
+
   const [list, setList] = useState([])
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true)
   const [newItem, setNewItem] = useState('')
   const {authState} = React.useContext(AuthContext);
   const {toastDispatch} = useToastContext()
+  const itemRef = useRef(null);
 
   useEffect(() => {
     setLoading(true)
@@ -31,7 +32,7 @@ const Shopping = () => {
         JSON.stringify({item_name}),
         toastDispatch)
         .catch(e => setError(e))
-        .finally(()=>setLoading(false))
+        .finally(() => setLoading(false))
   }
 
   const handleSubmit = (e) => {
@@ -55,16 +56,15 @@ const Shopping = () => {
         .catch(e => setError(e))
   }
 
-
   return (
-      <div className="Outer container">
+      <div className={"Outer"}>
         <Header text={'Shopping List'} back={'/'}/>
-        {loading ? <Loader classname="Loader Loader-trans"/> :
-            error ? "Failed to load shopping list" : <ShoppingListBlock list={list} deleteItem={deleteItem}/>}
+        <ul className={'TaskView'} style={{padding: '1rem 1rem 1rem 3rem', listStyleType: 'circle'}}>{list?.map(item => (
+            <ListItem item={item} deleteItem={() => deleteItem(item.id)}/>
+        ))}</ul>
         <AddNewItem handleSubmit={handleSubmit} newItem={newItem} setNewItem={setNewItem} placeholderText="New item"/>
       </div>
   );
 };
 
-
-export default Shopping;
+export default ShoppingView;

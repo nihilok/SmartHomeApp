@@ -15,6 +15,7 @@ return (
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
       {...other}
+        style={{padding: '1rem'}}
     >
       {value === index && (
           <div>{children}</div>
@@ -46,10 +47,12 @@ const TaskView = () => {
       }, [authState]
   );
 
-  async function addTask() {
+  async function addTask(evt) {
+    evt.preventDefault()
     await FetchWithToken(
         `/tasks/`,
         'POST',
+        authState,
         setTasks,
         JSON.stringify({hm_id:person, task:newTask}),
         toastDispatch)
@@ -59,20 +62,22 @@ const TaskView = () => {
     await FetchWithToken(
         `/tasks/${task_id}/`,
         'POST',
+        authState,
         setTasks,
         null,
         null)
         .catch(e => setError(e))
   }
 
-  async function deleteTask(id, name) {
+  async function deleteTask(id) {
     setTasks(prevTasks => ({
       ...prevTasks,
-      name: tasks.tasks.filter(x => x.id !== id)
+      tasks: prevTasks.tasks.filter(x => x.id !== id)
     }))
     await FetchWithToken(
         `/tasks/${id}/`,
         'DELETE',
+        authState,
         setTasks,
         JSON.stringify({id}),
         toastDispatch)
@@ -93,11 +98,11 @@ const TaskView = () => {
         {!loading ? tasks?.names.map((name, index) => (
             <TaskPanel value={tabValue} index={index} key={name + 'panel'}>
               {tasks.tasks.filter(task => task.name === name[1]).map(task => (
-                  <div>{task.task}</div>
+                  <div className={'task'} key={task.id} onDoubleClick={()=>deleteTask(task.id)}>{task.task}</div>
               ))}
             </TaskPanel>
         )) : ''}
-        </div>
+
         <AddNewItem
             handleSubmit={addTask}
             newItem={newTask}
@@ -105,7 +110,7 @@ const TaskView = () => {
             placeholderText={"New Task"}
             options={tasks.names}
             setID={setPerson}/>
-      </div>
+      </div></div>
   );
 };
 
