@@ -10,7 +10,6 @@ import Login from "./components/Login";
 import Heating from "./components/Heating";
 import HeatingSettings from "./components/HeatingSettings";
 import TaskView from "./components/Tasks/TaskView";
-import Shopping from "./components/Shopping";
 import Cams from "./components/Cams";
 import Recipes from "./components/Recipes";
 import Settings from "./components/Settings";
