@@ -51,7 +51,7 @@ const PlannerComponent = ({week}) => {
       }
 
       const removePlan = (item_date, description) => {
-        const descriptionB64 = atob(description)
+        const descriptionB64 = btoa(description)
         FetchWithToken(
             `/planner/${item_date}/${descriptionB64}/`,
             'DELETE',

@@ -79,7 +79,7 @@ async def shift_week(user: HouseholdMemberPydantic):
     return w
 
 
-@router.post('/add-item/{date}/')
+@router.post('/add-item/{date_key}/')
 async def add_item(
         item: AgendaItem,
         date_key: date,
@@ -92,10 +92,10 @@ async def add_item(
     return week
 
 
-@router.delete('/{date}/{item_description}/')
+@router.delete('/{date_key}/{item_description}/')
 async def delete_item(
         date_key: date,
-        item_description: str,
+        item_description: bytes,
         user: HouseholdMemberPydantic = Depends(get_current_active_user)
 ):
     item_description = base64.b64decode(item_description).decode('utf-8')

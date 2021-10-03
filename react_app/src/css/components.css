@@ -101,10 +101,10 @@
 .cam-screen {
     background-color: black;
     height: 45vh;
-    width: 100%;
+    aspect-ratio: 4/3;
     overflow: hidden;
     border-radius: 15px;
-    padding: 1rem 4px;
+    padding: 1rem 0;
     display: flex;
     justify-content: center;
     align-items: center;

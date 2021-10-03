@@ -32,26 +32,19 @@ const Login = () => {
         {
           method: 'POST',
           body: formData
-        }).then(res => {
-      if (res.status === 200) {
-        return res.json();
-      }
-      throw res;
+        }).then(res => res.json().then(resJson => {
+      authDispatch({
+        type: "LOGIN",
+        payload: resJson
+      });
+    })).catch(error => {
+      setData({
+        ...data,
+        isSubmitting: false,
+        errorMessage: error.message || error.statusText
+      })
     })
-        .then(resJson => {
-          authDispatch({
-            type: "LOGIN",
-            payload: resJson
-          });
-        })
-        .catch(error => {
-          setData({
-            ...data,
-            isSubmitting: false,
-            errorMessage: error.message || error.statusText
-          });
-        });
-  };
+  }
 
   return (
       <div className="Login-screen container">
@@ -71,6 +64,7 @@ const Login = () => {
           </div>
 
           {data.isSubmitting ? <Loader/> : ''}
+          {data.errorMessage}
         </form>
       </div>
   )

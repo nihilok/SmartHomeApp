@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300&display=swap');
+/*@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300&display=swap');*/
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300..900&display=swap');
 
 * {
     margin: 0;
@@ -38,7 +39,7 @@
 }
 
 body {
-    font-family: Lato, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    font-family: Rubik, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -145,7 +146,7 @@ code {
     padding: .5rem 2em;
     font-size: 16px;
     margin: .5rem auto;
-    color: white;
+    color: var(--text-light);
     border-radius: 8px;
     height: 2.5rem;
 }
@@ -156,10 +157,6 @@ code {
     padding-top: .6rem;
     box-shadow: 0 0 4px inset black;
 }
-
-/*.btn:hover:focus {*/
-/*    box-shadow: 0 0 4px inset black, var(--focus-shadow);*/
-/*}*/
 
 .btn-outline {
     background-color: transparent;

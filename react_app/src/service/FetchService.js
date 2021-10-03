@@ -50,7 +50,7 @@ async function FetchWithToken(url,
             console.log('HERE:')
             console.log(res)
           }
-          throw new Error('Bad response')
+          res.json().then(data=>console.error(data))
         } else {
           return res.json()
         }
