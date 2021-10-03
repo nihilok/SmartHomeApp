@@ -9,7 +9,7 @@ import MenuScreen from "./components/Menu";
 import Login from "./components/Login";
 import Heating from "./components/Heating";
 import HeatingSettings from "./components/HeatingSettings";
-import Tasks from "./components/Tasks";
+import TaskView from "./components/Tasks/TaskView";
 import Shopping from "./components/Shopping";
 import Cams from "./components/Cams";
 import Recipes from "./components/Recipes";
@@ -66,7 +66,7 @@ function App() {
                     <Route path="/settings" component={HeatingSettings}/>
                     <Route path="/config" component={() => (<Settings setDarkMode={setDarkMode}/>)}/>
                     <Route path="/heating" component={Heating}/>
-                    <Route path="/tasks" component={Tasks}/>
+                    <Route path="/tasks" component={TaskView}/>
                     <Route path="/shopping" component={Shopping}/>
                     <Route path="/cam" component={Cams}/>
                     <Route path="/recipes" component={Recipes}/>

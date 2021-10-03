@@ -8,6 +8,7 @@
     text-align: center;
     background-color: var(--primary-color);
     box-shadow: var(--shadow);
+    z-index: 1000
 }
 
 .header-text {
@@ -543,3 +544,15 @@
     }
 }
 
+.TaskView {
+    height: calc(100vh - 64px);
+    padding-bottom: 6rem;
+}
+
+button {
+    color: var(--primary-light) !important
+}
+
+.Mui-selected {
+    color: var(--text-primary) !important
+}
