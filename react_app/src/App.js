@@ -17,6 +17,7 @@ import Loader from "./components/Loader";
 import PlannerScreen from "./components/Planner/PlannerScreen";
 import {Header} from "./components/Header";
 import ShoppingView from "./components/ShoppingList/ShoppingView";
+import BabyTrackerView from "./components/BabyTracker/BabyTrackerView";
 
 
 function App() {
@@ -71,6 +72,7 @@ function App() {
                     <Route path="/cam" component={Cams}/>
                     <Route path="/recipes" component={Recipes}/>
                     <Route path="/planner" component={PlannerScreen}/>
+                    <Route path="/baby" component={BabyTrackerView}/>
                   </>}
 
           <Route path="/map" component={() => {

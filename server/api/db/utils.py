@@ -1,4 +1,5 @@
 import sqlite3
+from getpass import getpass
 
 superusers = [1]
 
@@ -21,3 +22,14 @@ def tx_recipe_table():
         conn2.commit()
     conn1.close()
     conn2.close()
+
+
+def new_user():
+    name = input('name: ')
+    password = getpass('password: ')
+    conn = sqlite3.connect('server/api/db/db.sqlite3')
+    curs = conn.cursor()
+    vals = f'("{name}", "{password}", 1)'
+    curs.execute(f'INSERT INTO householdmember VALUES {vals}')
+    conn.commit()
+    conn.close()

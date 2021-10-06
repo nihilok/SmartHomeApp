@@ -180,3 +180,26 @@ code {
     align-items: center;
     width: 100%;
 }
+
+.form-control-grid {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    grid-template-columns: 1fr 4fr;
+}
+
+.form-control-grid label {
+    margin: 1rem .5rem;
+}
+
+.form-control-grid input, .form-control-grid textarea  {
+    margin: 0 .5rem;
+    width: 90%;
+    justify-self: flex-end;
+}
+
+.button {
+    width: 80%;
+    margin: 1rem auto;
+}

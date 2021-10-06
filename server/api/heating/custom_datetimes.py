@@ -9,7 +9,7 @@ class BritishTime(datetime):
 
     @classmethod
     def dst(cls, dt: Optional[datetime] = None):
-        dt = dt if dt is not None else cls.now()
+        dt = dt if dt is not None else cls.utcnow()
         return cls.timezone.dst(dt)
 
 

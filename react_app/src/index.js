@@ -12,6 +12,7 @@ import './css/custom-range-input.css';
 import App from './App';
 import {library} from '@fortawesome/fontawesome-svg-core'
 import {
+    faBaby,
     faCog,
     faPizzaSlice,
     faFireAlt,
@@ -30,7 +31,7 @@ import {
 import {BrowserRouter as Router} from "react-router-dom";
 import {ToastProvider} from "./contexts/ToastContext";
 
-library.add(faCog, faCalendarAlt, faClock, faPizzaSlice, faFireAlt, faShoppingCart, faRoute, faMusic, faTasks, faMoneyBillWave, faArrowLeft, faTimes, faVideo, faCheckCircle)
+library.add(faBaby, faCog, faCalendarAlt, faClock, faPizzaSlice, faFireAlt, faShoppingCart, faRoute, faMusic, faTasks, faMoneyBillWave, faArrowLeft, faTimes, faVideo, faCheckCircle)
 
 
 ReactDOM.render(

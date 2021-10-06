@@ -48,7 +48,6 @@ async function FetchWithToken(url,
             }
           } else {
             console.log('HERE:')
-            console.log(res)
           }
           res.json().then(data=>console.error(data))
         } else {

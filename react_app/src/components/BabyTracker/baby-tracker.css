@@ -1,0 +1,21 @@
+.BabyTracker-options {
+    display: flex;
+    justify-content: space-around;
+}
+
+@media (min-width: 768px) {
+    .BabyTracker-data {
+        display: flex;
+        justify-content: space-around;
+    }
+}
+
+.BabyTracker-data > div {
+    width: 100%;
+    padding: 2rem;
+}
+
+.BabyTracker-data ul {
+    padding: 0;
+    list-style-type: none;
+}

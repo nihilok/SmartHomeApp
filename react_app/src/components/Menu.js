@@ -27,19 +27,15 @@ const MenuScreen = () => {
             <MenuButton
                 route="/heating"
                 icon="fire-alt"/>
-
             <MenuButton
                 route="/recipes"
                 icon="pizza-slice"/>
-            <div style={{
-              height: '30vh'
-            }} />
+            <MenuButton
+                route="/baby"
+                icon="baby"/>
             <MenuButton
                 route="/cam"
                 icon="video"/>
-            <div style={{
-              height: '30vh'
-            }}/>
 
           </nav>
         </div>
