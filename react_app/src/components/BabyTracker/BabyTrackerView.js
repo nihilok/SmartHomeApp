@@ -6,6 +6,11 @@ import {AuthContext} from "../../contexts/AuthContext";
 import NoteModal from "../NoteModal/NoteModal";
 import {useInput} from "../../hooks/input-hook";
 
+function correctHour(date) {
+  date.setTime(date.getTime() + date.getTimezoneOffset() * 60 * 1000)
+  return date
+}
+
 function toIsoString(date) {
   let tzo = -date.getTimezoneOffset(),
       dif = tzo >= 0 ? '+' : '-',
@@ -18,6 +23,26 @@ function toIsoString(date) {
       '-' + pad(date.getMonth() + 1) +
       '-' + pad(date.getDate()) +
       'T' + pad(date.getHours()) +
+      ':' + pad(date.getMinutes())
+}
+
+function toReadableString(date) {
+  let pad = function (num) {
+    let norm = Math.floor(Math.abs(num));
+    return (norm < 10 ? '0' : '') + norm;
+  };
+  date = correctHour(date)
+  return date.toLocaleDateString() +
+      ', ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+}
+
+function toReadableTimeString(date) {
+  let pad = function (num) {
+    let norm = Math.floor(Math.abs(num));
+    return (norm < 10 ? '0' : '') + norm;
+  };
+  date = correctHour(date)
+  return pad(date.getHours()) +
       ':' + pad(date.getMinutes())
 }
 
@@ -94,6 +119,7 @@ const BabyTrackerView = () => {
   const [feeds, setFeeds] = useState()
   const [changes, setChanges] = useState()
   const [newRecord, setNewRecord] = useState(null);
+  const [returnedEntry, setReturnedEntry] = useState();
 
   async function getFeeds() {
     await FetchWithToken('/baby/feed/', 'GET', authState, setFeeds)
@@ -104,15 +130,11 @@ const BabyTrackerView = () => {
   }
 
   async function newFeed(feedData) {
-    await FetchWithToken('/baby/feed/', 'POST', authState, null, feedData).then(data => {
-      setFeeds(p => p.concat(data))
-    })
+    await FetchWithToken('/baby/feed/', 'POST', authState, setFeeds, feedData)
   }
 
   async function newChange(changeData) {
-    await FetchWithToken('/baby/change/', 'POST', authState, null, changeData).then(data => {
-      setChanges(p => p.concat(data))
-    })
+    await FetchWithToken('/baby/change/', 'POST', authState, setChanges, changeData)
   }
 
   useEffect(() => {
@@ -134,16 +156,17 @@ const BabyTrackerView = () => {
       <div className={'Outer'}>
         <Header text={'Baby Tracker'} back={'/'}/>
         <div className={'BabyTracker-options'}>
-          <button onClick={handleNewFeed}>Add Feed</button>
-          <button onClick={handleNewChange}>Add Change</button>
+          <button className={'btn button btn-outline mx2'} onClick={handleNewFeed}>Add Feed</button>
+          <button className={'btn button btn-outline mx2'} onClick={handleNewChange}>Add Change</button>
         </div>
         <div className={'BabyTracker-data'}>
           <div>
             <h1>Feeds</h1>
             <ul>
-              {feeds?.map(feed => (
-                  <li>{new Date(feed.start_time).toLocaleString().substring(0, 17)} - {new Date(feed.end_time).toLocaleTimeString().substring(0, 5)}</li>
-              ))}
+              {feeds?.map(feed => {
+                console.log(feed)
+                return <li>{toReadableString(new Date(feed.start_time))} - {toReadableTimeString(new Date(feed.end_time))}</li>
+              })}
             </ul>
           </div>
           <div>
@@ -151,7 +174,7 @@ const BabyTrackerView = () => {
             <ul>
               {changes?.map(change => {
                 console.log(change)
-                   return <li>{new Date(change.timestamp).toLocaleString().substring(0, 17)}</li>
+                return <li>{toReadableString(new Date(change.timestamp))}</li>
 
               })}
             </ul>

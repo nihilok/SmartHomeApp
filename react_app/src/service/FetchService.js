@@ -49,17 +49,17 @@ async function FetchWithToken(url,
           } else {
             console.log('HERE:')
           }
-          res.json().then(data=>console.error(data))
+          res.json().then(data => console.error(data))
         } else {
-          return res.json()
+          res.json().then(data => {
+            if (setFetchData) {
+              setFetchData(data)
+            } else {
+              return data
+            }
+          })
         }
       })
-      .then(data => {
-        if (setFetchData) {
-          setFetchData(data)
-        }
-        return data
-      }).catch(e => console.log(e));
 }
 
 export default FetchWithToken;

@@ -202,4 +202,14 @@ code {
 .button {
     width: 80%;
     margin: 1rem auto;
+    cursor: pointer;
+}
+
+.mx1 {
+    margin-left: .5rem;
+    margin-right: .5rem;
+}
+.mx2 {
+    margin-left: 1rem;
+    margin-right: 1rem;
 }
