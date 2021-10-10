@@ -101,16 +101,16 @@
 
 .cam-screen {
     background-color: black;
-    height: 45vh;
+    min-height: 45vh;
     aspect-ratio: 4/3;
     overflow: hidden;
     border-radius: 15px;
-    padding: 1rem 0;
+    padding: 1rem;
     display: flex;
     justify-content: center;
     align-items: center;
     box-shadow: var(--shadow);
-
+    position: relative;
 }
 
 .Heating-screen {
@@ -509,7 +509,16 @@
 
 .cam-title {
     width: 100%;
-    padding: 1rem 0
+    padding: 1rem 0;
+    position: absolute;
+    top: .5rem;
+    left: 1.5rem;
+    color: white;
+}
+
+.cam-title > h3 {
+    font-weight: 300;
+    font-family: monospace;
 }
 
 .cam-feed {
