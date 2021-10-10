@@ -3,7 +3,6 @@ import {AuthContext} from "../contexts/AuthContext";
 import {useToastContext, ADD} from "../contexts/ToastContext";
 import {RippleLoader} from "./Loader";
 import {useFetchWithToken} from "../hooks/FetchWithToken";
-// import FetchAuthService from '../service/FetchService';
 
 
 const HeatingBlock = ({props}) => {
@@ -23,7 +22,12 @@ const HeatingBlock = ({props}) => {
   const getFromServer = useFetchWithToken();
 
   async function GetInfo() {
-    setLoading(true);
+    const temp = JSON.parse(localStorage.getItem('temp'))
+    if (temp) {
+      setInfo(temp);
+    } else {
+      setLoading(true);
+    }
     await getFromServer(`${authState.apiBaseUrl}/heating/info/`).then(response =>
         response.json().then((data) => {
           if (error) {
@@ -47,6 +51,7 @@ const HeatingBlock = ({props}) => {
             on: data.on,
             program_on: data.program_on
           }));
+        localStorage.setItem('temp', JSON.stringify(data))
         })).catch((e) => setError(e));
   }
 
@@ -79,11 +84,14 @@ const HeatingBlock = ({props}) => {
   }
 
   useEffect(() => {
+
     GetInfo().catch(e => setError(e));
     const interval = setInterval(() => {
       UpdateInfo().catch(e => setError(e));
     }, 5000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval)
+    };
   }, []);
 
   return (
