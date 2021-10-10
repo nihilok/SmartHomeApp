@@ -1,6 +1,5 @@
 import json
 import os
-import time
 import logging
 from datetime import datetime
 from typing import Optional
@@ -12,6 +11,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 
 from .custom_datetimes import BritishTime
+from ..utils.concurrent_calls import urls
 
 logging.basicConfig(level=logging.INFO)
 
@@ -28,7 +28,7 @@ class HeatingConf(BaseModel):
 class HeatingSystem:
     config_file = os.path.abspath(os.getcwd()) + '/api/heating/heating.conf'
     scheduler = BackgroundScheduler()
-    SENSOR_IP = 'https://example.com/'  # Local IP of temperature sensor API
+    SENSOR_IP = urls[0]  # Local IP of temperature sensor API
 
     def __init__(self):
         """Create connection with temperature api and load settings
