@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {AuthContext} from "../contexts/AuthContext";
 import {Header} from "./Header";
 import {useToastContext, ADD} from "../contexts/ToastContext";
-import Loader from "./Loader";
+import {useFetchWithToken} from "../hooks/FetchWithToken";
 
 
 const HeatingSettings = () => {
@@ -22,18 +22,12 @@ const HeatingSettings = () => {
   const [loading, setLoading] = useState(true)
   const {authState} = React.useContext(AuthContext);
   const {toastDispatch} = useToastContext()
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${authState.token}`
-  }
+
+  const getIt = useFetchWithToken();
 
   const getSettings = async (isSubscribed) => {
     setLoading(true);
-    return await fetch(`${authState.apiBaseUrl}/heating/conf/`, {
-      headers,
-      method: 'GET'
-    })
-
+    return await getIt(`${authState.apiBaseUrl}/heating/conf/`)
         .then(res => {
           if (res.status >= 400) {
             throw new Error("Bad response from server")
@@ -53,8 +47,10 @@ const HeatingSettings = () => {
 
   useEffect(() => {
     let isSubscribed = true;
-    getSettings(isSubscribed);
-    return () => isSubscribed = false;
+    getSettings(isSubscribed).catch(err => {console.error(err)});
+    return () => {
+      isSubscribed = false
+    };
   }, [])
 
   async function PostSettings() {
@@ -71,11 +67,7 @@ const HeatingSettings = () => {
       return
     }
 
-    await fetch(`${authState.apiBaseUrl}/heating/`, {
-      headers,
-      method: 'POST',
-      body: JSON.stringify({...settings})
-    })
+    await getIt(`${authState.apiBaseUrl}/heating/`, 'POST', {...settings})
         .then((response) => response.json().then((data) => {
           if (response.status !== 200) {
             toastDispatch({

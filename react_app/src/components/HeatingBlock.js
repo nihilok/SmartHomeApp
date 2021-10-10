@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {AuthContext} from "../contexts/AuthContext";
 import {useToastContext, ADD} from "../contexts/ToastContext";
 import {RippleLoader} from "./Loader";
+import {useFetchWithToken} from "../hooks/FetchWithToken";
 // import FetchAuthService from '../service/FetchService';
 
 
@@ -19,14 +20,11 @@ const HeatingBlock = ({props}) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true)
   const [colour, setColour] = useState('var(--primary-light)')
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${authState.token}`
-  }
+  const getFromServer = useFetchWithToken();
 
   async function GetInfo() {
     setLoading(true);
-    await fetch(`${authState.apiBaseUrl}/heating/info/`).then(response =>
+    await getFromServer(`${authState.apiBaseUrl}/heating/info/`).then(response =>
         response.json().then((data) => {
           if (error) {
             setError(null)
@@ -57,9 +55,7 @@ const HeatingBlock = ({props}) => {
       ...prevInfo,
       program_on: !info.program_on
     }))
-    await fetch(`${authState.apiBaseUrl}/heating/on_off/`,
-        {headers}
-    )
+    await getFromServer(`${authState.apiBaseUrl}/heating/on_off/`)
         .then(response =>
             response.json().then((data) => {
               if (response.status !== 200) {
