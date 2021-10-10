@@ -28,7 +28,7 @@ class HeatingConf(BaseModel):
 class HeatingSystem:
     config_file = os.path.abspath(os.getcwd()) + '/api/heating/heating.conf'
     scheduler = BackgroundScheduler()
-    SENSOR_IP = 'https://api.smarthome.mjfullstack.com/'  # Local IP of temperature sensor API
+    SENSOR_IP = 'https://example.com/'  # Local IP of temperature sensor API
 
     def __init__(self):
         """Create connection with temperature api and load settings
