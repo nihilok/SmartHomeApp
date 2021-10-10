@@ -18,6 +18,8 @@ import PlannerScreen from "./components/Planner/PlannerScreen";
 import {Header} from "./components/Header";
 import ShoppingView from "./components/ShoppingList/ShoppingView";
 import BabyTrackerView from "./components/BabyTracker/BabyTrackerView";
+import {autoLogout} from "./service/FetchService";
+import {useToastContext} from "./contexts/ToastContext";
 
 
 function App() {
@@ -25,6 +27,7 @@ function App() {
   const [authState, authDispatch] = useReducer(authReducer, initialAuthState)
   const [isLoading, setIsLoading] = useState(true)
   const [darkMode, setDarkMode] = useState(authState.darkMode)
+  const {toastDispatch} = useToastContext();
 
   useEffect(() => {
     const token = JSON.parse(localStorage.getItem('token'))
@@ -45,7 +48,7 @@ function App() {
                 }
 
               })).catch((e) => {
-        authDispatch({type: "LOGOUT"});
+        autoLogout(authDispatch, toastDispatch);
       }).finally(() => setIsLoading(false))
     } else {
       setIsLoading(false)

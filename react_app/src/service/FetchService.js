@@ -31,10 +31,7 @@ async function FetchWithToken(url,
         if (res.status !== 200) {
           if (toastDispatch) {
             switch (true) {
-              case (res.status === 401):
-                rejectedToast('You are not authorised to do that!')
-                break;
-              case (res.status === 403):
+              case ([401, 403].includes(res.status)):
                 rejectedToast('You are not authorised to do that!')
                 break;
               case (res.status === 404):
@@ -60,6 +57,17 @@ async function FetchWithToken(url,
           })
         }
       })
+}
+
+export function autoLogout (authDispatch, toastDispatch) {
+  toastDispatch({
+      type: 'ADD',
+      payload: {
+        content: 'You have been logged out!',
+        type: 'danger'
+      }
+    });
+  authDispatch({type: 'LOGOUT'})
 }
 
 export default FetchWithToken;
