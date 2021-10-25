@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Header} from './Header';
-import {useAuthContext} from "../contexts/AuthContext";
+import {param, useAuthContext} from "../contexts/AuthContext";
 
 function Cams(props) {
 
@@ -21,7 +21,7 @@ function Cams(props) {
         <>
         <Header text='Cams' back={'/'}/>
         <div className={"flex-col-center container"}>
-            <div className="cam-screen"><div className="cam-title"><h3>Car <span ref={clock}>{time}</span></h3></div><img src={authState.camUrl} className={"cam-feed"} alt={"cam_feed"}/></div>
+            <div className="cam-screen"><div className="cam-title"><h3>Car <span ref={clock}>{time}</span></h3></div><img src={`${authState.camUrl}?t=${param}`} className={"cam-feed"} alt={"cam_feed"}/></div>
         </div>
         </>
     );

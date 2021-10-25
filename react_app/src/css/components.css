@@ -524,6 +524,9 @@
 .cam-feed {
     border-radius: 5px;
     max-width: 100%;
+    aspect-ratio: 639/480;
+    object-fit: cover;
+    object-position: left;
 }
 
 @media (max-width: 768px) {
