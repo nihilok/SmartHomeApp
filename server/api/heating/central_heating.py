@@ -28,7 +28,7 @@ class HeatingConf(BaseModel):
 class HeatingSystem:
     config_file = os.path.abspath(os.getcwd()) + '/api/heating/heating.conf'
     scheduler = BackgroundScheduler()
-    SENSOR_IP = urls[0]  # Local IP of temperature sensor API
+    SENSOR_IP = urls['temperature']  # Local IP of temperature sensor API
 
     def __init__(self):
         """Create connection with temperature api and load settings
