@@ -78,11 +78,10 @@ async def api():
     ip_url = urlparse.urlparse(urls['ip']).netloc + urlparse.urlparse(urls['ip']).path
     weather_report = await weather()
     updated = BritishTime.fromtimestamp(weather_report.current['dt'])
-    print(datetime.fromtimestamp(weather_report.current['dt']).strftime('%H:%M:%S'))
     return ApiInfo(indoor_temp=str('{0:.1f}'.format(out[temp_url][0]['temperature'])) + '°C',
                    outdoor_temp=str('{0:.1f}'.format(weather_report.current['temp'])) + '°C',
                    weather=weather_report.current['weather'][0]['description'],
-                   last_updated=(updated + updated.dst()).strftime('%H:%S'),
+                   last_updated=updated.strftime('%H:%S'),
                    on=hs.check_state(),
                    program_on=hs.conf.program_on,
                    ip=out[ip_url][0]['ip'])

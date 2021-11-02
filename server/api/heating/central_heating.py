@@ -109,7 +109,6 @@ class HeatingSystem:
 
     def check_time(self):
         time_now = BritishTime.now()
-        time_now = time_now + time_now.dst()
         time_now = time_now.time()
         if (self.parse_time(self.conf.off_1) >
                 time_now > self.parse_time(self.conf.on_1)):
