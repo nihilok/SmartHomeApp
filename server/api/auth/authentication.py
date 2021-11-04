@@ -145,14 +145,14 @@ async def check_superuser(user: HouseholdMemberPydantic =
 
 @router.post('/users/')
 async def create_user(user: HouseholdMemberPydanticIn,
-                      # superuser: HouseholdMemberPydantic = Depends(check_superuser)
+                      superuser: HouseholdMemberPydantic = Depends(check_superuser)
                       ):
-    # if superuser:
-    user_obj = HouseholdMember(name=user.name, password_hash=get_password_hash(user.password_hash), household_id=1)
-    await user_obj.save()
-    return await HouseholdMemberPydantic.from_tortoise_orm(user_obj)
-    # else:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED,
-    #         detail="You need to be a superuser to create another user.",
-    #     )
+    if superuser:
+        user_obj = HouseholdMember(name=user.name, password_hash=get_password_hash(user.password_hash), household_id=1)
+        await user_obj.save()
+        return await HouseholdMemberPydantic.from_tortoise_orm(user_obj)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You need to be a superuser to create another user.",
+        )
