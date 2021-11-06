@@ -1,11 +1,10 @@
 APScheduler==3.7.0
 bcrypt==3.2.0
-fastapi==0.68.2
-Jinja2==2.11.3
+fastapi
 pigpio==1.78
 python-mpv==0.5.2
 python-multipart==0.0.5
-requests==2.25.1
+requests
 tortoise-orm==0.17.2
 uvicorn~=0.13.4
 passlib~=1.7.4

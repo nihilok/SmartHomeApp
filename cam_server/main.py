@@ -1,14 +1,12 @@
 from base64 import b64decode
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
-from starlette.requests import Request
 from tortoise.contrib.fastapi import register_tortoise
 
-from authentication import get_current_active_user, router, check_token, credentials_exception, oauth2_scheme
+from authentication import router, check_token, credentials_exception
 from cam import Camera
 
-from models import User
 
 camera = Camera()
 app = FastAPI()
