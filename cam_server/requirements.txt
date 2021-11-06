@@ -1,0 +1,8 @@
+passlib
+bcrypt
+python-jose
+fastapi
+tortoise-orm
+picamera
+smbus2
+pimoroni-bme280
