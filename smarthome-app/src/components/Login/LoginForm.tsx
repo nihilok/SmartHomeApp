@@ -1,13 +1,14 @@
 import * as React from 'react';
 import './login.css';
 import {useAuthContext} from "../../context/AuthContext";
-import {useHistory} from "react-router-dom";
+import {useHistory, useParams} from "react-router-dom";
 import {useCallback} from "react";
 
 export function LoginForm() {
 
     const {context, dispatch} = useAuthContext();
     let history = useHistory();
+    const {from} = useParams<{from: string}>();
 
     const checkToken = useCallback(() => {
         const localToken: string | null = localStorage.getItem('token')
@@ -27,7 +28,7 @@ export function LoginForm() {
                             type: "LOGIN",
                             payload: data
                         });
-                        history.push('/')
+                        history.length ? history.goForward() : history.push('/')
                     }
 
                 })

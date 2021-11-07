@@ -27,6 +27,6 @@ export function useFetchWithToken() {
       fetchState.body = JSON.stringify(body)
     }
 
-    return await fetch(url, fetchState)
+    return await fetch(context.apiBaseUrl + url, fetchState)
   }
 }
