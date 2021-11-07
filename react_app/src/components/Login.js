@@ -33,10 +33,17 @@ const Login = () => {
           method: 'POST',
           body: formData
         }).then(res => res.json().then(resJson => {
-      authDispatch({
-        type: "LOGIN",
-        payload: resJson
-      });
+      if (res.status === 200)
+        authDispatch({
+          type: "LOGIN",
+          payload: resJson
+        });
+      else authDispatch({type: 'LOGOUT'});
+      if (res.status === 401)
+        setData(p => ({
+          ...p,
+          errorMessage: 'Incorrect username or password',
+          isSubmitting: false}))
     })).catch(error => {
       setData({
         ...data,
