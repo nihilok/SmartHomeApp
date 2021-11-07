@@ -9,7 +9,7 @@
 
 ### Installation:
 
-My setup involves 3 physical machines, a Raspberry Pi 3B, running Ubuntu Server 20.04, as the main server (which also performs other tasks) connected to the relay that controls the central heating, a NodeMCU ESP8266 microcontroller that acts as a temperature sensor and serves JSON data, and a separate Raspberry Pi Zero W, running Raspian Lite, as a security camera. (In the near future, I may simplify this setup and utilise a microcontroller.) 
+My setup involves 3 physical machines, a Raspberry Pi 3B, running Ubuntu Server 20.04, as the main server (which also performs other tasks) connected to the relay that controls the central heating, a NodeMCU ESP8266 microcontroller running MicroPython that acts as a temperature sensor and serves JSON data, and a separate Raspberry Pi Zero W, running Raspian Lite, as a security camera. (In the near future, I may simplify this setup and utilise a microcontroller.) 
 
 [-Full write-up of initial build-](https://python.plainenglish.io/building-a-smart-central-heating-system-with-a-raspberry-pi-and-python-403c6ea0fd7e)
 
