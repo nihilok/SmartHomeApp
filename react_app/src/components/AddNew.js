@@ -24,7 +24,7 @@ export const AddNewItem = ({handleSubmit, newItem, setNewItem, placeholderText, 
     }
 
     function onSubmit(evt) {
-        inputRef.current.blur()
+        // inputRef.current.blur()
         handleSubmit(evt)
     }
 

@@ -14,14 +14,20 @@ const ShoppingView = () => {
   const [newItem, setNewItem] = useState('')
   const {authState} = React.useContext(AuthContext);
   const {toastDispatch} = useToastContext()
-  const itemRef = useRef(null);
+  const listRef = useRef(null);
 
   useEffect(() => {
     setLoading(true)
     FetchWithToken('/shopping/', 'GET', authState, setList)
-        .catch(e => setError(e)).finally(() => setLoading(false))
-        .finally(() => setLoading(false))
+        .catch(e => {
+          setError(e)
+          setList(JSON.parse(localStorage.getItem('list')))
+        }).finally(() => setLoading(false))
   }, [authState]);
+
+  useEffect(()=>{
+    localStorage.setItem('list', JSON.stringify(list))
+  }, [list])
 
 
   async function addItem(item_name) {
@@ -32,15 +38,18 @@ const ShoppingView = () => {
         JSON.stringify({item_name}),
         toastDispatch)
         .catch(e => setError(e))
-        .finally(() => setLoading(false))
+        .finally(() => {
+          setLoading(false)
+          if (listRef.current.scrollHeight > document.documentElement.scrollTop)
+            window.scrollTo(0, listRef.current.scrollHeight)
+        })
   }
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (newItem) {
-      addItem(newItem).catch();
+      addItem(newItem).catch(err => setError(err));
       setNewItem('');
-
     }
   }
 
@@ -57,10 +66,11 @@ const ShoppingView = () => {
   }
 
   return (
-      <div className={"Outer"}>
+      <div className={"Outer with-bottom-form"}>
         <Header text={'Shopping List'} back={'/'}/>
-        <ul className={'TaskView'} style={{padding: '1rem 1rem 1rem 3rem', listStyleType: 'circle'}}>{list?.map(item => (
-            <ListItem item={item} deleteItem={() => deleteItem(item.id)}/>
+        {error && <p>{error}</p>}
+        <ul ref={listRef} className={'TaskView'} style={{padding: '1rem 1rem 1rem 3rem', listStyleType: 'circle'}}>{list?.map(item => (
+            <ListItem item={item} deleteItem={() => deleteItem(item.id)} key={item.id}/>
         ))}</ul>
         <AddNewItem handleSubmit={handleSubmit} newItem={newItem} setNewItem={setNewItem} placeholderText="New item"/>
       </div>

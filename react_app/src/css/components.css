@@ -397,6 +397,10 @@
     max-width: 900px;
 }
 
+.with-bottom-form {
+    padding: 0 0 25vh 0;
+}
+
 .List {
     height: auto;
     padding-top: 1rem;
@@ -558,8 +562,7 @@
 }
 
 .TaskView {
-    min-height: calc(100vh - 64px);
-    padding-bottom: 25vh;
+    min-height: 68vh;
 }
 
 button {

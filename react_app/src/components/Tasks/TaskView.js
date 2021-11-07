@@ -56,6 +56,8 @@ const TaskView = () => {
         setTasks,
         JSON.stringify({hm_id:person, task:newTask}),
         toastDispatch)
+    window.scrollTo(0, document.documentElement.scrollHeight)
+    setNewTask('')
   }
 
   async function markComplete(task_id) {
@@ -90,7 +92,7 @@ const TaskView = () => {
   };
 
   return (
-      <div className={'Outer'}>
+      <div className={'Outer with-bottom-form'}>
         <Header text={'Tasks'} back={'/'}/>
         <div className={'TaskView'}><Tabs variant={'fullWidth'} value={tabValue} onChange={handleTabChange}>{!loading ? tasks?.names.map((name, index) => (
             <Tab value={index} key={name + 'tab'} label={name[1]}/>
