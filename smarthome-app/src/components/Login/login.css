@@ -1,0 +1,14 @@
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 50ch;
+    margin: auto;
+    text-align: center;
+}
+
+.inline-error-message {
+    color: firebrick;
+    margin: 1rem auto;
+    text-align: center;
+}

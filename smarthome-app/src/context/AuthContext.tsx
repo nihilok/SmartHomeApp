@@ -1,0 +1,66 @@
+import * as React from 'react'
+
+const apiBaseUrl: string = 'http://localhost:8080'
+
+interface iAuthContext {
+  isAuthenticated: boolean;
+  token: string | null;
+  apiBaseUrl: string;
+}
+
+export const initialState: iAuthContext = {
+  isAuthenticated: false,
+  token: localStorage.getItem('token'),
+  apiBaseUrl: apiBaseUrl,
+};
+
+const AuthContext = React.createContext<
+    {
+        context: iAuthContext;
+        dispatch: React.Dispatch<any>
+    }
+    >({
+    context: initialState,
+    dispatch: () => {}
+})
+
+interface iToken {access_token: string; token_type: string;}
+
+type Action =
+    | { type: 'LOGIN', payload: iToken }
+    | { type: 'LOGOUT' };
+
+export const reducer = (state: iAuthContext, action: Action) => {
+  switch (action.type) {
+    case "LOGIN":
+      console.log('Logging in')
+      localStorage.setItem("token", JSON.stringify(action.payload));
+      return {
+        ...state,
+        isAuthenticated: true,
+        token: action.payload
+      };
+    case "LOGOUT":
+      localStorage.clear();
+      return {
+        ...state,
+        isAuthenticated: false,
+      };
+    default:
+      return state;
+  }
+};
+
+export const AuthContextProvider: React.FC = ({children}) => {
+
+  //@ts-ignore
+  const [context, dispatch] = React.useReducer(reducer, initialState)
+
+  return <AuthContext.Provider value={{context, dispatch}}>
+    {children}
+  </AuthContext.Provider>
+}
+
+export const useAuthContext = () => {
+  return React.useContext(AuthContext)
+}
