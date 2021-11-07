@@ -1,11 +1,16 @@
 import * as React from 'react'
 
-const apiBaseUrl: string = 'http://localhost:8080'
+const apiBaseUrl = 'http://localhost:8080'
 
 interface iAuthContext {
   isAuthenticated: boolean;
   token: string | null;
   apiBaseUrl: string;
+}
+
+interface ContextWithReducer {
+  context: iAuthContext;
+  dispatch: React.Dispatch<Action>;
 }
 
 export const initialState: iAuthContext = {
@@ -14,14 +19,9 @@ export const initialState: iAuthContext = {
   apiBaseUrl: apiBaseUrl,
 };
 
-const AuthContext = React.createContext<
-    {
-        context: iAuthContext;
-        dispatch: React.Dispatch<any>
-    }
-    >({
-    context: initialState,
-    dispatch: () => {}
+const AuthContext = React.createContext<ContextWithReducer>({
+  context: initialState,
+  dispatch: () => {}
 })
 
 interface iToken {access_token: string; token_type: string;}
@@ -53,8 +53,7 @@ export const reducer = (state: iAuthContext, action: Action) => {
 
 export const AuthContextProvider: React.FC = ({children}) => {
 
-  //@ts-ignore
-  const [context, dispatch] = React.useReducer(reducer, initialState)
+  const [context, dispatch] = React.useReducer(reducer, initialState as never)
 
   return <AuthContext.Provider value={{context, dispatch}}>
     {children}
