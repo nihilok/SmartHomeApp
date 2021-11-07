@@ -3,9 +3,7 @@
 
 ###### Recent changes:
 
-- FastAPI backend
-- React frontend
-- Redis cache
+- Split camera and temperature functionality
 
 ### Installation:
 
