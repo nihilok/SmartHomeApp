@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 
 import requests
-from fastapi import Depends, APIRouter
+from fastapi import Depends, APIRouter, HTTPException
 from pydantic import BaseModel
 import urllib.parse as urlparse
 
@@ -15,6 +15,7 @@ from ...utils.concurrent_calls import urls, get_data
 from ..central_heating import HeatingConf
 
 from ...api.constants import TESTING
+
 if not TESTING:
     from ..central_heating import HeatingSystem
 else:
@@ -75,7 +76,7 @@ async def weather() -> WeatherReport:
 async def api():
     out = get_data()
     temp_url = urlparse.urlparse(urls['temperature']).netloc + urlparse.urlparse(urls['temperature']).path
-    ip_url = urlparse.urlparse(urls['ip']).netloc + urlparse.urlparse(urls['ip']).path
+    # ip_url = urlparse.urlparse(urls['ip']).netloc + urlparse.urlparse(urls['ip']).path
     weather_report = await weather()
     updated = BritishTime.fromtimestamp(weather_report.current['dt'])
     return ApiInfo(indoor_temp=str('{0:.1f}'.format(out[temp_url][0]['temperature'])) + '°C',
@@ -84,7 +85,8 @@ async def api():
                    last_updated=updated.strftime('%H:%S'),
                    on=hs.check_state(),
                    program_on=hs.conf.program_on,
-                   ip=out[ip_url][0]['ip'])
+                   )
+    # ip=out[ip_url][0]['ip'])
 
 
 @router.get('/heating/info/temperature/', response_model=ApiInfo)
@@ -117,3 +119,24 @@ async def heating_on_off(user: HouseholdMemberPydantic = Depends(get_current_act
     else:
         hs.program_off()
     return await heating()
+
+
+@router.get('/heating/advance/{mins}/')
+async def advance(
+        mins: int = 30,
+        user: HouseholdMemberPydantic = Depends(get_current_active_user)
+):
+    """Turns heating on for a given period of time outside of the normal schedule."""
+    time_on = hs.advance(mins)
+    if time_on:
+        return {'started': BritishTime.fromtimestamp(time_on).strftime('%H:%M:%S')}
+    raise HTTPException(status_code=400)
+
+
+@router.get('/heating/cancel/')
+async def cancel_advance(
+        user: HouseholdMemberPydantic = Depends(get_current_active_user)
+):
+    """Cancels advance loop"""
+    hs.cancel_advance()
+    return {}

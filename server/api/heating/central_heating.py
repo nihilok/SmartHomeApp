@@ -1,7 +1,9 @@
 import json
 import os
 import logging
+import time
 from datetime import datetime
+from threading import Thread
 from typing import Optional
 
 import pigpio
@@ -36,6 +38,8 @@ class HeatingSystem:
         self.pi = pigpio.pi()
         self.measurements = requests.get(self.SENSOR_IP).json()
         self.conf = self.get_or_create_config()
+        self.advance_on = None
+        self.thread = None
         self.scheduler.add_job(self.main_loop,
                                'interval',
                                minutes=1,
@@ -108,8 +112,7 @@ class HeatingSystem:
         return datetime.strptime(time, '%H:%M').time()
 
     def check_time(self):
-        time_now = BritishTime.now()
-        time_now = time_now.time()
+        time_now = BritishTime.now().time()
         if (self.parse_time(self.conf.off_1) >
                 time_now > self.parse_time(self.conf.on_1)):
             return True
@@ -145,3 +148,25 @@ class HeatingSystem:
 
     def check_state(self):
         return True if self.pi.read(27) else False
+
+    def advance(self, mins: int = 15):
+        if not self.check_time():
+            if not self.advance_on:
+                self.advance_on = time.time()
+                self.thread = Thread(target=self.advance_thread, args=(mins,))
+                self.thread.start()
+        return self.advance_on
+
+    def advance_thread(self, mins: int):
+        while time.time() - self.advance_on < mins * 60:
+            if not self.thread or not self.advance_on:
+                break
+            if self.check_temp():
+                self.switch_on_relay()
+            else:
+                self.switch_off_relay()
+            time.sleep(10)
+
+    def cancel_advance(self):
+        self.thread = None
+        self.advance_on = None

@@ -3,6 +3,7 @@ import {AuthContext} from "../contexts/AuthContext";
 import {useToastContext, ADD} from "../contexts/ToastContext";
 import {RippleLoader} from "./Loader";
 import {useFetchWithToken} from "../hooks/FetchWithToken";
+import FetchWithToken from "../service/FetchService";
 
 
 const HeatingBlock = ({props}) => {
@@ -51,7 +52,7 @@ const HeatingBlock = ({props}) => {
             on: data.on,
             program_on: data.program_on
           }));
-        localStorage.setItem('temp', JSON.stringify(data))
+          localStorage.setItem('temp', JSON.stringify(data))
         })).catch((e) => setError(e));
   }
 
@@ -83,8 +84,19 @@ const HeatingBlock = ({props}) => {
             }));
   }
 
-  useEffect(() => {
+  const [advanceOn, setAdvanceOn] = useState(null)
 
+  const handleAdvance = (mins) => {
+    FetchWithToken(`/heating/advance/${mins}/`, 'GET', authState, setAdvanceOn)
+        .catch(err => console.log(err))
+  }
+
+  const handleCancel = () => {
+    FetchWithToken(`/heating/cancel/`, 'GET', authState, setAdvanceOn)
+        .catch(err => console.log(err))
+  }
+
+  useEffect(() => {
     GetInfo().catch(e => setError(e));
     const interval = setInterval(() => {
       UpdateInfo().catch(e => setError(e));
@@ -114,6 +126,10 @@ const HeatingBlock = ({props}) => {
             <input type="checkbox" name="on_off" onChange={handleSwitch} checked={info.program_on}/>
             <span className="slider round"/>
           </label>
+        </div>
+        <div className="flex-row-center">
+          {!advanceOn?.started ? <button className={'btn'} onClick={() => handleAdvance(30)}>Advance (30mins)</button> :
+              <button className={'btn'} onClick={() => handleCancel()}>Cancel</button>}
         </div>
       </div>
   );
