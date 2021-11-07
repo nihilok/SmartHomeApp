@@ -4,6 +4,7 @@
 ###### Recent changes:
 
 - Split camera and temperature functionality
+- Heating 30 mins advance function
 
 ### Installation:
 
