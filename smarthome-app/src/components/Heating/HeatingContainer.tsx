@@ -48,11 +48,17 @@ export function HeatingContainer() {
     return (
         <div>
             <h1>Heating</h1>
-            <p>Indoor: <span id={'indoor'}>{loading ? <SimpleEllipsisLoader loading={loading}/> : data.indoor}</span>
+            <p>Indoor: <span>{loading ?
+                <SimpleEllipsisLoader loading={loading}/> :
+                data.indoor}</span>
             </p>
-            <p>Outdoor: <span id={'indoor'}>{loading ? <SimpleEllipsisLoader loading={loading}/> : data.outdoor}</span>
+            <p>Outdoor: <span>{loading ?
+                <SimpleEllipsisLoader loading={loading}/> :
+                data.outdoor}</span>
             </p>
-            <p>Weather: <span id={'indoor'}>{loading ? <SimpleEllipsisLoader loading={loading}/> : data.weather}</span>
+            <p>Weather: <span>{loading ?
+                <SimpleEllipsisLoader loading={loading}/> :
+                data.weather}</span>
             </p>
             <Link to="/heating/settings">Settings</Link>
         </div>
