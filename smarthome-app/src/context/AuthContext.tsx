@@ -1,6 +1,6 @@
-import * as React from 'react'
+import * as React from "react";
 
-const apiBaseUrl = 'http://localhost:8080'
+const apiBaseUrl = "http://localhost:8080";
 
 interface iAuthContext {
   isAuthenticated: boolean;
@@ -13,32 +13,33 @@ interface ContextWithReducer {
   dispatch: React.Dispatch<Action>;
 }
 
-export const initialState: iAuthContext = {
+const initialState: iAuthContext = {
   isAuthenticated: false,
-  token: localStorage.getItem('token'),
+  token: localStorage.getItem("token"),
   apiBaseUrl: apiBaseUrl,
 };
 
 const AuthContext = React.createContext<ContextWithReducer>({
   context: initialState,
-  dispatch: () => {}
-})
+  dispatch: () => {},
+});
 
-interface iToken {access_token: string; token_type: string;}
+interface iToken {
+  access_token: string;
+  token_type: string;
+}
 
-type Action =
-    | { type: 'LOGIN', payload: iToken }
-    | { type: 'LOGOUT' };
+type Action = { type: "LOGIN"; payload: iToken } | { type: "LOGOUT" };
 
-export const reducer = (state: iAuthContext, action: Action) => {
+const reducer = (state: iAuthContext, action: Action) => {
   switch (action.type) {
     case "LOGIN":
-      console.log('Logging in')
+      console.log("Logging in");
       localStorage.setItem("token", JSON.stringify(action.payload));
       return {
         ...state,
         isAuthenticated: true,
-        token: action.payload
+        token: action.payload,
       };
     case "LOGOUT":
       localStorage.clear();
@@ -51,15 +52,18 @@ export const reducer = (state: iAuthContext, action: Action) => {
   }
 };
 
-export const AuthContextProvider: React.FC = ({children}) => {
+export const AuthContextProvider: React.FC = ({ children }) => {
+  const [context, dispatch] = React.useReducer(reducer, initialState as never);
 
-  const [context, dispatch] = React.useReducer(reducer, initialState as never)
+  return (
+    <AuthContext.Provider value={{ context, dispatch }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
-  return <AuthContext.Provider value={{context, dispatch}}>
-    {children}
-  </AuthContext.Provider>
-}
+const useAuthContext = () => {
+  return React.useContext(AuthContext);
+};
 
-export const useAuthContext = () => {
-  return React.useContext(AuthContext)
-}
+export default useAuthContext;

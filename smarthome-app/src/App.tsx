@@ -1,18 +1,12 @@
-import * as React from 'react';
-import {Redirect} from "react-router-dom";
-import {useAuthContext} from "./context/AuthContext";
-import {RouterSwitch} from "./components/RouterSwitch";
+import * as React from "react";
+import useAuthContext from "./context/AuthContext";
+import RouterSwitch from "./components/RouterSwitch";
+import LoginForm from "./components/Login/LoginForm";
 
 function App() {
+  const { context } = useAuthContext();
 
-    const {context} = useAuthContext();
-
-    return (
-        <>
-            <RouterSwitch/>
-            {!context.isAuthenticated && <Redirect to='/login'/>}
-        </>
-    );
+  return context.isAuthenticated ? <RouterSwitch /> : <LoginForm />;
 }
 
 export default App;

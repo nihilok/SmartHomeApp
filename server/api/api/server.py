@@ -31,13 +31,13 @@ app.add_middleware(
 
 
 # Register tortoise-orm models:
-Tortoise.init_models(['api.db.models',  'api.baby_tracker.models'], 'models')
+Tortoise.init_models(["api.db.models", "api.baby_tracker.models"], "models")
 
 
 register_tortoise(
     app,
-    db_url=f'sqlite://{os.path.abspath(os.getcwd())}/api/db/db.sqlite3',
-    modules={'models': ['api.db.models', 'api.baby_tracker.models']},
+    db_url=f"sqlite://{os.path.abspath(os.getcwd())}/api/db/db.sqlite3",
+    modules={"models": ["api.db.models", "api.baby_tracker.models"]},
     generate_schemas=True,
     add_exception_handlers=True,
 )

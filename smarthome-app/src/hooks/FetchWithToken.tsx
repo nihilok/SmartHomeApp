@@ -1,17 +1,19 @@
-import {useAuthContext} from "../context/AuthContext";
+import useAuthContext from "../context/AuthContext";
 
-type Body = {} | null
+type Body = {} | null;
 
 export function useFetchWithToken() {
+  const { context } = useAuthContext();
 
-  const {context} = useAuthContext();
-
-  return async function (url: string, method: string = 'GET', body: Body = null) {
-
+  return async function (
+    url: string,
+    method: string = "GET",
+    body: Body = null
+  ) {
     const headers = new Headers({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${context.token}`
-    })
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${context.token}`,
+    });
 
     interface iFetchState {
       headers: Headers;
@@ -21,12 +23,12 @@ export function useFetchWithToken() {
 
     const fetchState: iFetchState = {
       headers,
-      method
-    }
+      method,
+    };
     if (body) {
-      fetchState.body = JSON.stringify(body)
+      fetchState.body = JSON.stringify(body);
     }
 
-    return await fetch(context.apiBaseUrl + url, fetchState)
-  }
+    return await fetch(context.apiBaseUrl + url, fetchState);
+  };
 }
