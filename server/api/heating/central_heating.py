@@ -31,6 +31,8 @@ class HeatingConf(BaseModel):
     target: int = 20
     program_on: bool = True
     advance: Optional[Advance] = None
+    current: Optional[float] = None
+    on: Optional[bool] = None
 
 
 class HeatingSystem:
@@ -84,11 +86,13 @@ class HeatingSystem:
             on_2="20:30",
             off_2="22:30",
             program_on=True,
+            on=self.check_state()
         )
         try:
             with open(self.config_file, "r") as f:
                 file_dict = json.load(f)
                 conf = HeatingConf(**file_dict)
+                conf.on = self.check_state()
         except (FileNotFoundError, TypeError):
             with open(self.config_file, "w") as f:
                 json.dump(conf, f)
@@ -150,19 +154,21 @@ class HeatingSystem:
     def switch_on_relay(self):
         if not self.check_state():
             self.pi.write(27, 1)
+            self.conf.on = True
 
     def switch_off_relay(self):
         if self.check_state():
             self.pi.write(27, 0)
+            self.conf.on = False
 
     def check_state(self):
-        return True if self.pi.read(27) else False
+        return not not self.pi.read(27)
 
     def advance(self, mins: int = 15):
         if not self.check_time():
             if not self.advance_on:
                 self.advance_on = time.time()
-                self.conf.advance = {"on": True, "start": self.advance_on}
+                self.conf.advance = Advance(on=True, start=self.advance_on)
                 self.thread = Thread(target=self.advance_thread, args=(mins,))
                 self.thread.start()
         return self.advance_on

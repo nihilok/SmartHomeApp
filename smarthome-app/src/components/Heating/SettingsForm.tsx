@@ -2,6 +2,7 @@ import * as React from "react";
 import "./heating.css";
 import { Box, Slider, Stack, Switch, TextField } from "@mui/material";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
+import classNames from "classnames";
 
 export function SettingsForm() {
   const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
@@ -16,18 +17,26 @@ export function SettingsForm() {
     off_2: "",
   };
 
-
   interface Override {
     start?: number;
     on: boolean;
   }
 
-    interface OverrideResponseKey {
-    advance: Override
+  interface OverrideResponseKey {
+    advance?: Override;
   }
 
+  interface CurrentTempResponseKey {
+    current?: number;
+  }
+
+  interface CurrentTempResponseKey {
+    on?: boolean;
+  }
 
   const [state, setState] = React.useState(initialState);
+  const [currentTemp, setCurrentTemp] = React.useState<number>();
+  const [relayOn, setRelayOn] = React.useState(false);
   const [firstLoad, setFirstLoad] = React.useState(true);
   const [override, setOverride] = React.useState<Override>({
     on: false,
@@ -65,7 +74,9 @@ export function SettingsForm() {
 
   const fetch = useFetchWithToken();
 
-  type Data = typeof initialState & OverrideResponseKey;
+  type Data = typeof initialState &
+    OverrideResponseKey &
+    CurrentTempResponseKey;
 
   function parseData(data: Data) {
     const { on_1, off_1, on_2, off_2, program_on, target } = data;
@@ -77,7 +88,9 @@ export function SettingsForm() {
       program_on,
       target,
     });
-    setOverride(data.advance ?? { on: false });
+    if (data.advance) setOverride(data.advance ?? { on: false });
+    if (data.current) setCurrentTemp(data.current);
+    if (data.on !== undefined) setRelayOn(data.on);
   }
 
   async function getSettings() {
@@ -117,10 +130,10 @@ export function SettingsForm() {
           console.log(data);
           return;
         }
-        console.log(data.started);
+        console.log(data.start);
         setOverride({
           on: true,
-          start: data.started,
+          start: data.start,
         });
       })
     );
@@ -140,14 +153,38 @@ export function SettingsForm() {
     }
   }, [state]);
 
+  React.useEffect(() => {
+    let interval = setInterval(
+      () =>
+        fetch("/heating/info/").then((res) =>
+          res.json().then((data) => {
+            if (res.status !== 200) return console.log(data);
+            setCurrentTemp(data.temp_float);
+            setRelayOn(data.on);
+          })
+        ),
+      2000
+    );
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <form className="heating-settings">
       <Box>
         <h1>Heating Settings</h1>
+        {currentTemp && (
+          <h1
+            className={classNames("TempDisplay", {
+              TempDisplay__On: relayOn,
+            })}
+          >
+            {currentTemp}&deg;C
+          </h1>
+        )}
         <Stack
           spacing={2}
           direction="row"
-          sx={{ mb: 3 }}
+          sx={{ mb: 3, px: 5 }}
           alignItems="center"
           justifyContent="center"
         >
@@ -236,19 +273,24 @@ export function SettingsForm() {
         <Stack
           spacing={2}
           direction="row"
-          sx={{ mb: 1 }}
+          sx={{ mb: -2 }}
           alignItems="center"
           justifyContent="center"
         >
           <h2>Override:</h2>
           <Switch
-            {...programLabel}
+            {...overrideLabel}
             onChange={handleOverride}
             checked={override.on}
           />
           <h2>{override.on ? "On" : "Off"}</h2>
         </Stack>
-        {override.start && <h4>{new Date(override.start).toLocaleTimeString()}</h4>}
+        {override.start && (
+          <p>
+            until{" "}
+            {new Date((override.start + 3600) * 1000).toLocaleTimeString()}
+          </p>
+        )}
       </Box>
     </form>
   );

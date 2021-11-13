@@ -52,6 +52,7 @@ class WeatherReport(BaseModel):
 
 class ApiInfo(BaseModel):
     indoor_temp: str
+    temp_float: float
     outdoor_temp: str = '- -' + '°C'
     weather: str = '- -'
     last_updated: str = '--:--:--'
@@ -76,17 +77,16 @@ async def weather() -> WeatherReport:
 async def api():
     out = get_data()
     temp_url = urlparse.urlparse(urls['temperature']).netloc + urlparse.urlparse(urls['temperature']).path
-    # ip_url = urlparse.urlparse(urls['ip']).netloc + urlparse.urlparse(urls['ip']).path
     weather_report = await weather()
     updated = BritishTime.fromtimestamp(weather_report.current['dt'])
-    return ApiInfo(indoor_temp=str('{0:.1f}'.format(out[temp_url][0]['temperature'])) + '°C',
+    return ApiInfo(indoor_temp=str('{0:.2f}'.format(out[temp_url][0]['temperature'])) + '°C',
+                   temp_float=float('{0:.2f}'.format(out[temp_url][0]['temperature'])),
                    outdoor_temp=str('{0:.1f}'.format(weather_report.current['temp'])) + '°C',
                    weather=weather_report.current['weather'][0]['description'],
                    last_updated=updated.strftime('%H:%S'),
                    on=hs.check_state(),
                    program_on=hs.conf.program_on,
                    )
-    # ip=out[ip_url][0]['ip'])
 
 
 @router.get('/heating/info/temperature/', response_model=ApiInfo)
@@ -99,6 +99,7 @@ async def temp_only():
 
 @router.get('/heating/conf/')
 async def heating():
+    hs.conf.current = hs.measurements["temperature"]
     return hs.conf
 
 

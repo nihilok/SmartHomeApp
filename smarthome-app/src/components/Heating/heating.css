@@ -9,3 +9,11 @@
     justify-content: center;
     min-width: 9ch;
 }
+
+.TempDisplay {
+    font-size: 4.5rem;
+}
+
+.TempDisplay__On {
+    color: firebrick;
+}
