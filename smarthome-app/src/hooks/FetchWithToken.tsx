@@ -12,8 +12,9 @@ export function useFetchWithToken() {
   ) {
     const headers = new Headers({
       "Content-Type": "application/json",
-      Authorization: `Bearer ${context.token}`,
-    });
+      Authorization: `Bearer ${context.token?.access_token ?? ''}`,
+    })
+
 
     interface iFetchState {
       headers: Headers;

@@ -1,0 +1,11 @@
+.heating-settings {
+    max-width: clamp(10ch, 70ch, 80vw);
+    margin: auto;
+    text-align: center;
+}
+
+.heating-settings input {
+    text-align: center;
+    justify-content: center;
+    min-width: 9ch;
+}

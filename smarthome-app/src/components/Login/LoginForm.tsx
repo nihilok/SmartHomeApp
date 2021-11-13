@@ -23,11 +23,10 @@ export default function LoginForm() {
             type: "LOGIN",
             payload: data,
           });
-          history.length ? history.goForward() : history.push("/");
         }
       })
     );
-  }, [context, dispatch, history]);
+  }, [context, dispatch]);
 
   React.useEffect(() => {
     console.log("Checking token");
