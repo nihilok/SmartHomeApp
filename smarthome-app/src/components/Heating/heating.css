@@ -1,3 +1,19 @@
+.status-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-screen > a {
+    margin: 2rem auto;
+    text-decoration: none;
+}
+
+.status-screen p {
+    font-size: 1.5rem;
+}
+
 .heating-settings {
     max-width: clamp(10ch, 70ch, 80vw);
     margin: auto;
@@ -15,5 +31,24 @@
 }
 
 .TempDisplay__On {
-    color: firebrick;
+    color: var(--primary-dark);
+}
+
+.heating-settings svg, .heating-settings img, .heating-settings object {
+    max-width: 20vw;
+    object-fit: contain;
+}
+
+.arrow {
+  border: solid var(--text-main);
+  border-width: 0 5px 5px 0;
+  display: inline-block;
+  padding: 3px;
+    width: 1rem;
+    height: 1rem;
+}
+
+.right {
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
 }

@@ -1,8 +1,28 @@
 import * as React from "react";
 import "./heating.css";
-import { Box, Slider, Stack, Switch, TextField } from "@mui/material";
+import {Box, CircularProgress, Slider, Stack, styled, Switch, TextField} from "@mui/material";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import classNames from "classnames";
+import {orange} from "@mui/material/colors";
+import arrow from "../arrow.svg"
+
+const CssTextField = styled(TextField)({
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': {
+      borderColor: orange[50],
+    },
+    '&:hover fieldset': {
+      borderColor: orange[300],
+    },
+
+  },
+  '& label': {
+    color: orange[50],
+  },
+  '& label.Mui-focused': {
+    color: orange[500],
+  },
+})
 
 export function SettingsForm() {
   const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
@@ -35,6 +55,7 @@ export function SettingsForm() {
   }
 
   const [state, setState] = React.useState(initialState);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [currentTemp, setCurrentTemp] = React.useState<number>();
   const [relayOn, setRelayOn] = React.useState(false);
   const [firstLoad, setFirstLoad] = React.useState(true);
@@ -103,6 +124,7 @@ export function SettingsForm() {
       )
       .finally(() => {
         lockRef.current = false;
+        setIsLoading(false)
       });
   }
 
@@ -171,126 +193,134 @@ export function SettingsForm() {
   return (
     <form className="heating-settings">
       <Box>
-        <h1>Heating Settings</h1>
-        {currentTemp && (
-          <h1
-            className={classNames("TempDisplay", {
-              TempDisplay__On: relayOn,
-            })}
-          >
-            {currentTemp}&deg;C
-          </h1>
-        )}
-        <Stack
-          spacing={2}
-          direction="row"
-          sx={{ mb: 3, px: 5 }}
-          alignItems="center"
-          justifyContent="center"
-        >
-          <h2>Target:</h2>
-          <Slider
-            aria-label="Target Temperature"
-            value={state.target}
-            onChange={handleSliderChange}
-            min={5}
-            max={30}
-          />
-          <h2>{state.target}&deg;C</h2>
-        </Stack>
+        {isLoading ? <div className="loading-screen"><CircularProgress/></div> :
+            <>
+              <h1>Heating Settings</h1>
+              {currentTemp && (
+                  <h1
+                      className={classNames("TempDisplay", {
+                        TempDisplay__On: relayOn,
+                      })}
+                  >
+                    {currentTemp.toFixed(1)}&deg;C
+                  </h1>
+              )}
+              <Stack
+                  spacing={2}
+                  direction="row"
+                  sx={{mb: 3, px: 5}}
+                  alignItems="center"
+                  justifyContent="center"
+              >
+                <h2>Target:</h2>
+                <Slider
+                    aria-label="Target Temperature"
+                    value={state.target}
+                    onChange={handleSliderChange}
+                    min={5}
+                    max={30}
+                />
+                <h2>{state.target}&deg;C</h2>
+              </Stack>
 
-        <Stack
-          spacing={2}
-          direction="row"
-          sx={{ mb: 5 }}
-          alignItems="center"
-          justifyContent="space-evenly"
-        >
-          <TextField
-            label="On 1"
-            name="on_1"
-            type="time"
-            value={state.on_1}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            onChange={handleTimeChange}
-          />
-          <TextField
-            label="Off 1"
-            name="off_1"
-            type="time"
-            value={state.off_1}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            onChange={handleTimeChange}
-          />
-        </Stack>
-        <Stack
-          spacing={2}
-          direction="row"
-          sx={{ mb: 3 }}
-          alignItems="center"
-          justifyContent="space-evenly"
-        >
-          <TextField
-            label="On 2"
-            name="on_2"
-            type="time"
-            value={state.on_2}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            onChange={handleTimeChange}
-          />
-          <TextField
-            label="Off 2"
-            type="time"
-            name="off_2"
-            value={state.off_2}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            onChange={handleTimeChange}
-          />
-        </Stack>
-        <Stack
-          spacing={2}
-          direction="row"
-          sx={{ mb: 1 }}
-          alignItems="center"
-          justifyContent="center"
-        >
-          <h2>Program:</h2>
-          <Switch
-            {...programLabel}
-            onChange={handleProgramChange}
-            checked={state.program_on}
-          />
-          <h2>{state.program_on ? "On" : "Off"}</h2>
-        </Stack>
-        <Stack
-          spacing={2}
-          direction="row"
-          sx={{ mb: -2 }}
-          alignItems="center"
-          justifyContent="center"
-        >
-          <h2>Override:</h2>
-          <Switch
-            {...overrideLabel}
-            onChange={handleOverride}
-            checked={override.on}
-          />
-          <h2>{override.on ? "On" : "Off"}</h2>
-        </Stack>
-        {override.start && (
-          <p>
-            until{" "}
-            {new Date((override.start + 3600) * 1000).toLocaleTimeString()}
-          </p>
-        )}
+              <Stack
+                  spacing={2}
+                  direction="row"
+                  sx={{mb: 5}}
+                  alignItems="center"
+                  justifyContent="space-evenly"
+              >
+                <CssTextField
+                    label="On 1"
+                    name="on_1"
+                    type="time"
+                    value={state.on_1}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    required={true}
+                    onChange={handleTimeChange}
+                />
+                <div className="arrow right"/>
+                <CssTextField
+                    label="Off 1"
+                    name="off_1"
+                    type="time"
+                    value={state.off_1}
+                    required={true}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    onChange={handleTimeChange}
+                />
+              </Stack>
+              <Stack
+                  spacing={2}
+                  direction="row"
+                  sx={{mb: 3}}
+                  alignItems="center"
+
+                  justifyContent="space-evenly"
+              >
+                <CssTextField
+                    label="On 2"
+                    name="on_2"
+                    type="time"
+                    value={state.on_2}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    onChange={handleTimeChange}
+                />
+                <div className="arrow right"/>
+                <CssTextField
+                    label="Off 2"
+                    type="time"
+                    name="off_2"
+                    value={state.off_2}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    onChange={handleTimeChange}
+                />
+              </Stack>
+              <Stack
+                  spacing={2}
+                  direction="row"
+                  sx={{mb: 1}}
+                  alignItems="center"
+                  justifyContent="center"
+              >
+                <h2>Program:</h2>
+                <Switch
+                    {...programLabel}
+                    onChange={handleProgramChange}
+                    checked={state.program_on}
+                />
+                <h2>{state.program_on ? "On" : "Off"}</h2>
+              </Stack>
+              <Stack
+                  spacing={2}
+                  direction="row"
+                  sx={{mb: -2}}
+                  alignItems="center"
+                  justifyContent="center"
+              >
+                <h2>Override:</h2>
+                <Switch
+                    {...overrideLabel}
+                    onChange={handleOverride}
+                    checked={override.on}
+                />
+                <h2>{override.on ? "On" : "Off"}</h2>
+              </Stack>
+              {override.start && (
+                  <p>
+                    until{" "}
+                    {new Date((override.start + 3600) * 1000).toLocaleTimeString()}
+                  </p>
+              )}
+            </> }
       </Box>
     </form>
   );

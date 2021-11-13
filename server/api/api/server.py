@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI
+from starlette.staticfiles import StaticFiles
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,4 +41,8 @@ register_tortoise(
     modules={"models": ["api.db.models", "api.baby_tracker.models"]},
     generate_schemas=True,
     add_exception_handlers=True,
+)
+
+app.mount(
+    "/", StaticFiles(directory="../smarthome-app/build", html=True), name="spa"
 )

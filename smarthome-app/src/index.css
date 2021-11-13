@@ -1,15 +1,21 @@
 :root {
   --danger: firebrick;
-  --muted: gray
+  --muted: gray;
+  --primary-dark: #e65100;
+  --text-main: #fff3e0;
+  --background-color: #3b3b3b;
 }
 
 body {
   margin: 0;
+  padding-top: 2rem;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background-color);
+  color: var(--text-main);
 }
 
 code {
@@ -20,4 +26,37 @@ code {
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+}
+
+.loading-screen {
+  position: absolute;
+  inset: 0;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0,0,0,0.1);
+  animation: fadeIn 100ms linear forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+input {
+  color: var(--text-main) !important;
+}
+
+.MuiFormControlRoot:not(.Mui-focussed) {
+  color: var(--text-main) !important;
+}
+
+.flipped-h, .flipped-h img {
+  transform: scaleX(-1);
 }

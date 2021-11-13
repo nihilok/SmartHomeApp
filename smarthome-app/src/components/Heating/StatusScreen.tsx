@@ -2,6 +2,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import { SimpleEllipsisLoader } from "../SimpleEllipsisLoader";
+import {Button} from "@mui/material";
 
 interface HeatingResponse {
   indoor_temp: string;
@@ -12,7 +13,7 @@ interface HeatingResponse {
   program_on: boolean;
 }
 
-export function HeatingContainer() {
+export function StatusScreen() {
   const [loading, setLoading] = React.useState(true);
 
   const [data, setData] = React.useState({
@@ -45,8 +46,8 @@ export function HeatingContainer() {
   }, []);
 
   return (
-    <div>
-      <h1>Heating</h1>
+    <div className="status-screen">
+      <h1>Current Status</h1>
       <p>
         Indoor:{" "}
         <span>
@@ -65,7 +66,7 @@ export function HeatingContainer() {
           {loading ? <SimpleEllipsisLoader loading={loading} /> : data.weather}
         </span>
       </p>
-      <Link to="/heating/settings">Settings</Link>
+      <Link to="/settings"><Button variant={'contained'} color={'primary'}>Settings</Button></Link>
     </div>
   );
 }
