@@ -12,7 +12,7 @@ from ...auth.authentication import get_current_active_user
 from ...cache.redis_funcs import get_weather, set_weather
 from ...db.models import HouseholdMemberPydantic
 from ...utils.concurrent_calls import urls, get_data
-from ..central_heating import HeatingConf
+from ..central_heating import HeatingConf, Advance
 
 from ...api.constants import TESTING
 
@@ -129,7 +129,7 @@ async def advance(
     """Turns heating on for a given period of time outside of the normal schedule."""
     time_on = hs.advance(mins)
     if time_on:
-        return {'started': BritishTime.fromtimestamp(time_on).strftime('%H:%M:%S')}
+        return Advance(on=True, start=time_on)
     raise HTTPException(status_code=400)
 
 

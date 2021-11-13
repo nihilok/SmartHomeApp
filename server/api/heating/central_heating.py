@@ -18,6 +18,11 @@ from ..utils.concurrent_calls import urls
 logging.basicConfig(level=logging.INFO)
 
 
+class Advance(BaseModel):
+    on: bool = False
+    start: Optional[int] = None
+
+
 class HeatingConf(BaseModel):
     on_1: str
     off_1: str
@@ -25,12 +30,13 @@ class HeatingConf(BaseModel):
     off_2: Optional[str] = None
     target: int = 20
     program_on: bool = True
+    advance: Optional[Advance] = None
 
 
 class HeatingSystem:
-    config_file = os.path.abspath(os.getcwd()) + '/api/heating/heating.conf'
+    config_file = os.path.abspath(os.getcwd()) + "/api/heating/heating.conf"
     scheduler = BackgroundScheduler()
-    SENSOR_IP = urls['temperature']  # Local IP of temperature sensor API
+    SENSOR_IP = urls["temperature"]  # Local IP of temperature sensor API
 
     def __init__(self):
         """Create connection with temperature api and load settings
@@ -40,10 +46,7 @@ class HeatingSystem:
         self.conf = self.get_or_create_config()
         self.advance_on = None
         self.thread = None
-        self.scheduler.add_job(self.main_loop,
-                               'interval',
-                               minutes=1,
-                               id='main_loop')
+        self.scheduler.add_job(self.main_loop, "interval", minutes=1, id="main_loop")
         self.scheduler.start(paused=True)
         if self.conf.program_on:
             self.program_on()
@@ -80,14 +83,14 @@ class HeatingSystem:
             off_1="08:30",
             on_2="20:30",
             off_2="22:30",
-            program_on=True
+            program_on=True,
         )
         try:
-            with open(self.config_file, 'r') as f:
+            with open(self.config_file, "r") as f:
                 file_dict = json.load(f)
                 conf = HeatingConf(**file_dict)
         except (FileNotFoundError, TypeError):
-            with open(self.config_file, 'w') as f:
+            with open(self.config_file, "w") as f:
                 json.dump(conf, f)
         finally:
             return conf
@@ -98,8 +101,8 @@ class HeatingSystem:
     def check_temp(self):
         self.get_measurements()
         target = self.conf.target
-        current = self.measurements['temperature']
-        msg = f'\ntarget: {target}\ncurrent: {current}'
+        current = self.measurements["temperature"]
+        msg = f"\ntarget: {target}\ncurrent: {current}"
         logging.debug(msg)
         if (float(target) - 0.4) > float(current):
             return True
@@ -109,21 +112,27 @@ class HeatingSystem:
 
     @staticmethod
     def parse_time(time):
-        return datetime.strptime(time, '%H:%M').time()
+        return datetime.strptime(time, "%H:%M").time()
 
     def check_time(self):
         time_now = BritishTime.now().time()
-        if (self.parse_time(self.conf.off_1) >
-                time_now > self.parse_time(self.conf.on_1)):
+        if (
+            self.parse_time(self.conf.off_1)
+            > time_now
+            > self.parse_time(self.conf.on_1)
+        ):
             return True
         elif self.conf.on_2:
-            if self.parse_time(self.conf.off_2) > time_now > self.parse_time(
-                    self.conf.on_2):
+            if (
+                self.parse_time(self.conf.off_2)
+                > time_now
+                > self.parse_time(self.conf.on_2)
+            ):
                 return True
         return False
 
     def save_state(self):
-        with open(self.config_file, 'w') as f:
+        with open(self.config_file, "w") as f:
             json.dump(jsonable_encoder(self.conf), f)
 
     def change_times(self, on1, off1, on2=None, off2=None):
@@ -153,6 +162,7 @@ class HeatingSystem:
         if not self.check_time():
             if not self.advance_on:
                 self.advance_on = time.time()
+                self.conf.advance = {"on": True, "start": self.advance_on}
                 self.thread = Thread(target=self.advance_thread, args=(mins,))
                 self.thread.start()
         return self.advance_on
@@ -170,3 +180,8 @@ class HeatingSystem:
     def cancel_advance(self):
         self.thread = None
         self.advance_on = None
+        self.conf.advance = {"on": False}
+
+    @property
+    def advance_start_time(self):
+        return self.advance_on

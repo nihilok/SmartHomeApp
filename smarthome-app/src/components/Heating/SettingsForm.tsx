@@ -16,16 +16,22 @@ export function SettingsForm() {
     off_2: "",
   };
 
+
   interface Override {
-    start?: Date;
+    start?: number;
     on: boolean;
   }
+
+    interface OverrideResponseKey {
+    advance: Override
+  }
+
 
   const [state, setState] = React.useState(initialState);
   const [firstLoad, setFirstLoad] = React.useState(true);
   const [override, setOverride] = React.useState<Override>({
     on: false,
-  })
+  });
 
   function debounce() {
     clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
@@ -49,17 +55,37 @@ export function SettingsForm() {
     inputProps: { "aria-label": "Heating Program On Off Switch" },
   };
 
+  const overrideLabel = {
+    inputProps: { "aria-label": "30 minutes program override" },
+  };
+
   function handleTimeChange(event: React.ChangeEvent<HTMLInputElement>) {
     setState({ ...state, [event.target.name]: event.target.value });
   }
 
   const fetch = useFetchWithToken();
 
+  type Data = typeof initialState & OverrideResponseKey;
+
+  function parseData(data: Data) {
+    const { on_1, off_1, on_2, off_2, program_on, target } = data;
+    setState({
+      on_1,
+      off_1,
+      on_2,
+      off_2,
+      program_on,
+      target,
+    });
+    setOverride(data.advance ?? { on: false });
+  }
+
   async function getSettings() {
     await fetch("/heating/conf/")
       .then((res) =>
         res.json().then((data) => {
-          res.status !== 200 ? console.log(data) : setState(data);
+          if (res.status !== 200) return console.log(data);
+          parseData(data);
         })
       )
       .finally(() => {
@@ -71,10 +97,31 @@ export function SettingsForm() {
     await fetch("/heating/", "POST", state).then((res) =>
       res.json().then((data) => {
         if (res.status !== 200) {
-          console.log(data);
+          parseData(data);
         } else {
           if (data !== state) setState(data);
         }
+      })
+    );
+  }
+
+  async function handleOverride() {
+    if (override.on) {
+      return await fetch("/heating/cancel/").then(() =>
+        setOverride({ on: false })
+      );
+    }
+    await fetch("/heating/advance/30/").then((res) =>
+      res.json().then((data) => {
+        if (res.status !== 200) {
+          console.log(data);
+          return;
+        }
+        console.log(data.started);
+        setOverride({
+          on: true,
+          start: data.started,
+        });
       })
     );
   }
@@ -193,14 +240,15 @@ export function SettingsForm() {
           alignItems="center"
           justifyContent="center"
         >
-          <h2 style={{color: 'var(--muted)'}}>Override:</h2>
+          <h2>Override:</h2>
           <Switch
             {...programLabel}
-            onChange={handleProgramChange}
+            onChange={handleOverride}
             checked={override.on}
           />
-          <h2 style={{color: 'var(--muted)'}}>{override.on ? "On" : "Off"}</h2>
+          <h2>{override.on ? "On" : "Off"}</h2>
         </Stack>
+        {override.start && <h4>{new Date(override.start).toLocaleTimeString()}</h4>}
       </Box>
     </form>
   );
