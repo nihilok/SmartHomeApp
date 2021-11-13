@@ -4,7 +4,6 @@ import {Box, CircularProgress, Slider, Stack, styled, Switch, TextField} from "@
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import classNames from "classnames";
 import {orange} from "@mui/material/colors";
-import arrow from "../arrow.svg"
 
 const CssTextField = styled(TextField)({
   '& .MuiOutlinedInput-root': {
