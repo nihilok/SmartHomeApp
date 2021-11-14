@@ -32,11 +32,14 @@ interface iToken {
   token_type: string;
 }
 
-type Action = { type: "LOGIN"; payload: iToken } | { type: "LOGOUT" };
+export const LOGIN = "LOGIN";
+export const LOGOUT = "LOGOUT"
+
+type Action = { type: typeof LOGIN; payload: iToken } | { type: typeof LOGOUT };
 
 const reducer = (state: iAuthContext, action: Action) => {
   switch (action.type) {
-    case "LOGIN":
+    case LOGIN:
       console.debug("Logging in");
       localStorage.setItem("token", JSON.stringify(action.payload));
       return {
@@ -44,7 +47,7 @@ const reducer = (state: iAuthContext, action: Action) => {
         isAuthenticated: true,
         token: action.payload,
       };
-    case "LOGOUT":
+    case LOGOUT:
       console.debug("Logging out");
       localStorage.clear();
       return {
