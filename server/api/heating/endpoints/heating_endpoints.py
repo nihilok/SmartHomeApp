@@ -7,6 +7,7 @@ from fastapi import Depends, APIRouter, HTTPException
 from pydantic import BaseModel
 import urllib.parse as urlparse
 
+from ..constants import WEATHER_URL
 from ..custom_datetimes import BritishTime
 from ...auth.authentication import get_current_active_user
 from ...cache.redis_funcs import get_weather, set_weather
@@ -19,6 +20,7 @@ from ...api.constants import TESTING
 if not TESTING:
     from ..central_heating import HeatingSystem
 else:
+
     @dataclass
     class HeatingSystem:
         conf = HeatingConf(
@@ -27,7 +29,7 @@ else:
             off_1="10:30",
             on_2="18:30",
             off_2="22:30",
-            program_on=True
+            program_on=True,
         )
 
         def check_state(self):
@@ -38,6 +40,7 @@ else:
 
         def program_off(self):
             self.conf.program_on = False
+
 
 hs = HeatingSystem()
 router = APIRouter()
@@ -53,59 +56,63 @@ class WeatherReport(BaseModel):
 class ApiInfo(BaseModel):
     indoor_temp: str
     temp_float: float
-    outdoor_temp: str = '- -' + '°C'
-    weather: str = '- -'
-    last_updated: str = '--:--:--'
+    outdoor_temp: str = "- -" + "°C"
+    weather: str = "- -"
+    last_updated: str = "--:--:--"
     on: bool = hs.check_state()
     program_on: bool = hs.conf.program_on
-    ip: Optional[str] = None
+    advance: Optional[Advance] = None
 
 
-@router.get('/weather/')
+@router.get("/weather/")
 async def weather() -> WeatherReport:
     weather_dict = await get_weather()
     if not weather_dict:
-        url = urls['weather']
+        url = WEATHER_URL
         r = requests.get(url).json()
-        weather_dict = {'current': r['current'], 'daily': r['daily']}
+        weather_dict = {"current": r["current"], "daily": r["daily"]}
         await set_weather(weather_dict)
     return WeatherReport(**weather_dict)
 
 
 # Central heating endpoints
-@router.get('/heating/info/', response_model=ApiInfo)
-async def api():
-    out = get_data()
-    temp_url = urlparse.urlparse(urls['temperature']).netloc + urlparse.urlparse(urls['temperature']).path
+@router.get("/heating/info/", response_model=ApiInfo)
+async def api() -> ApiInfo:
     weather_report = await weather()
-    updated = BritishTime.fromtimestamp(weather_report.current['dt'])
-    return ApiInfo(indoor_temp=str('{0:.2f}'.format(out[temp_url][0]['temperature'])) + '°C',
-                   temp_float=float('{0:.2f}'.format(out[temp_url][0]['temperature'])),
-                   outdoor_temp=str('{0:.1f}'.format(weather_report.current['temp'])) + '°C',
-                   weather=weather_report.current['weather'][0]['description'],
-                   last_updated=updated.strftime('%H:%S'),
-                   on=hs.check_state(),
-                   program_on=hs.conf.program_on,
-                   )
+    updated = BritishTime.fromtimestamp(weather_report.current["dt"])
+    return ApiInfo(
+        indoor_temp=str("{0:.1f}".format(hs.temperature)) + "°C",
+        temp_float=hs.temperature,
+        outdoor_temp=str("{0:.1f}".format(weather_report.current["temp"])) + "°C",
+        weather=weather_report.current["weather"][0]["description"],
+        last_updated=updated.strftime("%H:%S"),
+        on=hs.check_state(),
+        program_on=hs.conf.program_on,
+        advance=hs.conf.advance,
+    )
 
 
-@router.get('/heating/info/temperature/', response_model=ApiInfo)
-async def temp_only():
-    r = requests.get(urls['temperature'])
-    return ApiInfo(indoor_temp=str('{0:.1f}'.format(r.json()['temperature'])) + '°C',
-                   on=hs.check_state(),
-                   program_on=hs.conf.program_on)
+@router.get("/heating/info/temperature/", response_model=ApiInfo)
+async def temp_only() -> ApiInfo:
+    return ApiInfo(
+        indoor_temp=str("{0:.1f}".format(hs.temperature)) + "°C",
+        temp_float=hs.temperature,
+        on=hs.check_state(),
+        program_on=hs.conf.program_on,
+        advance=hs.conf.advance,
+    )
 
 
-@router.get('/heating/conf/')
-async def heating():
-    hs.conf.current = hs.measurements["temperature"]
+@router.get("/heating/conf/")
+async def heating() -> HeatingConf:
+    hs.conf.current = hs.temperature
     return hs.conf
 
 
-@router.post('/heating/')
-async def heating_conf(conf: HeatingConf,
-                       user: HouseholdMemberPydantic = Depends(get_current_active_user)) -> HeatingConf:
+@router.post("/heating/")
+async def heating_conf(
+    conf: HeatingConf, user: HouseholdMemberPydantic = Depends(get_current_active_user)
+) -> HeatingConf:
     if hs.conf != conf:
         hs.conf.__dict__.update(**conf.dict(exclude_unset=True))
         hs.save_state()
@@ -113,8 +120,10 @@ async def heating_conf(conf: HeatingConf,
     return await heating()
 
 
-@router.get('/heating/on_off/')
-async def heating_on_off(user: HouseholdMemberPydantic = Depends(get_current_active_user)):
+@router.get("/heating/on_off/")
+async def heating_on_off(
+    user: HouseholdMemberPydantic = Depends(get_current_active_user),
+) -> HeatingConf:
     if not hs.conf.program_on:
         hs.program_on()
     else:
@@ -122,10 +131,9 @@ async def heating_on_off(user: HouseholdMemberPydantic = Depends(get_current_act
     return await heating()
 
 
-@router.get('/heating/advance/{mins}/')
+@router.get("/heating/advance/{mins}/")
 async def advance(
-        mins: int = 30,
-        user: HouseholdMemberPydantic = Depends(get_current_active_user)
+    mins: int = 30, user: HouseholdMemberPydantic = Depends(get_current_active_user)
 ):
     """Turns heating on for a given period of time outside of the normal schedule."""
     time_on = hs.advance(mins)
@@ -134,9 +142,9 @@ async def advance(
     raise HTTPException(status_code=400)
 
 
-@router.get('/heating/cancel/')
+@router.get("/heating/cancel/")
 async def cancel_advance(
-        user: HouseholdMemberPydantic = Depends(get_current_active_user)
+    user: HouseholdMemberPydantic = Depends(get_current_active_user),
 ):
     """Cancels advance loop"""
     hs.cancel_advance()

@@ -86,9 +86,7 @@ export function SettingsForm() {
       program_on,
       target,
     });
-    data.advance !== undefined
-      ? setOverride(data.advance ?? { on: false })
-      : setOverride({ on: false });
+    setOverride(data.advance ?? { on: false });
     if (data.current) setCurrentTemp(data.current);
     if (data.on !== undefined) setRelayOn(data.on);
   }
