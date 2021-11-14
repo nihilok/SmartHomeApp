@@ -1,10 +1,11 @@
 import React from 'react'
 
 export const apiBaseUrl = 'http://localhost:8080'
+export const camUrl = 'http://example.com/cam'
 
 export const AuthContext = React.createContext();
 
-export const param = "ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnpkV0lpT2lKemJXRnlkR2h2YldVaUxDSmxlSEFpT2pFMk5qWXhNalF5TXpSOS5Jd3QzRzZQYjlMVlNDb0VLQ3M5SS1JOTQwbDZ4V2ZFaVdaS0dlTTk5RXlN"
+export const param = "SecrETcamToKenStRiNg"
 
 
 export const initialState = {
