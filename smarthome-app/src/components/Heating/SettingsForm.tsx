@@ -55,19 +55,23 @@ export function SettingsForm() {
   const debounce = React.useCallback(() => {
     clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
     timeoutRef.current = setTimeout(() => {
-      console.log('Updating settings')
+      console.log("Updating settings");
       setSettings()
         .catch((error) => console.log(error))
         .finally(() => (lockRef.current = true));
     }, 600);
-  }, [setSettings])
+  }, [setSettings]);
 
   function handleSliderChange(event: Event, newValue: number | number[]) {
     setState({ ...state, target: newValue as number });
   }
 
   function handleProgramChange(event: React.ChangeEvent<HTMLInputElement>) {
+    lockRef.current = true;
     setState({ ...state, program_on: event.target.checked });
+    programOnOff()
+      .catch((error) => console.log(error))
+      .finally(() => (lockRef.current = false));
   }
 
   const programLabel = {
@@ -94,7 +98,7 @@ export function SettingsForm() {
   }
 
   const getSettings = React.useCallback(async () => {
-    console.log('Getting settings')
+    console.log("Getting settings");
     await fetch("/heating/conf/")
       .then((res) =>
         res.json().then((data) => {
@@ -106,7 +110,7 @@ export function SettingsForm() {
         lockRef.current = false;
         setIsLoading(false);
       });
-  }, [])
+  }, []);
 
   async function setSettings() {
     await fetch("/heating/", "POST", state).then((res) =>
@@ -155,6 +159,8 @@ export function SettingsForm() {
   const overrideDisabled = () => {
     const timeNow = new Date();
     switch (true) {
+      case !state.program_on:
+        return false
       case parseTimes(state.on_1, state.off_1, timeNow):
         return true;
       case parseTimes(state.on_2, state.off_2, timeNow):
@@ -163,6 +169,17 @@ export function SettingsForm() {
         return false;
     }
   };
+
+  async function programOnOff() {
+    await fetch("/heating/on_off/").then((res) =>
+      res
+        .json()
+        .then((data) => {
+          if (res.status !== 200) return console.log(data)
+          setState({...state, program_on: data.program_on})
+        })
+    );
+  }
 
   React.useEffect(() => {
     getSettings().catch((error) => console.log(error));
@@ -178,8 +195,8 @@ export function SettingsForm() {
     }
     return () => {
       lockRef.current = true;
-      clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>)
-    }
+      clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
+    };
   }, [state]);
 
   React.useEffect(() => {
