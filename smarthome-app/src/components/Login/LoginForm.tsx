@@ -5,12 +5,13 @@ import { useHistory } from "react-router-dom";
 import { StyledTextField } from "../Custom/StyledTextField";
 import { Button } from "@mui/material";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
+import {EffectCallback} from "react";
 
 export default function LoginForm() {
   const { context, dispatch } = useAuthContext();
   let history = useHistory();
 
-  const checkToken = React.useCallback(() => {
+  const checkToken = React.useCallback(async () => {
     const localToken: string | null = localStorage.getItem("token");
     if (!localToken) return;
     const token = JSON.parse(localToken);
@@ -27,14 +28,18 @@ export default function LoginForm() {
             payload: data,
           });
         }
-        setState((p) => ({ ...p, isSubmitting: false }));
       })
     );
   }, [context, dispatch]);
 
   React.useEffect(() => {
     console.log("Checking token");
-    checkToken();
+    let timeout = setTimeout(()=>{}, 1)
+    checkToken().then(()=> {
+      timeout = setTimeout(() =>
+      setState((p) => ({...p, isSubmitting: false})), 300)
+    });
+    return () => clearTimeout(timeout)
   }, [checkToken]);
 
   const initialState = {

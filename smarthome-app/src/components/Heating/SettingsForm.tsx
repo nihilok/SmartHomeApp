@@ -36,6 +36,13 @@ export function SettingsForm() {
     on?: boolean;
   }
 
+  type Data = typeof initialState &
+    OverrideResponseKey &
+    CurrentTempResponseKey &
+    RelayOnResponseKey;
+
+  const fetch = useFetchWithToken();
+
   const [state, setState] = React.useState(initialState);
   const [isLoading, setIsLoading] = React.useState(true);
   const [currentTemp, setCurrentTemp] = React.useState<number>();
@@ -45,14 +52,15 @@ export function SettingsForm() {
     on: false,
   });
 
-  function debounce() {
+  const debounce = React.useCallback(() => {
     clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
     timeoutRef.current = setTimeout(() => {
+      console.log('Updating settings')
       setSettings()
         .catch((error) => console.log(error))
         .finally(() => (lockRef.current = true));
     }, 600);
-  }
+  }, [setSettings])
 
   function handleSliderChange(event: Event, newValue: number | number[]) {
     setState({ ...state, target: newValue as number });
@@ -70,13 +78,6 @@ export function SettingsForm() {
     setState({ ...state, [event.target.name]: event.target.value });
   }
 
-  const fetch = useFetchWithToken();
-
-  type Data = typeof initialState &
-    OverrideResponseKey &
-    CurrentTempResponseKey &
-    RelayOnResponseKey;
-
   function parseData(data: Data) {
     const { on_1, off_1, on_2, off_2, program_on, target } = data;
     setState({
@@ -92,7 +93,8 @@ export function SettingsForm() {
     if (data.on !== undefined) setRelayOn(data.on);
   }
 
-  async function getSettings() {
+  const getSettings = React.useCallback(async () => {
+    console.log('Getting settings')
     await fetch("/heating/conf/")
       .then((res) =>
         res.json().then((data) => {
@@ -104,7 +106,7 @@ export function SettingsForm() {
         lockRef.current = false;
         setIsLoading(false);
       });
-  }
+  }, [])
 
   async function setSettings() {
     await fetch("/heating/", "POST", state).then((res) =>
@@ -130,7 +132,6 @@ export function SettingsForm() {
           console.log(data);
           return;
         }
-        console.log(data.start);
         setOverride({
           on: true,
           start: data.start,
@@ -166,7 +167,7 @@ export function SettingsForm() {
   React.useEffect(() => {
     getSettings().catch((error) => console.log(error));
     setFirstLoad(false);
-  }, []);
+  }, [getSettings]);
 
   React.useEffect(() => {
     if (!firstLoad) {
@@ -174,6 +175,10 @@ export function SettingsForm() {
         debounce();
       }
       lockRef.current = false;
+    }
+    return () => {
+      lockRef.current = true;
+      clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>)
     }
   }, [state]);
 
@@ -306,25 +311,35 @@ export function SettingsForm() {
             </Stack>
             <Stack
               spacing={2}
-              direction="row"
-              sx={{ mb: 0 }}
+              direction="column"
+              sx={{ mb: 2 }}
               alignItems="center"
               justifyContent="center"
             >
-              <Button
-                variant={override.on ? "contained" : "outlined"}
-                disabled={overrideDisabled()}
-                onClick={handleOverride}
+              <Stack
+                spacing={2}
+                direction="row"
+                sx={{ mb: 0 }}
+                alignItems="center"
+                justifyContent="center"
               >
-                {override.on ? "Cancel Override" : "1hr Override"}
-              </Button>
+                <Button
+                  variant={override.on ? "contained" : "outlined"}
+                  disabled={overrideDisabled()}
+                  onClick={handleOverride}
+                >
+                  {override.on ? "Cancel Override" : "1hr Override"}
+                </Button>
+              </Stack>
+              {override.start && (
+                <p className="text-muted">
+                  on until{" "}
+                  {new Date(
+                    (override.start + 3600) * 1000
+                  ).toLocaleTimeString()}
+                </p>
+              )}
             </Stack>
-            {override.start && (
-              <p className="text-muted">
-                on until{" "}
-                {new Date((override.start + 3600) * 1000).toLocaleTimeString()}
-              </p>
-            )}
           </>
         )}
       </Box>
