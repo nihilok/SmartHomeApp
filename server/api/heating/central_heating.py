@@ -57,12 +57,7 @@ class HeatingSystem:
         """If time is within range, turn on relay if temp is below range,
         turn off if above range."""
         if self.check_time():
-            temp = self.check_temp()
-            if temp is True:
-                self.switch_on_relay()
-            elif temp is False:
-                self.switch_off_relay()
-            pass
+            self.thermostat_control()
         else:
             self.switch_off_relay()
 
@@ -177,17 +172,25 @@ class HeatingSystem:
         while time.time() - self.advance_on < mins * 60:
             if not self.thread or not self.advance_on:
                 break
-            if self.check_temp():
-                self.switch_on_relay()
-            else:
-                self.switch_off_relay()
-            time.sleep(10)
+            self.thermostat_control()
+            time.sleep(60)
 
     def cancel_advance(self):
         self.thread = None
         self.advance_on = None
+        self.switch_off_relay()
         self.conf.advance = {"on": False}
 
     @property
     def advance_start_time(self):
         return self.advance_on
+
+    @property
+    def too_cold(self):
+        return self.check_temp()
+
+    def thermostat_control(self):
+        if self.too_cold is True:
+            self.switch_on_relay()
+        elif self.too_cold is False:
+            self.switch_off_relay()
