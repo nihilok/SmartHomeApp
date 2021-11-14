@@ -1,10 +1,10 @@
 import * as React from "react";
 
-const apiBaseUrl = "http://localhost:8080";
+const apiBaseUrl = "http://localhost:8080"
 
 interface iAuthContext {
   isAuthenticated: boolean;
-  token: string | null;
+  token: { access_token: string; type: string };
   apiBaseUrl: string;
 }
 
@@ -15,7 +15,10 @@ interface ContextWithReducer {
 
 const initialState: iAuthContext = {
   isAuthenticated: false,
-  token: localStorage.getItem("token"),
+  token: JSON.parse(localStorage.getItem("token") as string) || {
+    token: "",
+    type: "",
+  },
   apiBaseUrl: apiBaseUrl,
 };
 
@@ -34,7 +37,7 @@ type Action = { type: "LOGIN"; payload: iToken } | { type: "LOGOUT" };
 const reducer = (state: iAuthContext, action: Action) => {
   switch (action.type) {
     case "LOGIN":
-      console.log("Logging in");
+      console.debug("Logging in");
       localStorage.setItem("token", JSON.stringify(action.payload));
       return {
         ...state,
@@ -42,6 +45,7 @@ const reducer = (state: iAuthContext, action: Action) => {
         token: action.payload,
       };
     case "LOGOUT":
+      console.debug("Logging out");
       localStorage.clear();
       return {
         ...state,

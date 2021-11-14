@@ -32,7 +32,7 @@ export default function LoginForm() {
   }, [context, dispatch]);
 
   React.useEffect(() => {
-    console.log("Checking token");
+    console.debug("Checking token");
     let timeout = setTimeout(()=>{}, 1)
     checkToken().then(()=> {
       timeout = setTimeout(() =>
@@ -67,7 +67,6 @@ export default function LoginForm() {
       isSubmitting: true,
       errorMessage: null,
     });
-    console.log(state);
     if (formRef.current) formData = new FormData(formRef.current);
     fetch(`${context.apiBaseUrl}/token/`, {
       method: "POST",

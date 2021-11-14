@@ -1,0 +1,1 @@
+export const TEMPERATURE_INTERVAL = 10000 // 10000 ms / 10s

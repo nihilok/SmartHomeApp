@@ -5,6 +5,7 @@ import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import classNames from "classnames";
 import { StyledTextField } from "../Custom/StyledTextField";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
+import { TEMPERATURE_INTERVAL } from "../../constants/constants";
 
 export function SettingsForm() {
   const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
@@ -55,7 +56,7 @@ export function SettingsForm() {
   const debounce = React.useCallback(() => {
     clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
     timeoutRef.current = setTimeout(() => {
-      console.log("Updating settings");
+      console.debug("Updating settings");
       setSettings()
         .catch((error) => console.log(error))
         .finally(() => (lockRef.current = true));
@@ -90,7 +91,7 @@ export function SettingsForm() {
   }
 
   const getSettings = React.useCallback(async () => {
-    console.log("Getting settings");
+    console.debug("Getting settings");
     await fetch("/heating/conf/")
       .then((res) =>
         res.json().then((data) => {
@@ -99,7 +100,6 @@ export function SettingsForm() {
         })
       )
       .finally(() => {
-        lockRef.current = false;
         setIsLoading(false);
       });
   }, []);
@@ -152,7 +152,7 @@ export function SettingsForm() {
     const timeNow = new Date();
     switch (true) {
       case !state.program_on:
-        return false
+        return false;
       case parseTimes(state.on_1, state.off_1, timeNow):
         return true;
       case parseTimes(state.on_2, state.off_2, timeNow):
@@ -163,23 +163,20 @@ export function SettingsForm() {
   };
 
   async function programOnOff() {
-    console.log('Switching on/off')
+    console.debug("Switching on/off");
     await fetch("/heating/on_off/").then((res) =>
-      res
-        .json()
-        .then((data) => {
-          if (res.status !== 200) return console.log(data)
-          setState({...state, program_on: data.program_on})
-        })
+      res.json().then((data) => {
+        if (res.status !== 200) return console.log(data);
+        setState({ ...state, program_on: data.program_on });
+        lockRef.current = false;
+      })
     );
   }
 
   function handleProgramChange(event: React.ChangeEvent<HTMLInputElement>) {
     lockRef.current = true;
     setState({ ...state, program_on: event.target.checked });
-    programOnOff()
-      .catch((error) => console.log(error))
-      .finally(() => (lockRef.current = false));
+    programOnOff().catch((error) => console.log(error));
   }
 
   React.useEffect(() => {
@@ -195,7 +192,6 @@ export function SettingsForm() {
       lockRef.current = false;
     }
     return () => {
-      lockRef.current = true;
       clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
     };
   }, [state]);
@@ -210,7 +206,7 @@ export function SettingsForm() {
             setRelayOn(data.on);
           })
         ),
-      5000
+      TEMPERATURE_INTERVAL
     );
     return () => clearInterval(interval);
   }, []);
