@@ -29,6 +29,7 @@
 .TempDisplay {
     font-size: 4.5rem;
     margin: 1.5rem auto 1rem;
+    user-select: none;
 }
 
 .TempDisplay__On {

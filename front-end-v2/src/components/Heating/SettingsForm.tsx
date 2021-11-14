@@ -1,6 +1,6 @@
 import * as React from "react";
 import "./heating.css";
-import { Box, Button, Slider, Stack, Switch } from "@mui/material";
+import { Box, Button, Slider, Stack, Switch, Tooltip } from "@mui/material";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import classNames from "classnames";
 import { StyledTextField } from "../Custom/StyledTextField";
@@ -222,13 +222,18 @@ export function SettingsForm() {
           <>
             <h1>Heating Settings</h1>
             {currentTemp && (
-              <h1
-                className={classNames("TempDisplay", {
-                  TempDisplay__On: relayOn,
-                })}
+              <Tooltip
+                title={`Relay is currently ${relayOn ? "on" : "off"}`}
+                placement="top"
               >
-                {currentTemp.toFixed(1)}&deg;C
-              </h1>
+                <h1
+                  className={classNames("TempDisplay", {
+                    TempDisplay__On: relayOn,
+                  })}
+                >
+                  {currentTemp.toFixed(1)}&deg;C
+                </h1>
+              </Tooltip>
             )}
             <Stack
               spacing={2}
@@ -238,13 +243,17 @@ export function SettingsForm() {
               justifyContent="center"
             >
               <h2>Target:</h2>
-              <Slider
+              <Tooltip
+                title="Desired internal temperature"
+                placement="top"
+              >
+                <Slider
                 aria-label="Target Temperature"
                 value={state.target}
                 onChange={handleSliderChange}
                 min={10}
                 max={28}
-              />
+                /></Tooltip>
               <h2>{state.target}&deg;C</h2>
             </Stack>
 
@@ -318,11 +327,13 @@ export function SettingsForm() {
               justifyContent="center"
             >
               <h2>Program:</h2>
-              <Switch
-                {...programLabel}
-                onChange={handleProgramChange}
-                checked={state.program_on}
-              />
+              <Tooltip title="Frost stat mode when off" placement="right">
+                <Switch
+                  {...programLabel}
+                  onChange={handleProgramChange}
+                  checked={state.program_on}
+                />
+              </Tooltip>
               <h2>{state.program_on ? "On" : "Off"}</h2>
             </Stack>
             <Stack
@@ -339,7 +350,7 @@ export function SettingsForm() {
                 alignItems="center"
                 justifyContent="center"
               >
-                <Button
+                <Tooltip title="Run thermostat control for 1 hour"><Button
                   variant={
                     override.on && !overrideDisabled()
                       ? "contained"
@@ -351,7 +362,7 @@ export function SettingsForm() {
                   {override.on && !overrideDisabled()
                     ? "Cancel Override"
                     : "1hr Override"}
-                </Button>
+                </Button></Tooltip>
               </Stack>
               {override.start && !overrideDisabled() && (
                 <p className="text-muted">
