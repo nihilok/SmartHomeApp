@@ -5,6 +5,7 @@ import { useHistory } from "react-router-dom";
 import { StyledTextField } from "../Custom/StyledTextField";
 import { Button } from "@mui/material";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
+import {LOGIN, LOGOUT} from '../../context/AuthContext'
 
 export default function LoginForm() {
   const { context, dispatch } = useAuthContext();
@@ -20,10 +21,10 @@ export default function LoginForm() {
     }).then((response) =>
       response.json().then((data) => {
         if (response.status !== 200) {
-          dispatch({ type: "LOGOUT" });
+          dispatch({ type: LOGOUT });
         } else {
           dispatch({
-            type: "LOGIN",
+            type: LOGIN,
             payload: data,
           });
         }
