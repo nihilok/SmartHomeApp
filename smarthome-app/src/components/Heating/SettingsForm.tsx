@@ -148,7 +148,7 @@ export function SettingsForm() {
     const off_diff = parseInt(off.split(":")[0]) - timeNow.getHours();
     if (off_diff < 0) return false;
     if (off_diff < 1)
-      if (parseInt(off.split(":")[1]) > timeNow.getMinutes()) return false;
+      if (parseInt(off.split(":")[1]) < timeNow.getMinutes()) return false;
     return true;
   }
 
