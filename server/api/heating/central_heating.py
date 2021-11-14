@@ -38,6 +38,7 @@ class HeatingConf(BaseModel):
 class HeatingSystem:
     config_file = os.path.abspath(os.getcwd()) + "/api/heating/heating.conf"
     scheduler = BackgroundScheduler()
+    backup_scheduler = BackgroundScheduler()
     SENSOR_IP = urls["temperature"]  # Local IP of temperature sensor API
 
     def __init__(self):
@@ -50,6 +51,8 @@ class HeatingSystem:
         self.thread = None
         self.scheduler.add_job(self.main_loop, "interval", minutes=1, id="main_loop")
         self.scheduler.start(paused=True)
+        self.backup_scheduler.add_job(self.backup_loop, "interval", minutes=5, id="main_loop")
+        self.backup_scheduler.start(paused=True)
         if self.conf.program_on:
             self.program_on()
 
@@ -61,9 +64,18 @@ class HeatingSystem:
         else:
             self.switch_off_relay()
 
+    def backup_loop(self):
+        """Turns on heating if house is below 5'C to prevent ice damage"""
+        self.get_measurements()
+        if float(self.measurements['temperature']) < 5:
+            self.switch_on_relay()
+        elif float(self.measurements['temperature']) > 6:
+            self.switch_off_relay()
+
     def program_on(self):
         self.conf.program_on = True
         self.main_loop()
+        self.backup_scheduler.pause()
         self.scheduler.resume()
         self.save_state()
 
@@ -71,6 +83,7 @@ class HeatingSystem:
         self.conf.program_on = False
         self.switch_off_relay()
         self.scheduler.pause()
+        self.backup_scheduler.resume()
         self.save_state()
 
     def get_or_create_config(self):
@@ -172,17 +185,18 @@ class HeatingSystem:
 
     def advance_thread(self, mins: int):
         while time.time() - self.advance_on < mins * 60:
-            if not self.thread or not self.advance_on or self.check_time():
+            if self.check_time():
                 self.cancel_advance()
+            if not self.thread or not self.advance_on:
                 break
             self.thermostat_control()
-            time.sleep(60)
+            time.sleep(30)
 
     def cancel_advance(self):
         self.thread = None
         self.advance_on = None
-        self.switch_off_relay()
         self.conf.advance = {"on": False}
+        self.switch_off_relay()
 
     @property
     def advance_start_time(self):
