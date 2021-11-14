@@ -30,6 +30,7 @@
     font-size: 4.5rem;
     margin: 1.5rem auto 1rem;
     user-select: none;
+    width: max-content;
 }
 
 .TempDisplay__On {

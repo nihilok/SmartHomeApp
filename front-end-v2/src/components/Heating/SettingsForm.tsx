@@ -7,6 +7,7 @@ import { StyledTextField } from "../Custom/StyledTextField";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
 import { TEMPERATURE_INTERVAL } from "../../constants/constants";
 import { HelpButton } from "../HelpButton/HelpButton";
+import {StyledTooltip} from "../Custom/StyledTooltip";
 
 export function SettingsForm() {
   const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
@@ -203,7 +204,9 @@ export function SettingsForm() {
         fetch("/heating/info/").then((res) =>
           res.json().then((data) => {
             if (res.status !== 200) return console.log(data);
-            parseData(data)
+            setCurrentTemp(data.temp_float);
+            setRelayOn(data.on);
+            setOverride(data.advance ?? {on: false})
           })
         ),
       TEMPERATURE_INTERVAL
@@ -223,9 +226,8 @@ export function SettingsForm() {
             <>
               <h1>Heating Settings</h1>
               {currentTemp && (
-                <Tooltip
-                  title={`Relay is currently ${relayOn ? "on" : "off"}`}
-                  placement="top"
+                <StyledTooltip
+                  title={`Indoor Temperature. Relay is currently ${relayOn ? "on" : "off"}`}
                 >
                   <h1
                     className={classNames("TempDisplay", {
@@ -234,7 +236,7 @@ export function SettingsForm() {
                   >
                     {currentTemp.toFixed(1)}&deg;C
                   </h1>
-                </Tooltip>
+                </StyledTooltip>
               )}
               <Stack
                 spacing={2}
@@ -244,7 +246,7 @@ export function SettingsForm() {
                 justifyContent="center"
               >
                 <h2>Target:</h2>
-                <Tooltip title="Desired internal temperature" placement="top">
+                <StyledTooltip title="Desired internal temperature">
                   <Slider
                     aria-label="Target Temperature"
                     value={state.target}
@@ -252,7 +254,7 @@ export function SettingsForm() {
                     min={10}
                     max={28}
                   />
-                </Tooltip>
+                </StyledTooltip>
                 <h2>{state.target}&deg;C</h2>
               </Stack>
 
@@ -338,13 +340,13 @@ export function SettingsForm() {
                 justifyContent="center"
               >
                 <h2>Program:</h2>
-                <Tooltip title="Frost stat mode when off" placement="right">
+                <StyledTooltip title="Frost stat mode when off">
                   <Switch
                     {...programLabel}
                     onChange={handleProgramChange}
                     checked={state.program_on}
                   />
-                </Tooltip>
+                </StyledTooltip>
                 <h2>{state.program_on ? "On" : "Off"}</h2>
               </Stack>
               <Stack
@@ -361,7 +363,7 @@ export function SettingsForm() {
                   alignItems="center"
                   justifyContent="center"
                 >
-                  <Tooltip title="Run thermostat control for 1 hour">
+                  <StyledTooltip title="Run thermostat control for 1 hour">
                     <Button
                       variant={
                         override.on && !overrideDisabled()
@@ -375,7 +377,7 @@ export function SettingsForm() {
                         ? "Cancel Override"
                         : "1hr Override"}
                     </Button>
-                  </Tooltip>
+                  </StyledTooltip>
                 </Stack>
                 {override.start && !overrideDisabled() && (
                   <p className="text-muted">
