@@ -1,6 +1,6 @@
 {
-  "short_name": "Thermo",
-  "name": "Central Heating App",
+  "short_name": "Central Heating",
+  "name": "Central Heating Controls",
   "icons": [
     {
       "src": "favicon.ico",
