@@ -6,7 +6,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { AuthContextProvider } from "./context/AuthContext";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import reportWebVitals from "./reportWebVitals";
-import { createTheme, ThemeProvider, styled } from "@mui/material";
+import { createTheme, ThemeProvider } from "@mui/material";
 import blue from "@mui/material/colors/blue";
 import orange from "@mui/material/colors/orange";
 

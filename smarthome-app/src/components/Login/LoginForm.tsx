@@ -2,6 +2,9 @@ import * as React from "react";
 import "./login.css";
 import useAuthContext from "../../context/AuthContext";
 import { useHistory } from "react-router-dom";
+import { StyledTextField } from "../Custom/StyledTextField";
+import { Button } from "@mui/material";
+import { FullScreenLoader } from "../Loaders/FullScreenLoader";
 
 export default function LoginForm() {
   const { context, dispatch } = useAuthContext();
@@ -85,22 +88,24 @@ export default function LoginForm() {
       });
   }
 
-  return (
+  return data.isSubmitting ? (
+    <FullScreenLoader />
+  ) : (
     <form onSubmit={logIn} ref={formRef} className={"login-form"}>
       <h1>Log In</h1>
-      <input
+      <StyledTextField
         placeholder="Username"
         type="text"
         onChange={handleInputChange}
         name="username"
       />
-      <input
+      <StyledTextField
         placeholder="Password"
         type="password"
         onChange={handleInputChange}
         name="password"
       />
-      <input type="submit" value="Login" />
+      <Button type="submit">Log In</Button>
       <div className={"inline-error-message"}>{data.errorMessage}</div>
     </form>
   );
