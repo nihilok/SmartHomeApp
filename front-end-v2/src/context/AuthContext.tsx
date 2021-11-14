@@ -1,6 +1,6 @@
 import * as React from "react";
 
-const apiBaseUrl = 'http://localhost:8080'
+const apiBaseUrl = "http://localhost:8080";
 
 interface iAuthContext {
   isAuthenticated: boolean;
@@ -33,7 +33,7 @@ interface iToken {
 }
 
 export const LOGIN = "LOGIN";
-export const LOGOUT = "LOGOUT"
+export const LOGOUT = "LOGOUT";
 
 type Action = { type: typeof LOGIN; payload: iToken } | { type: typeof LOGOUT };
 
@@ -69,8 +69,6 @@ export const AuthContextProvider: React.FC = ({ children }) => {
   );
 };
 
-const useAuthContext = () => {
+export default function useAuthContext() {
   return React.useContext(AuthContext);
-};
-
-export default useAuthContext;
+}
