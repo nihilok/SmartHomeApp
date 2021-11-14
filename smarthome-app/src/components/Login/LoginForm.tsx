@@ -27,6 +27,7 @@ export default function LoginForm() {
             payload: data,
           });
         }
+        setState((p) => ({ ...p, isSubmitting: false }));
       })
     );
   }, [context, dispatch]);
@@ -39,15 +40,15 @@ export default function LoginForm() {
   const initialState = {
     username: "",
     password: "",
-    isSubmitting: false,
+    isSubmitting: true,
     errorMessage: null,
   };
 
-  const [data, setData] = React.useState(initialState);
+  const [state, setState] = React.useState(initialState);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setData({
-      ...data,
+    setState({
+      ...state,
       [event.target.name]: event.target.value,
     });
   };
@@ -57,12 +58,12 @@ export default function LoginForm() {
   function logIn(evt: React.FormEvent) {
     evt.preventDefault();
     let formData;
-    setData({
-      ...data,
+    setState({
+      ...state,
       isSubmitting: true,
       errorMessage: null,
     });
-    console.log(data);
+    console.log(state);
     if (formRef.current) formData = new FormData(formRef.current);
     fetch(`${context.apiBaseUrl}/token/`, {
       method: "POST",
@@ -80,15 +81,15 @@ export default function LoginForm() {
         })
       )
       .catch((error) => {
-        setData({
-          ...data,
+        setState({
+          ...state,
           isSubmitting: false,
           errorMessage: error.message || error.statusText,
         });
       });
   }
 
-  return data.isSubmitting ? (
+  return state.isSubmitting ? (
     <FullScreenLoader />
   ) : (
     <form onSubmit={logIn} ref={formRef} className={"login-form"}>
@@ -106,7 +107,7 @@ export default function LoginForm() {
         name="password"
       />
       <Button type="submit">Log In</Button>
-      <div className={"inline-error-message"}>{data.errorMessage}</div>
+      <div className={"inline-error-message"}>{state.errorMessage}</div>
     </form>
   );
 }
