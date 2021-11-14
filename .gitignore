@@ -5,8 +5,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/react_app/node_modules
-/smarthome-app/node_modules
+/front-end-v1/node_modules
+/front-end-v2/node_modules
 /.pnp
 .pnp.js
 
@@ -14,8 +14,8 @@
 /coverage
 
 # production
-react_app/build
-smarthome-app/build
+front-end-v1/build
+front-end-v2/build
 
 # misc
 .DS_Store
@@ -33,4 +33,4 @@ yarn-error.log*
 /server/api/db/db.sqlite3-shm
 /server/api/db/db.sqlite3-wal
 *.sqlite3
-/smarthome-app/deploy.sh
+/front-end-v2/deploy.sh

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-const apiBaseUrl = "http://localhost:8080"
+const apiBaseUrl = 'http://localhost:8080'
 
 interface iAuthContext {
   isAuthenticated: boolean;

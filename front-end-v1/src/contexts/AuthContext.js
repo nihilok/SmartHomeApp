@@ -1,27 +1,27 @@
 import React from 'react'
 
-export const apiBaseUrl = 'http://localhost:8000'
+export const apiBaseUrl = 'http://localhost:8080'
 
 export const AuthContext = React.createContext();
+
+export const param = "ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SnpkV0lpT2lKemJXRnlkR2h2YldVaUxDSmxlSEFpT2pFMk5qWXhNalF5TXpSOS5Jd3QzRzZQYjlMVlNDb0VLQ3M5SS1JOTQwbDZ4V2ZFaVdaS0dlTTk5RXlN"
 
 
 export const initialState = {
   isAuthenticated: false,
-  // user: null,
   token: localStorage.getItem('token'),
   apiBaseUrl: apiBaseUrl,
+  camUrl: camUrl,
   darkMode: JSON.parse(localStorage.getItem('dark-mode'))
 };
 
 export const reducer = (state, action) => {
   switch (action.type) {
     case "LOGIN":
-      // localStorage.setItem("user", JSON.stringify(action.payload.user));
       localStorage.setItem("token", JSON.stringify(action.payload.access_token));
       return {
         ...state,
         isAuthenticated: true,
-        // user: action.payload.user,
         token: action.payload.access_token
       };
     case "LOGOUT":
@@ -29,7 +29,6 @@ export const reducer = (state, action) => {
       return {
         ...state,
         isAuthenticated: false,
-        // user: null
       };
     case "DARKMODE":
       if (!state.darkMode) {
@@ -42,11 +41,14 @@ export const reducer = (state, action) => {
 
       return {
         ...state,
-        darkMode: JSON.parse(localStorage.getItem('dark-mode')),
-        // user: null
+        darkMode: !state.darkMode,
       };
 
     default:
       return state;
   }
 };
+
+export const useAuthContext = () => {
+  return React.useContext(AuthContext)
+}
