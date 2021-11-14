@@ -66,14 +66,6 @@ export function SettingsForm() {
     setState({ ...state, target: newValue as number });
   }
 
-  function handleProgramChange(event: React.ChangeEvent<HTMLInputElement>) {
-    lockRef.current = true;
-    setState({ ...state, program_on: event.target.checked });
-    programOnOff()
-      .catch((error) => console.log(error))
-      .finally(() => (lockRef.current = false));
-  }
-
   const programLabel = {
     inputProps: { "aria-label": "Heating Program On Off Switch" },
   };
@@ -171,6 +163,7 @@ export function SettingsForm() {
   };
 
   async function programOnOff() {
+    console.log('Switching on/off')
     await fetch("/heating/on_off/").then((res) =>
       res
         .json()
@@ -179,6 +172,14 @@ export function SettingsForm() {
           setState({...state, program_on: data.program_on})
         })
     );
+  }
+
+  function handleProgramChange(event: React.ChangeEvent<HTMLInputElement>) {
+    lockRef.current = true;
+    setState({ ...state, program_on: event.target.checked });
+    programOnOff()
+      .catch((error) => console.log(error))
+      .finally(() => (lockRef.current = false));
   }
 
   React.useEffect(() => {
