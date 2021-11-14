@@ -36,7 +36,7 @@
 }
 
 .TimeInputRow > :nth-child(2) {
-    margin-right: .5rem;
+    margin-right: .25rem;
 }
 
 .heating-settings svg, .heating-settings img, .heating-settings object {
