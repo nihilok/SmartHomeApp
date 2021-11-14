@@ -5,7 +5,6 @@ import { useHistory } from "react-router-dom";
 import { StyledTextField } from "../Custom/StyledTextField";
 import { Button } from "@mui/material";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
-import {EffectCallback} from "react";
 
 export default function LoginForm() {
   const { context, dispatch } = useAuthContext();
@@ -76,13 +75,15 @@ export default function LoginForm() {
     })
       .then((res) =>
         res.json().then((resJson) => {
-          if (res.status === 200) {
-            dispatch({
-              type: "LOGIN",
-              payload: resJson,
-            });
-            history.push("/");
+          if (res.status !== 200) {
+            console.log(resJson)
+            throw new Error(resJson.detail);
           }
+          dispatch({
+            type: "LOGIN",
+            payload: resJson,
+          });
+          history.push("/");
         })
       )
       .catch((error) => {

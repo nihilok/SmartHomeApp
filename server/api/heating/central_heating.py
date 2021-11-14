@@ -121,13 +121,14 @@ class HeatingSystem:
             > self.parse_time(self.conf.on_1)
         ):
             return True
-        elif self.conf.on_2:
-            if (
-                self.parse_time(self.conf.off_2)
-                > time_now
-                > self.parse_time(self.conf.on_2)
-            ):
-                return True
+        elif not self.conf.on_2:
+            return False
+        if (
+            self.parse_time(self.conf.off_2)
+            > time_now
+            > self.parse_time(self.conf.on_2)
+        ):
+            return True
         return False
 
     def save_state(self):
@@ -160,17 +161,18 @@ class HeatingSystem:
         return not not self.pi.read(27)
 
     def advance(self, mins: int = 15):
-        if not self.check_time():
-            if not self.advance_on:
-                self.advance_on = time.time()
-                self.conf.advance = Advance(on=True, start=self.advance_on)
-                self.thread = Thread(target=self.advance_thread, args=(mins,))
-                self.thread.start()
+        if self.check_time():
+            return
+        if not self.thread:
+            self.advance_on = time.time()
+            self.conf.advance = Advance(on=True, start=self.advance_on)
+            self.thread = Thread(target=self.advance_thread, args=(mins,))
+            self.thread.start()
         return self.advance_on
 
     def advance_thread(self, mins: int):
         while time.time() - self.advance_on < mins * 60:
-            if not self.thread or not self.advance_on:
+            if not self.thread or not self.advance_on or self.check_time():
                 break
             self.thermostat_control()
             time.sleep(60)
@@ -186,8 +188,12 @@ class HeatingSystem:
         return self.advance_on
 
     @property
-    def too_cold(self):
+    def too_cold(self) -> Optional[bool]:
         return self.check_temp()
+
+    @property
+    def within_program_time(self) -> bool:
+        return self.check_time()
 
     def thermostat_control(self):
         if self.too_cold is True:
