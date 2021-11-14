@@ -77,7 +77,7 @@ async def weather() -> WeatherReport:
 
 # Central heating endpoints
 @router.get("/heating/info/", response_model=ApiInfo)
-async def api() -> ApiInfo:
+async def api():
     weather_report = await weather()
     updated = BritishTime.fromtimestamp(weather_report.current["dt"])
     return ApiInfo(
@@ -93,7 +93,7 @@ async def api() -> ApiInfo:
 
 
 @router.get("/heating/info/temperature/", response_model=ApiInfo)
-async def temp_only() -> ApiInfo:
+async def temp_only():
     return ApiInfo(
         indoor_temp=str("{0:.1f}".format(hs.temperature)) + "°C",
         temp_float=hs.temperature,
@@ -104,7 +104,7 @@ async def temp_only() -> ApiInfo:
 
 
 @router.get("/heating/conf/")
-async def heating() -> HeatingConf:
+async def heating():
     hs.conf.current = hs.temperature
     return hs.conf
 
@@ -112,7 +112,7 @@ async def heating() -> HeatingConf:
 @router.post("/heating/")
 async def heating_conf(
     conf: HeatingConf, user: HouseholdMemberPydantic = Depends(get_current_active_user)
-) -> HeatingConf:
+):
     if hs.conf != conf:
         hs.conf.__dict__.update(**conf.dict(exclude_unset=True))
         hs.save_state()
@@ -123,7 +123,7 @@ async def heating_conf(
 @router.get("/heating/on_off/")
 async def heating_on_off(
     user: HouseholdMemberPydantic = Depends(get_current_active_user),
-) -> HeatingConf:
+):
     if not hs.conf.program_on:
         hs.program_on()
     else:

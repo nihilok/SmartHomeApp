@@ -12,6 +12,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 
+from .constants import TEMPERATURE_URL
 from .custom_datetimes import BritishTime
 from ..utils.concurrent_calls import urls
 
@@ -39,7 +40,7 @@ class HeatingSystem:
     config_file = os.path.abspath(os.getcwd()) + "/api/heating/heating.conf"
     scheduler = BackgroundScheduler()
     backup_scheduler = BackgroundScheduler()
-    SENSOR_IP = urls["temperature"]  # Local IP of temperature sensor API
+    SENSOR_IP = TEMPERATURE_URL  # Local IP of temperature sensor API
 
     def __init__(self):
         """Create connection with temperature api and load settings

@@ -168,7 +168,7 @@ export function SettingsForm() {
     await fetch("/heating/on_off/").then((res) =>
       res.json().then((data) => {
         if (res.status !== 200) return console.log(data);
-        setState({ ...state, program_on: data.program_on });
+        parseData(data);
         lockRef.current = false;
       })
     );
@@ -203,8 +203,7 @@ export function SettingsForm() {
         fetch("/heating/info/").then((res) =>
           res.json().then((data) => {
             if (res.status !== 200) return console.log(data);
-            setCurrentTemp(data.temp_float);
-            setRelayOn(data.on);
+            parseData(data)
           })
         ),
       TEMPERATURE_INTERVAL
