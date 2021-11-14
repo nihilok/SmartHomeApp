@@ -338,14 +338,14 @@ export function SettingsForm() {
                 justifyContent="center"
               >
                 <Button
-                  variant={override.on ? "contained" : "outlined"}
+                  variant={override.on && !overrideDisabled() ? "contained" : "outlined"}
                   disabled={overrideDisabled()}
                   onClick={handleOverride}
                 >
-                  {override.on ? "Cancel Override" : "1hr Override"}
+                  {override.on && !overrideDisabled() ? "Cancel Override" : "1hr Override"}
                 </Button>
               </Stack>
-              {override.start && (
+              {override.start && !overrideDisabled() && (
                 <p className="text-muted">
                   on until{" "}
                   {new Date(

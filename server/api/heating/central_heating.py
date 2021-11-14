@@ -173,6 +173,7 @@ class HeatingSystem:
     def advance_thread(self, mins: int):
         while time.time() - self.advance_on < mins * 60:
             if not self.thread or not self.advance_on or self.check_time():
+                self.cancel_advance()
                 break
             self.thermostat_control()
             time.sleep(60)
