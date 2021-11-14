@@ -85,7 +85,9 @@ export function SettingsForm() {
       program_on,
       target,
     });
-    if (data.advance) setOverride(data.advance ?? { on: false });
+    data.advance !== undefined
+      ? setOverride(data.advance ?? { on: false })
+      : setOverride({ on: false });
     if (data.current) setCurrentTemp(data.current);
     if (data.on !== undefined) setRelayOn(data.on);
   }
@@ -326,7 +328,7 @@ export function SettingsForm() {
             <Stack
               spacing={2}
               direction="column"
-              sx={{ mb: 2 }}
+              sx={{ mb: 4 }}
               alignItems="center"
               justifyContent="center"
             >
@@ -338,11 +340,17 @@ export function SettingsForm() {
                 justifyContent="center"
               >
                 <Button
-                  variant={override.on && !overrideDisabled() ? "contained" : "outlined"}
+                  variant={
+                    override.on && !overrideDisabled()
+                      ? "contained"
+                      : "outlined"
+                  }
                   disabled={overrideDisabled()}
                   onClick={handleOverride}
                 >
-                  {override.on && !overrideDisabled() ? "Cancel Override" : "1hr Override"}
+                  {override.on && !overrideDisabled()
+                    ? "Cancel Override"
+                    : "1hr Override"}
                 </Button>
               </Stack>
               {override.start && !overrideDisabled() && (
