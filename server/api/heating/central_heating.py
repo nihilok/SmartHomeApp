@@ -138,21 +138,22 @@ class HeatingSystem:
         return datetime.strptime(time, "%H:%M").time()
 
     def check_time(self):
-        time_now = BritishTime.now().time()
-        if (
-            self.parse_time(self.conf.off_1)
-            > time_now
-            > self.parse_time(self.conf.on_1)
-        ):
-            return True
-        elif not self.conf.on_2:
-            return False
-        if (
-            self.parse_time(self.conf.off_2)
-            > time_now
-            > self.parse_time(self.conf.on_2)
-        ):
-            return True
+        if self.conf.program_on:
+            time_now = BritishTime.now().time()
+            if (
+                self.parse_time(self.conf.off_1)
+                > time_now
+                > self.parse_time(self.conf.on_1)
+            ):
+                return True
+            elif not self.conf.on_2:
+                return False
+            if (
+                self.parse_time(self.conf.off_2)
+                > time_now
+                > self.parse_time(self.conf.on_2)
+            ):
+                return True
         return False
 
     def save_state(self):
@@ -196,9 +197,9 @@ class HeatingSystem:
 
     def advance_thread(self, mins: int):
         while time.time() - self.advance_on < mins * 60:
-            if self.conf.program_on and self.check_time():
+            if self.check_time():
                 self.cancel_advance()
-            if not self.thread or not self.advance_on:
+            if not self.thread:
                 break
             self.thermostat_control()
             time.sleep(30)
