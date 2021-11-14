@@ -58,3 +58,7 @@
   transform: rotate(-45deg);
   -webkit-transform: rotate(-45deg);
 }
+
+.disabled-arrow {
+    --muted: #2c2c2c;
+}

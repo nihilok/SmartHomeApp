@@ -6,7 +6,7 @@ import classNames from "classnames";
 import { StyledTextField } from "../Custom/StyledTextField";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
 import { TEMPERATURE_INTERVAL } from "../../constants/constants";
-import {HelpButton} from "../HelpButton/HelpButton";
+import { HelpButton } from "../HelpButton/HelpButton";
 
 export function SettingsForm() {
   const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
@@ -215,172 +215,184 @@ export function SettingsForm() {
   }, []);
 
   return (
-      <>
-        <HelpButton/>
+    <>
+      <HelpButton />
 
-        <form className="heating-settings">
-          <Box>
-            {isLoading ? (
-                <FullScreenLoader/>
-            ) : (
-                <>
-                  <h1>Heating Settings</h1>
-                  {currentTemp && (
-                      <Tooltip
-                          title={`Relay is currently ${relayOn ? "on" : "off"}`}
-                          placement="top"
-                      >
-                        <h1
-                            className={classNames("TempDisplay", {
-                              TempDisplay__On: relayOn,
-                            })}
-                        >
-                          {currentTemp.toFixed(1)}&deg;C
-                        </h1>
-                      </Tooltip>
-                  )}
-                  <Stack
-                      spacing={2}
-                      direction="row"
-                      sx={{mb: 3}}
-                      alignItems="center"
-                      justifyContent="center"
+      <form className="heating-settings">
+        <Box>
+          {isLoading ? (
+            <FullScreenLoader />
+          ) : (
+            <>
+              <h1>Heating Settings</h1>
+              {currentTemp && (
+                <Tooltip
+                  title={`Relay is currently ${relayOn ? "on" : "off"}`}
+                  placement="top"
+                >
+                  <h1
+                    className={classNames("TempDisplay", {
+                      TempDisplay__On: relayOn,
+                    })}
                   >
-                    <h2>Target:</h2>
-                    <Tooltip
-                        title="Desired internal temperature"
-                        placement="top"
-                    >
-                      <Slider
-                          aria-label="Target Temperature"
-                          value={state.target}
-                          onChange={handleSliderChange}
-                          min={10}
-                          max={28}
-                      /></Tooltip>
-                    <h2>{state.target}&deg;C</h2>
-                  </Stack>
+                    {currentTemp.toFixed(1)}&deg;C
+                  </h1>
+                </Tooltip>
+              )}
+              <Stack
+                spacing={2}
+                direction="row"
+                sx={{ mb: 3 }}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <h2>Target:</h2>
+                <Tooltip title="Desired internal temperature" placement="top">
+                  <Slider
+                    aria-label="Target Temperature"
+                    value={state.target}
+                    onChange={handleSliderChange}
+                    min={10}
+                    max={28}
+                  />
+                </Tooltip>
+                <h2>{state.target}&deg;C</h2>
+              </Stack>
 
-                  <Stack
-                      spacing={2}
-                      direction="row"
-                      sx={{mb: 5}}
-                      alignItems="center"
-                      justifyContent="space-evenly"
-                      className={"TimeInputRow"}
-                  >
-                    <StyledTextField
-                        label="On 1"
-                        name="on_1"
-                        type="time"
-                        value={state.on_1}
-                        InputLabelProps={{
-                          shrink: true,
-                        }}
-                        required={true}
-                        onChange={handleTimeChange}
-                    />
-                    <div className="arrow right"/>
-                    <StyledTextField
-                        label="Off 1"
-                        name="off_1"
-                        type="time"
-                        value={state.off_1}
-                        required={true}
-                        InputLabelProps={{
-                          shrink: true,
-                        }}
-                        onChange={handleTimeChange}
-                    />
-                  </Stack>
-                  <Stack
-                      spacing={2}
-                      direction="row"
-                      sx={{mb: 3}}
-                      alignItems="center"
-                      justifyContent="space-evenly"
-                      className={"TimeInputRow"}
-                  >
-                    <StyledTextField
-                        label="On 2"
-                        name="on_2"
-                        type="time"
-                        value={state.on_2}
-                        InputLabelProps={{
-                          shrink: true,
-                        }}
-                        onChange={handleTimeChange}
-                    />
-                    <div className="arrow right"/>
-                    <StyledTextField
-                        label="Off 2"
-                        type="time"
-                        name="off_2"
-                        value={state.off_2}
-                        InputLabelProps={{
-                          shrink: true,
-                        }}
-                        onChange={handleTimeChange}
-                    />
-                  </Stack>
-                  <Stack
-                      spacing={2}
-                      direction="row"
-                      sx={{mb: 1}}
-                      alignItems="center"
-                      justifyContent="center"
-                  >
-                    <h2>Program:</h2>
-                    <Tooltip title="Frost stat mode when off" placement="right">
-                      <Switch
-                          {...programLabel}
-                          onChange={handleProgramChange}
-                          checked={state.program_on}
-                      />
-                    </Tooltip>
-                    <h2>{state.program_on ? "On" : "Off"}</h2>
-                  </Stack>
-                  <Stack
-                      spacing={2}
-                      direction="column"
-                      sx={{mb: 4}}
-                      alignItems="center"
-                      justifyContent="center"
-                  >
-                    <Stack
-                        spacing={2}
-                        direction="row"
-                        sx={{mb: 0}}
-                        alignItems="center"
-                        justifyContent="center"
+              <Stack
+                spacing={2}
+                direction="row"
+                sx={{ mb: 5 }}
+                alignItems="center"
+                justifyContent="space-evenly"
+                className={"TimeInputRow"}
+              >
+                <StyledTextField
+                  label="On 1"
+                  name="on_1"
+                  type="time"
+                  value={state.on_1}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  required={true}
+                  onChange={handleTimeChange}
+                  disabled={!state.program_on}
+                />
+                <div
+                  className={classNames("arrow right", {
+                    "disabled-arrow": !state.program_on,
+                  })}
+                />
+                <StyledTextField
+                  label="Off 1"
+                  name="off_1"
+                  type="time"
+                  value={state.off_1}
+                  required={true}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  onChange={handleTimeChange}
+                  disabled={!state.program_on}
+                />
+              </Stack>
+              <Stack
+                spacing={2}
+                direction="row"
+                sx={{ mb: 3 }}
+                alignItems="center"
+                justifyContent="space-evenly"
+                className={"TimeInputRow"}
+              >
+                <StyledTextField
+                  label="On 2"
+                  name="on_2"
+                  type="time"
+                  value={state.on_2}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  onChange={handleTimeChange}
+                  disabled={!state.program_on}
+                />
+                <div
+                  className={classNames("arrow right", {
+                    "disabled-arrow": !state.program_on,
+                  })}
+                />
+                <StyledTextField
+                  label="Off 2"
+                  type="time"
+                  name="off_2"
+                  value={state.off_2}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  onChange={handleTimeChange}
+                  disabled={!state.program_on}
+                />
+              </Stack>
+              <Stack
+                spacing={2}
+                direction="row"
+                sx={{ mb: 1 }}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <h2>Program:</h2>
+                <Tooltip title="Frost stat mode when off" placement="right">
+                  <Switch
+                    {...programLabel}
+                    onChange={handleProgramChange}
+                    checked={state.program_on}
+                  />
+                </Tooltip>
+                <h2>{state.program_on ? "On" : "Off"}</h2>
+              </Stack>
+              <Stack
+                spacing={2}
+                direction="column"
+                sx={{ mb: 4 }}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Stack
+                  spacing={2}
+                  direction="row"
+                  sx={{ mb: 0 }}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Tooltip title="Run thermostat control for 1 hour">
+                    <Button
+                      variant={
+                        override.on && !overrideDisabled()
+                          ? "contained"
+                          : "outlined"
+                      }
+                      disabled={overrideDisabled()}
+                      onClick={handleOverride}
                     >
-                      <Tooltip title="Run thermostat control for 1 hour"><Button
-                          variant={
-                            override.on && !overrideDisabled()
-                                ? "contained"
-                                : "outlined"
-                          }
-                          disabled={overrideDisabled()}
-                          onClick={handleOverride}
-                      >
-                        {override.on && !overrideDisabled()
-                            ? "Cancel Override"
-                            : "1hr Override"}
-                      </Button></Tooltip>
-                    </Stack>
-                    {override.start && !overrideDisabled() && (
-                        <p className="text-muted">
-                          on until{" "}
-                          {new Date(
-                              (override.start + 3600) * 1000
-                          ).toLocaleTimeString()}
-                        </p>
-                    )}
-                  </Stack>
-                </>
-            )}
-          </Box>
-        </form>
-      </>
+                      {override.on && !overrideDisabled()
+                        ? "Cancel Override"
+                        : "1hr Override"}
+                    </Button>
+                  </Tooltip>
+                </Stack>
+                {override.start && !overrideDisabled() && (
+                  <p className="text-muted">
+                    on until{" "}
+                    {new Date(
+                      (override.start + 3600) * 1000
+                    ).toLocaleTimeString()}
+                  </p>
+                )}
+              </Stack>
+            </>
+          )}
+        </Box>
+      </form>
+    </>
   );
 }
