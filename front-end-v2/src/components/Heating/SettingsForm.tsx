@@ -1,13 +1,13 @@
 import * as React from "react";
 import "./heating.css";
-import { Box, Button, Slider, Stack, Switch, Tooltip } from "@mui/material";
+import { Box, Button, Slider, Stack, Switch } from "@mui/material";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import classNames from "classnames";
 import { StyledTextField } from "../Custom/StyledTextField";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
 import { TEMPERATURE_INTERVAL } from "../../constants/constants";
 import { HelpButton } from "../HelpButton/HelpButton";
-import {StyledTooltip} from "../Custom/StyledTooltip";
+import { StyledTooltip } from "../Custom/StyledTooltip";
 
 export function SettingsForm() {
   const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
@@ -47,23 +47,13 @@ export function SettingsForm() {
   const fetch = useFetchWithToken();
 
   const [state, setState] = React.useState(initialState);
+  const firstLoad = React.useRef(true);
   const [isLoading, setIsLoading] = React.useState(true);
   const [currentTemp, setCurrentTemp] = React.useState<number>();
   const [relayOn, setRelayOn] = React.useState(false);
-  const [firstLoad, setFirstLoad] = React.useState(true);
   const [override, setOverride] = React.useState<Override>({
     on: false,
   });
-
-  const debounce = React.useCallback(() => {
-    clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
-    timeoutRef.current = setTimeout(() => {
-      console.debug("Updating settings");
-      setSettings()
-        .catch((error) => console.log(error))
-        .finally(() => (lockRef.current = true));
-    }, 600);
-  }, [setSettings]);
 
   function handleSliderChange(event: Event, newValue: number | number[]) {
     setState({ ...state, target: newValue as number });
@@ -77,7 +67,8 @@ export function SettingsForm() {
     setState({ ...state, [event.target.name]: event.target.value });
   }
 
-  function parseData(data: Data) {
+  const parseData = React.useCallback((data: Data) => {
+    lockRef.current = true;
     const { on_1, off_1, on_2, off_2, program_on, target } = data;
     setState({
       on_1,
@@ -90,7 +81,8 @@ export function SettingsForm() {
     setOverride(data.advance ?? { on: false });
     if (data.current) setCurrentTemp(data.current);
     if (data.on !== undefined) setRelayOn(data.on);
-  }
+    lockRef.current = false;
+  }, []);
 
   const getSettings = React.useCallback(async () => {
     console.debug("Getting settings");
@@ -103,20 +95,37 @@ export function SettingsForm() {
       )
       .finally(() => {
         setIsLoading(false);
+        firstLoad.current = false;
       });
-  }, []);
+  }, [fetch, parseData]);
 
-  async function setSettings() {
-    await fetch("/heating/", "POST", state).then((res) =>
-      res.json().then((data) => {
-        if (res.status !== 200) {
-          parseData(data);
-        } else {
-          if (data !== state) setState(data);
-        }
-      })
-    );
-  }
+  const setSettings = React.useCallback(
+    async (state: typeof initialState) => {
+      console.debug("Updating settings");
+      await fetch("/heating/", "POST", state).then((res) =>
+        res.json().then((data) => {
+          if (res.status !== 200) {
+            parseData(data);
+          } else {
+            if (data !== state) setState(data);
+          }
+        })
+      );
+    },
+    [fetch, parseData]
+  );
+
+  const debounce = React.useCallback(
+    (state: typeof initialState) => {
+      clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
+      timeoutRef.current = setTimeout(() => {
+        setSettings(state)
+          .catch((error) => console.log(error))
+          .then(() => (lockRef.current = true));
+      }, 600);
+    },
+    [setSettings]
+  );
 
   async function handleOverride() {
     if (override.on) {
@@ -183,20 +192,20 @@ export function SettingsForm() {
 
   React.useEffect(() => {
     getSettings().catch((error) => console.log(error));
-    setFirstLoad(false);
+    firstLoad.current = false;
   }, [getSettings]);
 
   React.useEffect(() => {
-    if (!firstLoad) {
-      if (!lockRef.current) {
-        debounce();
-      }
+    if (firstLoad.current) return;
+    if (lockRef.current) {
       lockRef.current = false;
+      return;
     }
+    debounce(state);
     return () => {
       clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
     };
-  }, [state]);
+  }, [debounce, state]);
 
   React.useEffect(() => {
     let interval = setInterval(
@@ -206,16 +215,16 @@ export function SettingsForm() {
             if (res.status !== 200) return console.log(data);
             setCurrentTemp(data.temp_float);
             setRelayOn(data.on);
-            setOverride(data.advance ?? {on: false})
+            setOverride(data.advance ?? { on: false });
           })
         ),
       TEMPERATURE_INTERVAL
     );
     return () => clearInterval(interval);
-  }, []);
+  }, [fetch]);
 
   return (
-    <>
+    <div className={"full-screen flex flex-col justify-center align-center"}>
       <HelpButton />
 
       <form className="heating-settings">
@@ -227,7 +236,11 @@ export function SettingsForm() {
               <h1>Heating Settings</h1>
               {currentTemp && (
                 <StyledTooltip
-                  title={`Indoor Temperature. Relay is currently ${relayOn ? "on" : "off"}`}
+                  title={`Indoor Temperature. Relay is currently ${
+                    relayOn ? "on" : "off"
+                  }`}
+                  placement="top"
+                  enterDelay={1000}
                 >
                   <h1
                     className={classNames("TempDisplay", {
@@ -246,7 +259,11 @@ export function SettingsForm() {
                 justifyContent="center"
               >
                 <h2>Target:</h2>
-                <StyledTooltip title="Desired internal temperature">
+                <StyledTooltip
+                  title="Desired internal temperature"
+                  placement="top"
+                  enterDelay={1000}
+                >
                   <Slider
                     aria-label="Target Temperature"
                     value={state.target}
@@ -340,7 +357,11 @@ export function SettingsForm() {
                 justifyContent="center"
               >
                 <h2>Program:</h2>
-                <StyledTooltip title="Frost stat mode when off">
+                <StyledTooltip
+                  title="Frost stat mode when off (5&deg;C)"
+                  placement="top"
+                  enterDelay={1000}
+                >
                   <Switch
                     {...programLabel}
                     onChange={handleProgramChange}
@@ -363,20 +384,28 @@ export function SettingsForm() {
                   alignItems="center"
                   justifyContent="center"
                 >
-                  <StyledTooltip title="Run thermostat control for 1 hour">
-                    <Button
-                      variant={
-                        override.on && !overrideDisabled()
-                          ? "contained"
-                          : "outlined"
-                      }
-                      disabled={overrideDisabled()}
-                      onClick={handleOverride}
-                    >
-                      {override.on && !overrideDisabled()
-                        ? "Cancel Override"
-                        : "1hr Override"}
-                    </Button>
+                  <StyledTooltip
+                    title={`${
+                      override.on ? "Cancel" : "Run"
+                    } thermostat control${!override.on ? " for 1 hour" : ""}`}
+                    placement="top"
+                    enterDelay={1000}
+                  >
+                    <span>
+                      <Button
+                        variant={
+                          override.on && !overrideDisabled()
+                            ? "contained"
+                            : "outlined"
+                        }
+                        disabled={overrideDisabled()}
+                        onClick={handleOverride}
+                      >
+                        {override.on && !overrideDisabled()
+                          ? "Cancel Override"
+                          : "1hr Override"}
+                      </Button>
+                    </span>
                   </StyledTooltip>
                 </Stack>
                 {override.start && !overrideDisabled() && (
@@ -392,6 +421,6 @@ export function SettingsForm() {
           )}
         </Box>
       </form>
-    </>
+    </div>
   );
 }

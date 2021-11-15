@@ -9,7 +9,6 @@
 
 body {
   margin: 0;
-  padding-top: 2rem;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
@@ -65,4 +64,26 @@ input {
 
 .text-muted {
   color: var(--muted);
+}
+
+.full-screen {
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.align-center {
+  align-items: center;
 }

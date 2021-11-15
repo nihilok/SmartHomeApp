@@ -1,7 +1,8 @@
 import * as React from "react";
 import './help-button.css';
-import {ClickAwayListener, IconButton, Tooltip} from "@mui/material";
+import {ClickAwayListener, IconButton} from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import {StyledTooltip} from "../Custom/StyledTooltip";
 
 export function HelpButton() {
     const [open, setOpen] = React.useState(false);
@@ -16,7 +17,7 @@ export function HelpButton() {
   return (
       <ClickAwayListener onClickAway={handleTooltipClose}>
             <div>
-              <Tooltip
+              <StyledTooltip
                 PopperProps={{
                   disablePortal: true,
                 }}
@@ -30,7 +31,7 @@ export function HelpButton() {
                 <IconButton onClick={handleTooltipOpen} className={'help-button'} color="primary" aria-label="help" component="div">
                     <HelpOutlineIcon />
                 </IconButton>
-              </Tooltip>
+              </StyledTooltip>
             </div>
           </ClickAwayListener>
   );

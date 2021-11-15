@@ -1,11 +1,12 @@
 import useAuthContext from "../context/AuthContext";
+import * as React from "react";
 
 type Body = {} | null;
 
 export function useFetchWithToken() {
   const { context } = useAuthContext();
 
-  return async function (
+  return React.useCallback(async function (
     url: string,
     method: string = "GET",
     body: Body = null
@@ -31,5 +32,5 @@ export function useFetchWithToken() {
     }
 
     return await fetch(context.apiBaseUrl + url, fetchState);
-  };
+  }, [context.apiBaseUrl, context.token])
 }
