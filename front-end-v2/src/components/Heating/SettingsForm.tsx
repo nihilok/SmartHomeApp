@@ -408,14 +408,14 @@ export function SettingsForm() {
                     </span>
                   </StyledTooltip>
                 </Stack>
-                {override.start && !overrideDisabled() && (
+                {override.start && !overrideDisabled() ? (
                   <p className="text-muted">
                     on until{" "}
                     {new Date(
                       (override.start + 3600) * 1000
                     ).toLocaleTimeString()}
                   </p>
-                )}
+                ) : <p style={{display: 'hidden'}}/>}
               </Stack>
             </>
           )}
