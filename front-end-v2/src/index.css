@@ -57,7 +57,7 @@ input {
   color: var(--text-main) !important;
 }
 
-.MuiButtonBase-root:not(.MuiIconButton-colorPrimary) {
+.MuiIconButton-root:not(.MuiIconButton-colorPrimary) {
   color: inherit !important;
 }
 
