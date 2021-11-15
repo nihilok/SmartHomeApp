@@ -43,6 +43,7 @@ class HeatingSystem:
     RELAY_GPIO_PIN = 27
     THRESHOLD = 0.4
     TEMPERATURE_URL = 'http://192.168.1.10' # URL/IP of the NodeMCU
+    scheduler = BackgroundScheduler()
     
     def __init__(self):
         """
@@ -57,7 +58,7 @@ class HeatingSystem:
         }
         self.measurements = self.get_measurements()
         self.pi = pigpio.pi()
-        self.scheduler = BackgroundScheduler()
+        self.scheduler.add_job(main_loop)
         
     def get_measurements(self):
         """Gets measurements from temperature sensor and handles errors, 
@@ -127,6 +128,34 @@ class HeatingSystem:
 
 ```
 
-So straight away we have a couple of Python dependencies (`pip install requests pigpio apscheduler`), and you will also need to install and run the pigpio daemon on your Raspberry Pi (`sudo apt install pigpiod`). Otherwise, though, you can see that the system is still relatively simple, but still incomplete without a way to set, store & check times that you want the main loop to run, it also depends on the measurements served by the NodeMCU unit, which we haven't started on yet, but we have everything we need to see how the essence of the system will work.
+So straight away we have a couple of Python dependencies (`pip install requests pigpio apscheduler`), and you will also need to install and run the pigpio daemon on your Raspberry Pi (`sudo apt install pigpiod`). Otherwise, though, you can see that the system is relatively simple, and despite it still being incomplete without a way to set, store & check times that you want the main loop to run, and without any measurements served by the NodeMCU unit, which we haven't started on yet, we have everything we need to see how the essence of the system will work.
 
-I know straight away that I'm going to be using FastApi for this build, as while the initial build of this used Flask, FastAPI has now far surpassed Flask as my go-to framework of choice.
+We will come back to this to add more complexity, but for now let's take a look at the API endpoints and see if we can't turn on the relay from our smartphone! I know straight away that I'm going to be using FastApi for this build, as while the initial build of this used Flask, FastAPI has now far surpassed Flask as my go-to framework of choice.
+
+Again, from a modularity-first perspective, we should create a specific router for our heating related endpoints and a basic FastAPI (ASGI) app that we can add different routers to. 
+In `server/heating/heating_endpoints.py`:
+```python3
+from fastapi import APIRouter
+
+router = APIRouter()
+```
+And then in `server/__init__.py`:
+```python3
+from fastapi import FastAPI
+from .heating.heating_endpoints import router as heating_router
+
+app = FastAPI()
+app.include_router(heating_router)
+```
+And now were ready to keep working on `heating_endpoints.py` knowing that all of the routes created with the router will be included in our app.
+`heating_endpoints.py`
+```python3
+from .heating_system import HeatingSystem
+
+hs = HeatingSystem()
+
+@router.get('/')
+async def heating_index():
+    hs.switch_on_relay()
+```
+
