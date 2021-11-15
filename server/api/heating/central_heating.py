@@ -39,6 +39,7 @@ class HeatingSystem:
     config_file = os.path.abspath(os.getcwd()) + "/api/heating/heating.conf"
     scheduler = BackgroundScheduler()
     backup_scheduler = BackgroundScheduler()
+    THRESHOLD = 0.2
     SENSOR_IP = TEMPERATURE_URL  # Local IP of temperature sensor API
     TEMPERATURE_URL = TEMPERATURE_URL
 
@@ -134,7 +135,7 @@ class HeatingSystem:
         current = self.temperature
         msg = f"\ntarget: {target}\ncurrent: {current}"
         logging.debug(msg)
-        if target - 0.4 > current:
+        if target - self.THRESHOLD > current:
             return True
         elif target <= current:
             return False
