@@ -57,6 +57,10 @@ input {
   color: var(--text-main) !important;
 }
 
+.MuiButtonBase-root:not(.MuiIconButton-colorPrimary) {
+  color: inherit !important;
+}
+
 .flipped-h,
 .flipped-h img {
   transform: scaleX(-1);
