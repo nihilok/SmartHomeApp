@@ -49,6 +49,7 @@ export function SettingsForm() {
   const [state, setState] = React.useState(initialState);
   const firstLoad = React.useRef(true);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [helpMode, setHelpMode] = React.useState(false);
   const [currentTemp, setCurrentTemp] = React.useState<number>();
   const [relayOn, setRelayOn] = React.useState(false);
   const [override, setOverride] = React.useState<Override>({
@@ -225,8 +226,7 @@ export function SettingsForm() {
 
   return (
     <div className={"full-screen flex flex-col justify-center align-center"}>
-      <HelpButton />
-
+      <HelpButton helpMode={helpMode} setHelpMode={setHelpMode}/>
       <form className="heating-settings">
         <Box>
           {isLoading ? (
@@ -240,7 +240,7 @@ export function SettingsForm() {
                     relayOn ? "on" : "off"
                   }`}
                   placement="top"
-                  enterDelay={1000}
+                  disabled={!helpMode}
                 >
                   <h1
                     className={classNames("TempDisplay", {
@@ -262,7 +262,7 @@ export function SettingsForm() {
                 <StyledTooltip
                   title="Desired internal temperature"
                   placement="top"
-                  enterDelay={1000}
+                  disabled={!helpMode}
                 >
                   <Slider
                     aria-label="Target Temperature"
@@ -360,7 +360,6 @@ export function SettingsForm() {
                 <StyledTooltip
                   title="Frost stat mode when off (5&deg;C)"
                   placement="top"
-                  enterDelay={1000}
                 >
                   <Switch
                     {...programLabel}
@@ -389,7 +388,7 @@ export function SettingsForm() {
                       override.on ? "Cancel" : "Run"
                     } thermostat control${!override.on ? " for 1 hour" : ""}`}
                     placement="top"
-                    enterDelay={1000}
+                    disabled={!helpMode}
                   >
                     <span>
                       <Button
@@ -415,7 +414,7 @@ export function SettingsForm() {
                       (override.start + 3600) * 1000
                     ).toLocaleTimeString()}
                   </p>
-                ) : <p style={{display: 'hidden'}}/>}
+                ) : <p style={{opacity: 0}}>Override Off</p>}
               </Stack>
             </>
           )}
