@@ -26,6 +26,7 @@ central-heating-project/
             heating_system.py
             heating_endpoints.py
         __init__.py
+    main.py
 ```
 
 Ok let's start, as I did, with the heating system. I have stuck with the OOP approach that I set out with, as it has proved useful to be able to import the whole system and reference its attributes and properties in the API, but a functional approach based on the main methods and properties would also be possible.
@@ -128,7 +129,7 @@ class HeatingSystem:
 
 ```
 
-So straight away we have a couple of Python dependencies (`pip install requests pigpio apscheduler`), and you will also need to install and run the pigpio daemon on your Raspberry Pi (`sudo apt install pigpiod`). Otherwise, though, you can see that the system is relatively simple, and despite it still being incomplete without a way to set, store & check times that you want the main loop to run, and without any measurements served by the NodeMCU unit, which we haven't started on yet, we have everything we need to see how the essence of the system will work.
+So straight away we have a couple of Python dependencies (`pip install requests pigpio apscheduler`), so it would be worth creating a virtual environment, and you will also need to install and run the pigpio daemon on your Raspberry Pi (`sudo apt install pigpiod`). Otherwise, though, you can see that the system is relatively simple, and despite it still being incomplete without a way to set, store & check times that you want the main loop to run, and without any measurements served by the NodeMCU unit, which we haven't started on yet, we have everything we need to see how the essence of the system will work.
 
 We will come back to this to add more complexity, but for now let's take a look at the API endpoints and see if we can't turn on the relay from our smartphone! I know straight away that I'm going to be using FastApi for this build, as while the initial build of this used Flask, FastAPI has now far surpassed Flask as my go-to framework of choice.
 
@@ -150,6 +151,7 @@ app.include_router(heating_router)
 And now were ready to keep working on `heating_endpoints.py` knowing that all of the routes created with the router will be included in our app.
 `heating_endpoints.py`
 ```python3
+import time
 from .heating_system import HeatingSystem
 
 hs = HeatingSystem()
@@ -157,5 +159,18 @@ hs = HeatingSystem()
 @router.get('/')
 async def heating_index():
     hs.switch_on_relay()
+    time.sleep(5)
+    hs.switch_off_relay()
+    return {'message': 'done!'}
 ```
 
+Now let's install UVicorn, an ASGI server (`pip install uvicorn`) and create a `main.py` file to run our server.
+```python3
+# central-heating-project/main.py
+import uvicorn
+
+if __name__ == "__main__":
+    uvicorn.run('server:app', port=8080)
+```
+
+And now if we run that (`python main.py`) and go to http://localhost:8080 in a browser we should see the relay turn on for 5 seconds before switching off again.
