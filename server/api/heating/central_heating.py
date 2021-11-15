@@ -186,6 +186,10 @@ class HeatingSystem:
     def check_state(self):
         return not not self.pi.read(27)
 
+    @property
+    def relay_state(self):
+        return self.check_state()
+
     def advance(self, mins: int = 15):
         if self.check_time():
             return
