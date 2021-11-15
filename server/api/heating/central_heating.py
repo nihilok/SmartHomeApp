@@ -40,14 +40,13 @@ class HeatingSystem:
     scheduler = BackgroundScheduler()
     backup_scheduler = BackgroundScheduler()
     THRESHOLD = 0.2
-    SENSOR_IP = TEMPERATURE_URL  # Local IP of temperature sensor API
-    TEMPERATURE_URL = TEMPERATURE_URL
+    TEMPERATURE_URL = TEMPERATURE_URL  # Local IP of temperature sensor API
 
     def __init__(self):
         """Create connection with temperature api and load settings
         from config file"""
         self.pi = pigpio.pi()
-        self.measurements = requests.get(self.SENSOR_IP).json()
+        self.measurements = requests.get(self.TEMPERATURE_URL).json()
         self.conf = self.get_or_create_config()
         self.advance_on = None
         self.thread = None
@@ -103,7 +102,7 @@ class HeatingSystem:
                 conf = HeatingConf(**file_dict)
                 conf.on = self.check_state()
         except Exception as e:
-            logging.error(e.message)
+            logging.error(str(e))
             conf = HeatingConf(
                 target="18",
                 on_1="06:30",
@@ -123,14 +122,14 @@ class HeatingSystem:
         try:
             self.measurements = requests.get(self.TEMPERATURE_URL).json()
         except Exception as e:
-            logging.error(e)
+            logging.error(str(e))
         try:
             measurements = self.measurements
         except AttributeError:
             measurements = {"temperature": 0, "pressure": 0, "humidity": 0}
         return measurements
 
-    def check_temp(self):
+    def check_temp(self) -> Optional[bool]:
         target = float(self.conf.target)
         current = self.temperature
         msg = f"\ntarget: {target}\ncurrent: {current}"
@@ -139,13 +138,12 @@ class HeatingSystem:
             return True
         elif target <= current:
             return False
-        return None
 
     @staticmethod
-    def parse_time(time):
+    def parse_time(time: str) -> datetime.time:
         return datetime.strptime(time, "%H:%M").time()
 
-    def check_time(self):
+    def check_time(self) -> bool:
         if self.conf.program_on:
             time_now = BritishTime.now().time()
             if (
@@ -190,14 +188,10 @@ class HeatingSystem:
             self.pi.write(27, 0)
             self.conf.on = False
 
-    def check_state(self):
+    def check_state(self) -> bool:
         return not not self.pi.read(27)
 
-    @property
-    def relay_state(self):
-        return self.check_state()
-
-    def advance(self, mins: int = 15):
+    def advance(self, mins: int = 15) -> Optional[float]:
         if self.check_time():
             return
         if not self.thread:
@@ -224,7 +218,7 @@ class HeatingSystem:
         self.save_state()
 
     @property
-    def advance_start_time(self):
+    def advance_start_time(self) -> Optional[float]:
         return self.advance_on
 
     @property
@@ -238,3 +232,7 @@ class HeatingSystem:
     @property
     def temperature(self) -> float:
         return float(self.get_measurements()["temperature"])
+
+    @property
+    def relay_state(self) -> bool:
+        return self.check_state()

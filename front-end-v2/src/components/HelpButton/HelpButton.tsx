@@ -13,9 +13,8 @@ export function HelpButton({ helpMode, setHelpMode }: Props) {
   const [open, setOpen] = React.useState(false);
 
   const handleClick = () => {
-    if (!helpMode)
-      handleTooltipOpen()
-    else handleTooltipClose() 
+    if (!helpMode) handleTooltipOpen();
+    else handleTooltipClose();
     setHelpMode(!helpMode);
   };
 
