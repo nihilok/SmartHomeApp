@@ -57,6 +57,7 @@ class ApiInfo(BaseModel):
     indoor_temp: str
     temp_float: float
     outdoor_temp: str = "- -" + "°C"
+    outdoor_float: Optional[float] = None
     weather: str = "- -"
     last_updated: str = "--:--:--"
     on: bool = hs.check_state()
@@ -98,6 +99,7 @@ async def api():
         indoor_temp=str("{0:.1f}".format(hs.temperature)) + "°C",
         temp_float=hs.temperature,
         outdoor_temp=str("{0:.1f}".format(weather_report.current["temp"])) + "°C",
+        outdoor_float=float(weather_report.current["temp"]),
         weather=weather_report.current["weather"][0]["description"],
         last_updated=updated.strftime("%H:%S"),
         on=hs.check_state(),

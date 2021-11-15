@@ -51,6 +51,7 @@ export function SettingsForm() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [helpMode, setHelpMode] = React.useState(false);
   const [currentTemp, setCurrentTemp] = React.useState<number>();
+  const [outdoorTemp, setOutdoorTemp] = React.useState<number>();
   const [relayOn, setRelayOn] = React.useState(false);
   const [override, setOverride] = React.useState<Override>({
     on: false,
@@ -209,24 +210,25 @@ export function SettingsForm() {
   }, [debounce, state]);
 
   React.useEffect(() => {
-    let interval = setInterval(
-      () =>
-        fetch("/heating/info/").then((res) =>
-          res.json().then((data) => {
-            if (res.status !== 200) return console.log(data);
-            setCurrentTemp(data.temp_float);
-            setRelayOn(data.on);
-            setOverride(data.advance ?? { on: false });
-          })
-        ),
-      TEMPERATURE_INTERVAL
-    );
+    function getInfo() {
+      fetch("/heating/info/").then((res) =>
+        res.json().then((data) => {
+          if (res.status !== 200) return console.log(data);
+          setCurrentTemp(data.temp_float);
+          setOutdoorTemp(data.outdoor_float);
+          setRelayOn(data.on);
+          setOverride(data.advance ?? { on: false });
+        })
+      );
+    }
+    getInfo();
+    let interval = setInterval(getInfo, TEMPERATURE_INTERVAL);
     return () => clearInterval(interval);
   }, [fetch]);
 
   return (
     <div className={"full-screen flex flex-col justify-center align-center"}>
-      <HelpButton helpMode={helpMode} setHelpMode={setHelpMode}/>
+      <HelpButton helpMode={helpMode} setHelpMode={setHelpMode} />
       <form className="heating-settings">
         <Box>
           {isLoading ? (
@@ -415,7 +417,9 @@ export function SettingsForm() {
                       (override.start + 3600) * 1000
                     ).toLocaleTimeString()}
                   </p>
-                ) : <p style={{opacity: 0}}>Override Off</p>}
+                ) : (
+                  <p style={{ opacity: 0 }}>Override Off</p>
+                )}
               </Stack>
             </>
           )}
