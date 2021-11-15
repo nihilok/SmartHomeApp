@@ -64,6 +64,20 @@ class ApiInfo(BaseModel):
     advance: Optional[Advance] = None
 
 
+class SensorReadings(BaseModel):
+    temperature: float
+    pressure: float
+    humidity: float
+
+
+class HeatingInfo(BaseModel):
+    indoor_temperature: float
+    sensor_readings: SensorReadings
+    relay_on: bool
+    program_on: bool
+    advance: Advance
+
+
 @router.get("/weather/")
 async def weather() -> WeatherReport:
     weather_dict = await get_weather()
@@ -103,24 +117,35 @@ async def temp_only():
     )
 
 
-@router.get("/heating/conf/")
+@router.get("/heating/")
 async def heating():
+    context = {
+        "indoor_temperature": hs.temperature,
+        "sensor_readings": hs.measurements,
+        "relay_on": hs.relay_state,
+        "conf": hs.conf,
+    }
+    return HeatingInfo(**context)
+
+
+@router.get("/heating/conf/", response_model=HeatingConf)
+async def heating_conf():
     hs.conf.current = hs.temperature
     return hs.conf
 
 
-@router.post("/heating/")
-async def heating_conf(
+@router.post("/heating/", response_model=HeatingConf)
+async def update_heating_conf(
     conf: HeatingConf, user: HouseholdMemberPydantic = Depends(get_current_active_user)
 ):
     if hs.conf != conf:
         hs.conf.__dict__.update(**conf.dict(exclude_unset=True))
         hs.save_state()
         hs.main_loop()
-    return await heating()
+    return await heating_conf()
 
 
-@router.get("/heating/on_off/")
+@router.get("/heating/on_off/", response_model=HeatingConf)
 async def heating_on_off(
     user: HouseholdMemberPydantic = Depends(get_current_active_user),
 ):
@@ -128,10 +153,10 @@ async def heating_on_off(
         hs.program_on()
     else:
         hs.program_off()
-    return await heating()
+    return await heating_conf()
 
 
-@router.get("/heating/advance/{mins}/")
+@router.get("/heating/advance/{mins}/", response_model=Advance)
 async def advance(
     mins: int = 30, user: HouseholdMemberPydantic = Depends(get_current_active_user)
 ):
