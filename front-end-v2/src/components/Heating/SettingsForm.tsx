@@ -360,6 +360,7 @@ export function SettingsForm() {
                 <StyledTooltip
                   title="Frost stat mode when off (5&deg;C)"
                   placement="top"
+                  disabled={!helpMode}
                 >
                   <Switch
                     {...programLabel}

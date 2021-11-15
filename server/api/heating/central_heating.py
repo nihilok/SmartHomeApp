@@ -46,7 +46,7 @@ class HeatingSystem:
         """Create connection with temperature api and load settings
         from config file"""
         self.pi = pigpio.pi()
-        self.measurements = requests.get(self.TEMPERATURE_URL).json()
+        self.measurements = self.get_measurements()
         self.conf = self.get_or_create_config()
         self.advance_on = None
         self.thread = None
