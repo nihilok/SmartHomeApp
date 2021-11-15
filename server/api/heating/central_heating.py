@@ -110,7 +110,7 @@ class HeatingSystem:
                 on_2="20:30",
                 off_2="22:30",
                 program_on=True,
-                on=self.check_state()
+                on=self.check_state(),
             )
             with open(self.config_file, "w") as f:
                 json.dump(conf, f)
@@ -126,11 +126,7 @@ class HeatingSystem:
         try:
             measurements = self.measurements
         except AttributeError:
-            measurements = {
-                'temperature': 0,
-                'pressure': 0,
-                'humidity': 0
-            }
+            measurements = {"temperature": 0, "pressure": 0, "humidity": 0}
         return measurements
 
     def check_temp(self):
@@ -211,19 +207,20 @@ class HeatingSystem:
         return self.advance_on
 
     def advance_thread(self, mins: int):
-        while time.time() - self.advance_on < mins * 60:
-            if self.check_time():
-                self.cancel_advance()
-            if not self.thread:
+        while self.advance_on and time.time() - self.advance_on < mins * 60:
+            if not self.thread or not self.advance_on:
                 break
             self.thermostat_control()
             time.sleep(30)
+            if self.check_time():
+                self.cancel_advance()
 
     def cancel_advance(self):
         self.thread = None
         self.advance_on = None
         self.conf.advance = Advance(on=False)
         self.switch_off_relay()
+        self.save_state()
 
     @property
     def advance_start_time(self):
