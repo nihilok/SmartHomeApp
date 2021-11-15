@@ -14,7 +14,6 @@ from pydantic import BaseModel
 
 from .constants import TEMPERATURE_URL
 from .custom_datetimes import BritishTime
-from ..utils.concurrent_calls import urls
 
 logging.basicConfig(level=logging.INFO)
 
@@ -41,6 +40,7 @@ class HeatingSystem:
     scheduler = BackgroundScheduler()
     backup_scheduler = BackgroundScheduler()
     SENSOR_IP = TEMPERATURE_URL  # Local IP of temperature sensor API
+    TEMPERATURE_URL = TEMPERATURE_URL
 
     def __init__(self):
         """Create connection with temperature api and load settings
@@ -117,11 +117,21 @@ class HeatingSystem:
         return conf
 
     def get_measurements(self):
+        """Gets measurements from temperature sensor and handles errors,
+        by returning the last known set of measurements or a default"""
         try:
-            self.measurements = requests.get(self.SENSOR_IP).json()
+            self.measurements = requests.get(self.TEMPERATURE_URL).json()
         except Exception as e:
             logging.error(e)
-        return self.measurements
+        try:
+            measurements = self.measurements
+        except AttributeError:
+            measurements = {
+                'temperature': 0,
+                'pressure': 0,
+                'humidity': 0
+            }
+        return measurements
 
     def check_temp(self):
         target = float(self.conf.target)
