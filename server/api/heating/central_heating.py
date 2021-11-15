@@ -96,25 +96,25 @@ class HeatingSystem:
         self.save_state()
 
     def get_or_create_config(self):
-        conf = HeatingConf(
-            target="18",
-            on_1="06:30",
-            off_1="08:30",
-            on_2="20:30",
-            off_2="22:30",
-            program_on=True,
-            on=self.check_state(),
-        )
         try:
             with open(self.config_file, "r") as f:
                 file_dict = json.load(f)
                 conf = HeatingConf(**file_dict)
                 conf.on = self.check_state()
-        except (FileNotFoundError, TypeError):
+        except Exception as e:
+            logging.error(e.message)
+            conf = HeatingConf(
+                target="18",
+                on_1="06:30",
+                off_1="08:30",
+                on_2="20:30",
+                off_2="22:30",
+                program_on=True,
+                on=self.check_state()
+            )
             with open(self.config_file, "w") as f:
                 json.dump(conf, f)
-        finally:
-            return conf
+        return conf
 
     def get_measurements(self):
         try:
