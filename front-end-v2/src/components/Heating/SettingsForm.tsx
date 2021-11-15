@@ -415,7 +415,7 @@ export function SettingsForm() {
                       (override.start + 3600) * 1000
                     ).toLocaleTimeString()}
                   </p>
-                ) : <p style={{display: 'hidden'}}/>}
+                ) : <p style={{opacity: 0}}>Override Off</p>}
               </Stack>
             </>
           )}
