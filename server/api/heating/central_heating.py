@@ -31,8 +31,6 @@ class HeatingConf(BaseModel):
     target: int = 20
     program_on: bool = True
     advance: Optional[Advance] = None
-    current: Optional[float] = None
-    on: Optional[bool] = None
 
 
 class HeatingSystem:
@@ -46,7 +44,7 @@ class HeatingSystem:
         """Create connection with temperature api and load settings
         from config file"""
         self.pi = pigpio.pi()
-        self.measurements = requests.get(self.TEMPERATURE_URL).json()
+        self.measurements = self.get_measurements()
         self.conf = self.get_or_create_config()
         self.advance_on = None
         self.thread = None
@@ -100,20 +98,18 @@ class HeatingSystem:
             with open(self.config_file, "r") as f:
                 file_dict = json.load(f)
                 conf = HeatingConf(**file_dict)
-                conf.on = self.check_state()
         except Exception as e:
             logging.error(str(e))
             conf = HeatingConf(
-                target="18",
+                target=20,
                 on_1="06:30",
                 off_1="08:30",
                 on_2="20:30",
                 off_2="22:30",
                 program_on=True,
-                on=self.check_state(),
             )
             with open(self.config_file, "w") as f:
-                json.dump(conf, f)
+                json.dump(jsonable_encoder(conf), f)
         return conf
 
     def get_measurements(self):
@@ -146,20 +142,23 @@ class HeatingSystem:
     def check_time(self) -> bool:
         if self.conf.program_on:
             time_now = BritishTime.now().time()
-            if (
-                self.parse_time(self.conf.off_1)
-                > time_now
-                > self.parse_time(self.conf.on_1)
-            ):
-                return True
-            elif not self.conf.on_2:
-                return False
-            if (
-                self.parse_time(self.conf.off_2)
-                > time_now
-                > self.parse_time(self.conf.on_2)
-            ):
-                return True
+            try:
+                if (
+                    self.parse_time(self.conf.off_1)
+                    > time_now
+                    > self.parse_time(self.conf.on_1)
+                ):
+                    return True
+                elif not self.conf.on_2:
+                    return False
+                if (
+                    self.parse_time(self.conf.off_2)
+                    > time_now
+                    > self.parse_time(self.conf.on_2)
+                ):
+                    return True
+            except ValueError:
+                pass
         return False
 
     def save_state(self):
@@ -181,12 +180,10 @@ class HeatingSystem:
     def switch_on_relay(self):
         if not self.check_state():
             self.pi.write(27, 1)
-            self.conf.on = True
 
     def switch_off_relay(self):
         if self.check_state():
             self.pi.write(27, 0)
-            self.conf.on = False
 
     def check_state(self) -> bool:
         return not not self.pi.read(27)

@@ -63,3 +63,7 @@
 .disabled-arrow {
     --muted: #2c2c2c;
 }
+
+.on-arrow {
+    --muted: var(--text-main);
+}

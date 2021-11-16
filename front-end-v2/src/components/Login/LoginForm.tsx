@@ -6,6 +6,7 @@ import { StyledTextField } from "../Custom/StyledTextField";
 import { Button } from "@mui/material";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
 import {LOGIN, LOGOUT} from '../../context/AuthContext'
+import {FullScreenComponent} from "../Custom/FullScreenComponent";
 
 export default function LoginForm() {
   const { context, dispatch } = useAuthContext();
@@ -98,22 +99,24 @@ export default function LoginForm() {
   return state.isSubmitting ? (
     <FullScreenLoader />
   ) : (
-    <form onSubmit={logIn} ref={formRef} className={"login-form"}>
-      <h1>Log In</h1>
-      <StyledTextField
-        placeholder="Username"
-        type="text"
-        onChange={handleInputChange}
-        name="username"
-      />
-      <StyledTextField
-        placeholder="Password"
-        type="password"
-        onChange={handleInputChange}
-        name="password"
-      />
-      <Button type="submit">Log In</Button>
-      <div className={"inline-error-message"}>{state.errorMessage}</div>
-    </form>
+      <FullScreenComponent>
+        <form onSubmit={logIn} ref={formRef} className={"login-form"}>
+          <h1>Log In</h1>
+          <StyledTextField
+              placeholder="Username"
+              type="text"
+              onChange={handleInputChange}
+              name="username"
+          />
+          <StyledTextField
+              placeholder="Password"
+              type="password"
+              onChange={handleInputChange}
+              name="password"
+          />
+          <Button type="submit">Log In</Button>
+          <div className={"inline-error-message"}>{state.errorMessage}</div>
+        </form>
+      </FullScreenComponent>
   );
 }
