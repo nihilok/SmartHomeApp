@@ -29,7 +29,9 @@ central-heating-project/
     main.py
 ```
 
-Ok let's start, as I did, with the heating system. I have stuck with the OOP approach that I set out with, as it has proved useful to be able to import the whole system and reference its attributes and properties in the API, but a functional approach based on the main methods and properties would also be possible.
+In my setup, this will (eventually) be on the machine whose GPIO pins control the relay, which is separate from the temperature sensor, although it would be possible to have the temperature sensor attached to the same Raspberry Pi. See my initial write-up for more.
+
+Ok let's start, as I did then, with the heating system. I have stuck with the OOP approach that I set out with, as it has proved useful to be able to import the whole system and reference its attributes and properties in the API, but a functional approach based on the main methods and properties would also be possible.
 ```python3
 import pigpio
 
@@ -62,9 +64,9 @@ class HeatingSystem:
         if self.relay_on:
             self.pi.write(self.RELAY_GPIO_PIN, 0)
 ```
-So straight away we have a Python dependency (`pip install pigpio`), so it would be worth creating a virtual environment, and you will also need to install and run the pigpio daemon on your Raspberry Pi (`sudo apt install pigpiod -y && pigpiod`). Otherwise, though, you can see that the system is relatively simple, and and still needs a way to check the measurements served by the NodeMCU unit, which we haven't started on yet, we have everything we need to see how the essence of the system will work.
+So straight away we have a Python dependency (`pip install pigpio`), so it would be worth creating a virtual environment; you will also need to install and run the pigpio daemon on your Raspberry Pi (`sudo apt install pigpiod -y && pigpiod`). Otherwise, though, you can see that the system is relatively simple, and while it still needs a way to check the measurements served by the NodeMCU unit, which we haven't started on yet, and a way to check these against a target set by the user, as well as to schedule the task of doing so, we have everything we need to see how the essence of the system will work.
 
-We will come back to this to add more complexity, but for now let's take a look at the API endpoints and see if we can't turn on the relay from our smartphone! I know straight away that I'm going to be using FastApi for this build, as while the initial build of this used Flask, FastAPI has now far surpassed Flask as my go-to framework of choice.
+We will come back to this to add more complexity, but for now let's take a look at the API endpoints and see if we can't turn on the relay from our smartphone! I know straight away that I'm going to be using FastAPI for this build, as while the initial build of this used Flask, FastAPI has now far surpassed Flask as my go-to framework of choice.
 
 Again, from a modularity-first perspective, we should create a basic FastAPI (ASGI) app that we can add different routers to, and then in a separate file create a specific router for our heating related endpoints:
 ```python3
@@ -203,4 +205,4 @@ class HeatingSystem:
         return measurements
 
 ```
-So, now you can see it taking shape. The system in it's current state will actually perform the task of keeping our space above 20'C, and will check the temperature every 5 minutes. We currently still have no way to configure the system, but the `conf` attribute is a hint of what's coming, as it will also store the times we want the heating to be on, which, again, we can add in later.
+So, there's another dependency (`pip install apscheduler`), which is a really simple, but popular and powerful library letting us schedule tasks at either specific times or at intervals, but now you can see it taking shape. The system in its current state will actually perform the task of keeping our space above 20'C, and will check the temperature every 5 minutes. We currently still have no way to configure the system, but the `conf` dictionary is a hint of what's coming, as it will also store the times we want the heating to be on, which, again, we can add in later. We're also not using the frost stat method, a feature which guards against frozen pipes that is included in most off the shelf wall heating programmers. I've added a `THRESHOLD` attribute that defines the 'deadzone' in which the relay will neither be switched on nor off, used in the `too_cold` property which is in turn used in the `main_loop` method. It returns a bool (`True`/`False`) unless the temperature is within the threshold, in which case it returns `None` (it has no return clause, so technically is a void function, but in Python this is the same as returning `None`).
