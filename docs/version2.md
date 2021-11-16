@@ -108,9 +108,10 @@ if __name__ == "__main__":
     uvicorn.run('server:app', port=8080)
 ```
 
-And now if we run that (`python main.py`) and go to http://localhost:8080/relay in a browser we should see the relay turn on for 5 seconds before switching off again, and the success message json should then load in the browser window. Now it's just a case of deciding what different routes we need, and creating a front-end app to control the system.
+And now if we run that (`python main.py`) and go to http://localhost:8080/relay in a browser we should see the relay turn on for 5 seconds before switching off again, and the success message json should then load in the browser window. Now it's just a case of deciding what different routes we need, and creating a front-end app to control the system. First, let's add a few more useful methods and properties etc. to the `HeatingSystem`:
 
 ```python3
+# central-heating-project/server/heating/heating_system.py
 from typing import Optional
 
 import pigpio
@@ -128,36 +129,10 @@ class HeatingSystem:
     scheduler = BackgroundScheduler()
     
     def __init__(self):
-        """
-        Tasks:
-        - Create or get a config file for persistent settings
-        - Get the first sensor readings
-        - Set up connection with Raspberry Pi GPIO pins
-        - Initialize scheduled tasks
-        """
-        self.config = {
-            'target': 20,
-        }
+        self.config = {'target': 20}
         self.measurements = self.get_measurements()
-
         self.scheduler.add_job(self.main_loop, 'interval', minutes=5)
-        
-    def get_measurements(self):
-        """Gets measurements from temperature sensor and handles errors, 
-        by returning the last known set of measurements or a default"""
-        try:
-            self.measurements = requests.get(self.TEMPERATURE_URL).json()
-        except Exception as e:
-            print(e)
-        try:
-            measurements = self.measurements
-        except AttributeError:
-            measurements = {
-                'temperature': 0,
-                'pressure': 0,
-                'humidity': 0
-            }
-        return measurements
+        self.scheduler.start()
     
     @property
     def temperature(self) -> float:
@@ -195,6 +170,7 @@ class HeatingSystem:
             self.pi.write(self.RELAY_GPIO_PIN, 0)
 
     def main_loop(self):
+        """Checks if temperature is below, within or above the target and switches on/off relay accordingly"""
         if self.too_cold is None:
             return
         elif self.too_cold is True:
@@ -203,9 +179,28 @@ class HeatingSystem:
             self.switch_off_relay()
     
     def frost_stat_loop(self):
+        """Checks if temperature is below a dangerous level (5'C), and switches on heating if so"""
         if self.temperature < 5:
             self.switch_on_relay()
         elif self.temperature > 6:
             self.switch_off_relay()
+    
+    def get_measurements(self) -> dict:
+        """Gets measurements from temperature sensor and handles errors, 
+        by returning the last known set of measurements or a default"""
+        try:
+            self.measurements = requests.get(self.TEMPERATURE_URL).json()
+        except Exception as e:
+            print(e)
+        try:
+            measurements = self.measurements
+        except AttributeError:
+            measurements = {
+                'temperature': 0,
+                'pressure': 0,
+                'humidity': 0
+            }
+        return measurements
 
 ```
+So, now you can see it taking shape. The system in it's current state will actually perform the task of keeping our space above 20'C, and will check the temperature every 5 minutes. We currently still have no way to configure the system, but the `conf` attribute is a hint of what's coming, as it will also store the times we want the heating to be on, which, again, we can add in later.
