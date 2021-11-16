@@ -33,6 +33,7 @@ In my setup, this will (eventually) be on the machine whose GPIO pins control th
 
 Ok let's start, as I did then, with the heating system. I have stuck with the OOP approach that I set out with, as it has proved useful to be able to import the whole system and reference its attributes and properties in the API, but a functional approach based on the main methods and properties would also be possible.
 ```python3
+# central-heating-project/server/heating/heating_system.py
 import pigpio
 
 
@@ -205,4 +206,43 @@ class HeatingSystem:
         return measurements
 
 ```
-So, there's another dependency (`pip install apscheduler`), which is a really simple, but popular and powerful library letting us schedule tasks at either specific times or at intervals, but now you can see it taking shape. The system in its current state will actually perform the task of keeping our space above 20'C, and will check the temperature every 5 minutes. We currently still have no way to configure the system, but the `conf` dictionary is a hint of what's coming, as it will also store the times we want the heating to be on, which, again, we can add in later. We're also not using the frost stat method, a feature which guards against frozen pipes that is included in most off the shelf wall heating programmers. I've added a `THRESHOLD` attribute that defines the 'deadzone' in which the relay will neither be switched on nor off, used in the `too_cold` property which is in turn used in the `main_loop` method. It returns a bool (`True`/`False`) unless the temperature is within the threshold, in which case it returns `None` (it has no return clause, so technically is a void function, but in Python this is the same as returning `None`).
+So, there's another dependency (`pip install apscheduler`), which is a really simple, but popular and powerful library letting us schedule tasks at either specific times or at intervals, but now you can see it taking shape. The system in its current state will actually perform the task of keeping our space above 20'C, and will check the temperature every 5 minutes. We currently still have no way to configure the system, but the `conf` dictionary is a hint of what's coming, as it will also store the times we want the heating to be on, which, again, we can add in later. We're also not using the `frost_stat_loop` method, a feature which guards against frozen pipes that is included in most off the shelf wall heating programmers.
+
+I've added a `THRESHOLD` attribute that defines the 'deadzone' in which the relay will neither be switched on nor off, used in the `too_cold` property which is in turn used in the `main_loop` method. It returns a bool (`True`/`False`) unless the temperature is within the threshold, in which case it returns `None` (it has no return clause, so technically is a void function, but in Python this is the same as returning `None`).
+
+OK let's get to the fun stuff, the endpoints! For the purposes of this tutorial, I have decided that 4 endpoints will suffice: one to get the data (GET); one to set the data (POST); one to trigger/cancel an override (GET); and one to turn on/off the program (GET).
+
+One great thing about FastAPI and one of its core dependencies, Pydantic, is that it allows you to define types for the arguments that your endpoints accept which when used correctly, serve to validate data that is either being sent or received by the API. When used in conjunction with TypeScript on the front-end, it is truly a delight to work with. If your types are named similarly, it is almost like you are using different dialects of the same language, when jumping between front and back.
+
+```python3
+from fastapi import APIRouter
+from pydantic import BaseModel
+
+from .heating_system import HeatingSystem
+
+router = APIRouter()
+hs = HeatingSystem()
+
+class HeatingResponse(BaseModel):
+    temperature: float
+    target: int
+    
+class HeatingUpdate(BaseModel):
+    target: int
+
+@router.get('/heating/')
+async def heating():
+    return HeatingResponse(
+        temperature=hs.temperature,
+        target=hs.target,
+    )
+
+@router.post('/heating/')
+async def heating(update: HeatingUpdate):
+    hs.conf['target'] = update.target
+    return await heating()
+```
+
+The one thing that you have to get used to with FastAPI is using async / await. But one way to look at it is that an asynchronous function, or coroutine, will behave exactly as you would expect a synchronous function to behave (within another asynchronous function) if it is preceded with the keyword `await`.
+
+Now would be a good time to check out the Swagger documentation that is automatically generated for us. Go to `http://localhost:8080/docs`
