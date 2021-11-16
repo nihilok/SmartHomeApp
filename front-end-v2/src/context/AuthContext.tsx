@@ -2,9 +2,14 @@ import * as React from "react";
 
 const apiBaseUrl = "http://localhost:8080";
 
+interface iToken {
+  access_token: string;
+  token_type: string;
+}
+
 interface iAuthContext {
   isAuthenticated: boolean;
-  token: { access_token: string; type: string };
+  token: iToken;
   apiBaseUrl: string;
 }
 
@@ -16,8 +21,8 @@ interface ContextWithReducer {
 const initialState: iAuthContext = {
   isAuthenticated: false,
   token: JSON.parse(localStorage.getItem("token") as string) || {
-    token: "",
-    type: "",
+    access_token: "",
+    token_type: "",
   },
   apiBaseUrl: apiBaseUrl,
 };
@@ -26,11 +31,6 @@ const AuthContext = React.createContext<ContextWithReducer>({
   context: initialState,
   dispatch: () => {},
 });
-
-interface iToken {
-  access_token: string;
-  token_type: string;
-}
 
 export const LOGIN = "LOGIN";
 export const LOGOUT = "LOGOUT";

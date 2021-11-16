@@ -232,7 +232,7 @@ export function SettingsForm() {
     getInfo();
     let interval = setInterval(getInfo, TEMPERATURE_INTERVAL);
     return () => clearInterval(interval);
-  }, [fetch]);
+  }, [fetch, parseData]);
 
   return (
     <div className={"full-screen flex flex-col justify-center align-center"}>
