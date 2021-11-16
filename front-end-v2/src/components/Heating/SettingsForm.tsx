@@ -9,7 +9,8 @@ import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import { checkTimeStringWithinLimit } from "../../lib/helpers";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
 import { HelpButton } from "../HelpButton/HelpButton";
-import {FullScreenComponent} from "../Custom/FullScreenComponent";
+import { FullScreenComponent } from "../Custom/FullScreenComponent";
+import { ProgramArrow } from "./ProgramArrow";
 
 export function SettingsForm() {
   interface Override {
@@ -162,13 +163,21 @@ export function SettingsForm() {
     );
   }
 
+  const withinLimit1: boolean =
+    !!config.program_on &&
+    checkTimeStringWithinLimit(config.on_1, config.off_1)
+
+  const withinLimit2: boolean =
+    !!config.program_on &&
+    checkTimeStringWithinLimit(config.on_2 as string, config.off_2 as string)
+
   const overrideDisabled = () => {
     switch (true) {
       case !config.program_on:
         return false;
-      case checkTimeStringWithinLimit(config.on_1, config.off_1):
+      case withinLimit1:
         return true;
-      case checkTimeStringWithinLimit(config.on_2 as string, config.off_2 as string):
+      case withinLimit2:
         return true;
       default:
         return false;
@@ -294,10 +303,9 @@ export function SettingsForm() {
                   onChange={handleTimeChange}
                   disabled={!config.program_on}
                 />
-                <div
-                  className={classNames("arrow right", {
-                    "disabled-arrow": !config.program_on,
-                  })}
+                <ProgramArrow
+                  programOn={config.program_on as boolean}
+                  withinLimit={withinLimit1}
                 />
                 <StyledTextField
                   label="Off 1"
@@ -331,10 +339,9 @@ export function SettingsForm() {
                   onChange={handleTimeChange}
                   disabled={!config.program_on}
                 />
-                <div
-                  className={classNames("arrow right", {
-                    "disabled-arrow": !config.program_on,
-                  })}
+                <ProgramArrow
+                  programOn={config.program_on as boolean}
+                  withinLimit={withinLimit2}
                 />
                 <StyledTextField
                   label="Off 2"
