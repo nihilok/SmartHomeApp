@@ -9,6 +9,7 @@ import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import { checkTimeStringWithinLimit } from "../../lib/helpers";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
 import { HelpButton } from "../HelpButton/HelpButton";
+import {FullScreenComponent} from "../Custom/FullScreenComponent";
 
 export function SettingsForm() {
   interface Override {
@@ -223,7 +224,7 @@ export function SettingsForm() {
   }, [fetch, parseData]);
 
   return (
-    <div className={"full-screen flex flex-col justify-center align-center"}>
+    <FullScreenComponent>
       <HelpButton helpMode={helpMode} setHelpMode={setHelpMode} />
       <form className="heating-settings">
         <Box>
@@ -421,6 +422,6 @@ export function SettingsForm() {
           )}
         </Box>
       </form>
-    </div>
+    </FullScreenComponent>
   );
 }
