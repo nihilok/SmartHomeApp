@@ -8,9 +8,9 @@ interface iToken {
 }
 
 interface iAuthContext {
+  apiBaseUrl: string;
   isAuthenticated: boolean;
   token: iToken;
-  apiBaseUrl: string;
 }
 
 interface ContextWithReducer {

@@ -1,13 +1,14 @@
 import * as React from "react";
 import "./heating.css";
-import { Box, Button, Slider, Stack, Switch } from "@mui/material";
-import { useFetchWithToken } from "../../hooks/FetchWithToken";
 import classNames from "classnames";
-import { StyledTextField } from "../Custom/StyledTextField";
-import { FullScreenLoader } from "../Loaders/FullScreenLoader";
-import { TEMPERATURE_INTERVAL } from "../../constants/constants";
-import { HelpButton } from "../HelpButton/HelpButton";
+import { Box, Button, Slider, Stack, Switch } from "@mui/material";
 import { StyledTooltip } from "../Custom/StyledTooltip";
+import { StyledTextField } from "../Custom/StyledTextField";
+import { TEMPERATURE_INTERVAL } from "../../constants/constants";
+import { useFetchWithToken } from "../../hooks/FetchWithToken";
+import { parseTimes } from "../../lib/helpers";
+import { FullScreenLoader } from "../Loaders/FullScreenLoader";
+import { HelpButton } from "../HelpButton/HelpButton";
 
 export function SettingsForm() {
   interface Override {
@@ -158,18 +159,6 @@ export function SettingsForm() {
         });
       })
     );
-  }
-
-  function parseTimes(on: string, off: string, timeNow: Date) {
-    const on_diff = timeNow.getHours() - parseInt(on.split(":")[0]);
-    if (on_diff < 0) return false;
-    if (on_diff < 1)
-      if (parseInt(on.split(":")[1]) > timeNow.getMinutes()) return false;
-    const off_diff = parseInt(off.split(":")[0]) - timeNow.getHours();
-    if (off_diff < 0) return false;
-    if (off_diff < 1)
-      if (parseInt(off.split(":")[1]) < timeNow.getMinutes()) return false;
-    return true;
   }
 
   const overrideDisabled = () => {
