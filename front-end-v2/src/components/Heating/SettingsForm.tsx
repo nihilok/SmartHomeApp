@@ -6,7 +6,7 @@ import { StyledTooltip } from "../Custom/StyledTooltip";
 import { StyledTextField } from "../Custom/StyledTextField";
 import { TEMPERATURE_INTERVAL } from "../../constants/constants";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
-import { parseTimes } from "../../lib/helpers";
+import { checkTimeStringWithinLimit } from "../../lib/helpers";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
 import { HelpButton } from "../HelpButton/HelpButton";
 
@@ -162,13 +162,12 @@ export function SettingsForm() {
   }
 
   const overrideDisabled = () => {
-    const timeNow = new Date();
     switch (true) {
       case !config.program_on:
         return false;
-      case parseTimes(config.on_1, config.off_1, timeNow):
+      case checkTimeStringWithinLimit(config.on_1, config.off_1):
         return true;
-      case parseTimes(config.on_2 as string, config.off_2 as string, timeNow):
+      case checkTimeStringWithinLimit(config.on_2 as string, config.off_2 as string):
         return true;
       default:
         return false;
