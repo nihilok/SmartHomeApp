@@ -10,10 +10,37 @@ import { HelpButton } from "../HelpButton/HelpButton";
 import { StyledTooltip } from "../Custom/StyledTooltip";
 
 export function SettingsForm() {
-  const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
-  const lockRef = React.useRef<boolean>(true);
+  interface Override {
+    start?: number;
+    on: boolean;
+  }
 
-  const initialState = {
+  interface Sensors {
+    temperature: number;
+    pressure: number;
+    humidity: number;
+  }
+
+  interface HeatingConfig {
+    target: number;
+    on_1: string;
+    off_1: string;
+    on_2?: string;
+    off_2?: string;
+    program_on?: boolean;
+    advance?: Override;
+  }
+
+  interface APIResponse {
+    indoor_temperature: number;
+    sensor_readings: Sensors;
+    relay_on: boolean;
+    conf: HeatingConfig;
+  }
+
+  type Data = APIResponse;
+
+  const initialState: HeatingConfig = {
     target: 20,
     program_on: true,
     on_1: "",
@@ -22,75 +49,60 @@ export function SettingsForm() {
     off_2: "",
   };
 
-  interface Override {
-    start?: number;
-    on: boolean;
-  }
-
-  interface OverrideResponseKey {
-    advance?: Override;
-  }
-
-  interface CurrentTempResponseKey {
-    current?: number;
-  }
-
-  interface RelayOnResponseKey {
-    on?: boolean;
-  }
-
-  type Data = typeof initialState &
-    OverrideResponseKey &
-    CurrentTempResponseKey &
-    RelayOnResponseKey;
-
   const fetch = useFetchWithToken();
-
-  const [state, setState] = React.useState(initialState);
+  const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
+  const lockRef = React.useRef(true);
   const firstLoad = React.useRef(true);
+  const [config, setConfig] = React.useState(initialState);
   const [isLoading, setIsLoading] = React.useState(true);
   const [helpMode, setHelpMode] = React.useState(false);
   const [currentTemp, setCurrentTemp] = React.useState<number>();
-  const [outdoorTemp, setOutdoorTemp] = React.useState<number>();
   const [relayOn, setRelayOn] = React.useState(false);
   const [override, setOverride] = React.useState<Override>({
     on: false,
   });
 
   function handleSliderChange(event: Event, newValue: number | number[]) {
-    setState({ ...state, target: newValue as number });
+    setConfig({ ...config, target: newValue as number });
   }
 
   const programLabel = {
-    inputProps: { "aria-label": "Heating Program On Off Switch" },
+    inputProps: {
+      "aria-label": "Switch between timer program and frost stat mode",
+    },
   };
 
   function handleTimeChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setState({ ...state, [event.target.name]: event.target.value });
+    setConfig({ ...config, [event.target.name]: event.target.value });
   }
 
   const parseData = React.useCallback((data: Data) => {
-    lockRef.current = true;
-    const { on_1, off_1, on_2, off_2, program_on, target } = data;
-    setState({
-      on_1,
-      off_1,
-      on_2,
-      off_2,
-      program_on,
-      target,
-    });
-    setOverride(data.advance ?? { on: false });
-    if (data.current) setCurrentTemp(data.current);
-    if (data.on !== undefined) setRelayOn(data.on);
-    lockRef.current = false;
+    if (!lockRef.current) {
+      lockRef.current = true;
+      if (data.conf) {
+        const { on_1, off_1, on_2, off_2, program_on, target, advance } =
+          data.conf;
+        setConfig({
+          on_1,
+          off_1,
+          on_2,
+          off_2,
+          program_on,
+          target,
+        });
+        setOverride(advance ?? { on: false });
+      }
+      if (data.indoor_temperature) setCurrentTemp(data.indoor_temperature);
+      if (data.relay_on !== null) setRelayOn(data.relay_on);
+      lockRef.current = false;
+    }
   }, []);
 
   const getSettings = React.useCallback(async () => {
     console.debug("Getting settings");
-    await fetch("/heating/conf/")
+    await fetch("/heating/")
       .then((res) =>
-        res.json().then((data) => {
+        res.json().then((data: Data) => {
           if (res.status !== 200) return console.log(data);
           parseData(data);
         })
@@ -102,14 +114,13 @@ export function SettingsForm() {
   }, [fetch, parseData]);
 
   const setSettings = React.useCallback(
-    async (state: typeof initialState) => {
+    async (currentState: HeatingConfig) => {
       console.debug("Updating settings");
-      await fetch("/heating/", "POST", state).then((res) =>
+      await fetch("/heating/", "POST", currentState).then((res) =>
         res.json().then((data) => {
-          if (res.status !== 200) {
-            parseData(data);
-          } else {
-            if (data !== state) setState(data);
+          if (res.status !== 200) console.error(data);
+          else {
+            if (data !== currentState) parseData(data);
           }
         })
       );
@@ -118,7 +129,7 @@ export function SettingsForm() {
   );
 
   const debounce = React.useCallback(
-    (state: typeof initialState) => {
+    (state: HeatingConfig) => {
       clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
       timeoutRef.current = setTimeout(() => {
         setSettings(state)
@@ -164,11 +175,11 @@ export function SettingsForm() {
   const overrideDisabled = () => {
     const timeNow = new Date();
     switch (true) {
-      case !state.program_on:
+      case !config.program_on:
         return false;
-      case parseTimes(state.on_1, state.off_1, timeNow):
+      case parseTimes(config.on_1, config.off_1, timeNow):
         return true;
-      case parseTimes(state.on_2, state.off_2, timeNow):
+      case parseTimes(config.on_2 as string, config.off_2 as string, timeNow):
         return true;
       default:
         return false;
@@ -188,7 +199,7 @@ export function SettingsForm() {
 
   function handleProgramChange(event: React.ChangeEvent<HTMLInputElement>) {
     lockRef.current = true;
-    setState({ ...state, program_on: event.target.checked });
+    setConfig({ ...config, program_on: event.target.checked });
     programOnOff().catch((error) => console.log(error));
   }
 
@@ -203,21 +214,18 @@ export function SettingsForm() {
       lockRef.current = false;
       return;
     }
-    debounce(state);
+    debounce(config);
     return () => {
       clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
     };
-  }, [debounce, state]);
+  }, [debounce, config]);
 
   React.useEffect(() => {
     function getInfo() {
-      fetch("/heating/info/").then((res) =>
-        res.json().then((data) => {
+      fetch("/heating/").then((res) =>
+        res.json().then((data: Data) => {
           if (res.status !== 200) return console.log(data);
-          setCurrentTemp(data.temp_float);
-          setOutdoorTemp(data.outdoor_float);
-          setRelayOn(data.on);
-          setOverride(data.advance ?? { on: false });
+          parseData(data);
         })
       );
     }
@@ -268,13 +276,13 @@ export function SettingsForm() {
                 >
                   <Slider
                     aria-label="Target Temperature"
-                    value={state.target}
+                    value={config.target}
                     onChange={handleSliderChange}
                     min={10}
                     max={28}
                   />
                 </StyledTooltip>
-                <h2>{state.target}&deg;C</h2>
+                <h2>{config.target}&deg;C</h2>
               </Stack>
 
               <Stack
@@ -289,30 +297,30 @@ export function SettingsForm() {
                   label="On 1"
                   name="on_1"
                   type="time"
-                  value={state.on_1}
+                  value={config.on_1}
                   InputLabelProps={{
                     shrink: true,
                   }}
                   required={true}
                   onChange={handleTimeChange}
-                  disabled={!state.program_on}
+                  disabled={!config.program_on}
                 />
                 <div
                   className={classNames("arrow right", {
-                    "disabled-arrow": !state.program_on,
+                    "disabled-arrow": !config.program_on,
                   })}
                 />
                 <StyledTextField
                   label="Off 1"
                   name="off_1"
                   type="time"
-                  value={state.off_1}
+                  value={config.off_1}
                   required={true}
                   InputLabelProps={{
                     shrink: true,
                   }}
                   onChange={handleTimeChange}
-                  disabled={!state.program_on}
+                  disabled={!config.program_on}
                 />
               </Stack>
               <Stack
@@ -327,28 +335,28 @@ export function SettingsForm() {
                   label="On 2"
                   name="on_2"
                   type="time"
-                  value={state.on_2}
+                  value={config.on_2}
                   InputLabelProps={{
                     shrink: true,
                   }}
                   onChange={handleTimeChange}
-                  disabled={!state.program_on}
+                  disabled={!config.program_on}
                 />
                 <div
                   className={classNames("arrow right", {
-                    "disabled-arrow": !state.program_on,
+                    "disabled-arrow": !config.program_on,
                   })}
                 />
                 <StyledTextField
                   label="Off 2"
                   type="time"
                   name="off_2"
-                  value={state.off_2}
+                  value={config.off_2}
                   InputLabelProps={{
                     shrink: true,
                   }}
                   onChange={handleTimeChange}
-                  disabled={!state.program_on}
+                  disabled={!config.program_on}
                 />
               </Stack>
               <Stack
@@ -367,10 +375,10 @@ export function SettingsForm() {
                   <Switch
                     {...programLabel}
                     onChange={handleProgramChange}
-                    checked={state.program_on}
+                    checked={config.program_on}
                   />
                 </StyledTooltip>
-                <h2>{state.program_on ? "On" : "Off"}</h2>
+                <h2>{config.program_on ? "On" : "Off"}</h2>
               </Stack>
               <Stack
                 spacing={2}
