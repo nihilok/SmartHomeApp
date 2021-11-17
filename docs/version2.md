@@ -260,7 +260,7 @@ The one thing that you have to get used to with FastAPI is using async / await. 
 Now would be a good time to check out the Swagger documentation that is automatically generated for us. Go to `http://localhost:8080/docs`. We can get even more info in our docs and further validate our responses, by including a response model parameter in the route decorator, like so (in this case the `update_heating` function returns the result of the `heating` function, so the response models are the same):
 
 ```python3
-# central-heating-project/server/heating/heating_endpoints.
+# central-heating-project/server/heating/heating_endpoints.py
 
 @router.get('/heating/', response_model=HeatingResponse)
 async def heating():
@@ -275,3 +275,59 @@ async def update_heating(update: HeatingUpdate):
     return await heating()
 ```
 It would be possible to pass the target update as just an int, but again, we plan to beef this model up later when we add in the times. You can play in swagger (`/docs`) with passing different payloads and seeing the response. In most cases, if you don't pass something that can be represented by the pydantic model you created, you will get an HTTP Unprocessable Entity response (422). In our case, in the body of the POST request to `/heating/` we would have to have an `update` key that represents an object with a `target` key or we will get a 422. If we were passing a single int value as a parameter, we would type hint the parameter as an int, and while a string representing an integer can be coersed into the correct type, anything else will return a 422. While these errors tell you exactly which parameters are failing, it can sometimes be difficult to debug them without removing the type entirely, as the function never executes past checking the types of the parameters, which is not enough for you to be able to print or log the object, for example, to see what's going wrong.
+
+
+```python3
+# central-heating-project/server/heating/heating_endpoints.py
+
+from fastapi import APIRouter
+from pydantic import BaseModel
+
+from .heating_system import HeatingSystem
+
+router = APIRouter()
+hs = HeatingSystem()
+
+
+# Create models for our parameters/responses:
+class HeatingResponse(BaseModel):
+    temperature: float
+    target: int
+    
+class HeatingUpdate(BaseModel):
+    target: int
+
+
+# Create functions for our different endpoints/routes:
+@router.get('/heating/', response_model=HeatingResponse)
+async def heating():
+    return HeatingResponse(
+        temperature=hs.temperature,
+        target=hs.target,
+    )
+
+
+@router.post('/heating/', response_model=HeatingResponse)
+async def update_heating(update: HeatingUpdate):
+    hs.conf['target'] = update.target
+    return await heating()
+
+
+@router.get('/heating/program/', reponse_model=HeatingResponse)
+async def program_on_off(off: bool = False):
+    if off:
+        hs.program_off()
+    else:
+        hs.program_on()
+    return await heating()
+
+
+@router.get('/heating/override/', response_model=HeatingResponse)
+async def override(cancel: bool = False):
+    if cancel:
+        hs.cancel_advance()
+    else:
+        hs.advance()
+    return await heating()
+
+```
