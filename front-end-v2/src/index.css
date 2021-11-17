@@ -91,3 +91,19 @@ input {
 .align-center {
   align-items: center;
 }
+
+input[type=time],
+input[type=time]::-webkit-inner-spin-button,
+input[type=time]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+input[type="time"]::-webkit-date-and-time-value {
+  margin: 0;
+  font-size: 1.5rem;
+  width: 100%;
+  text-align: center;
+}
+
