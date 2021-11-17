@@ -29,8 +29,11 @@ central-heating-project/
     main.py
 ```
 
-Ok let's start, as I did, with the heating system. I have stuck with the OOP approach that I set out with, as it has proved useful to be able to import the whole system and reference its attributes and properties in the API, but a functional approach based on the main methods and properties would also be possible.
+In my setup, this will (eventually) be on the machine whose GPIO pins control the relay, which is separate from the temperature sensor, although it would be possible to have the temperature sensor attached to the same Raspberry Pi. See my initial write-up for more.
+
+Ok let's start, as I did then, with the heating system. I have stuck with the OOP approach that I set out with, as it has proved useful to be able to import the whole system and reference its attributes and properties in the API, but a functional approach based on the main methods and properties would also be possible.
 ```python3
+# central-heating-project/server/heating/heating_system.py
 import pigpio
 
 
@@ -62,9 +65,9 @@ class HeatingSystem:
         if self.relay_on:
             self.pi.write(self.RELAY_GPIO_PIN, 0)
 ```
-So straight away we have a Python dependency (`pip install pigpio`), so it would be worth creating a virtual environment, and you will also need to install and run the pigpio daemon on your Raspberry Pi (`sudo apt install pigpiod -y && pigpiod`). Otherwise, though, you can see that the system is relatively simple, and and still needs a way to check the measurements served by the NodeMCU unit, which we haven't started on yet, we have everything we need to see how the essence of the system will work.
+So straight away we have a Python dependency (`pip install pigpio`), so it would be worth creating a virtual environment; you will also need to install and run the pigpio daemon on your Raspberry Pi (`sudo apt install pigpiod -y && pigpiod`). Otherwise, though, you can see that the system is relatively simple, and while it still needs a way to check the measurements served by the NodeMCU unit, which we haven't started on yet, and a way to check these against a target set by the user, as well as to schedule the task of doing so, we have everything we need to see how the essence of the system will work.
 
-We will come back to this to add more complexity, but for now let's take a look at the API endpoints and see if we can't turn on the relay from our smartphone! I know straight away that I'm going to be using FastApi for this build, as while the initial build of this used Flask, FastAPI has now far surpassed Flask as my go-to framework of choice.
+We will come back to this to add more complexity, but for now let's take a look at the API endpoints and see if we can't turn on the relay from our smartphone! I know straight away that I'm going to be using FastAPI for this build, as while the initial build of this used Flask, FastAPI has now far surpassed Flask as my go-to framework of choice.
 
 Again, from a modularity-first perspective, we should create a basic FastAPI (ASGI) app that we can add different routers to, and then in a separate file create a specific router for our heating related endpoints:
 ```python3
@@ -108,9 +111,10 @@ if __name__ == "__main__":
     uvicorn.run('server:app', port=8080)
 ```
 
-And now if we run that (`python main.py`) and go to http://localhost:8080/relay in a browser we should see the relay turn on for 5 seconds before switching off again, and the success message json should then load in the browser window. Now it's just a case of deciding what different routes we need, and creating a front-end app to control the system.
+And now if we run that (`python main.py`) and go to http://localhost:8080/relay in a browser we should see the relay turn on for 5 seconds before switching off again, and the success message json should then load in the browser window. Now it's just a case of deciding what different routes we need, and creating a front-end app to control the system. First, let's add a few more useful methods and properties etc. to the `HeatingSystem`:
 
 ```python3
+# central-heating-project/server/heating/heating_system.py
 from typing import Optional
 
 import pigpio
@@ -128,36 +132,10 @@ class HeatingSystem:
     scheduler = BackgroundScheduler()
     
     def __init__(self):
-        """
-        Tasks:
-        - Create or get a config file for persistent settings
-        - Get the first sensor readings
-        - Set up connection with Raspberry Pi GPIO pins
-        - Initialize scheduled tasks
-        """
-        self.config = {
-            'target': 20,
-        }
+        self.config = {'target': 20}
         self.measurements = self.get_measurements()
-
         self.scheduler.add_job(self.main_loop, 'interval', minutes=5)
-        
-    def get_measurements(self):
-        """Gets measurements from temperature sensor and handles errors, 
-        by returning the last known set of measurements or a default"""
-        try:
-            self.measurements = requests.get(self.TEMPERATURE_URL).json()
-        except Exception as e:
-            print(e)
-        try:
-            measurements = self.measurements
-        except AttributeError:
-            measurements = {
-                'temperature': 0,
-                'pressure': 0,
-                'humidity': 0
-            }
-        return measurements
+        self.scheduler.start()
     
     @property
     def temperature(self) -> float:
@@ -195,6 +173,7 @@ class HeatingSystem:
             self.pi.write(self.RELAY_GPIO_PIN, 0)
 
     def main_loop(self):
+        """Checks if temperature is below, within or above the target and switches on/off relay accordingly"""
         if self.too_cold is None:
             return
         elif self.too_cold is True:
@@ -203,9 +182,67 @@ class HeatingSystem:
             self.switch_off_relay()
     
     def frost_stat_loop(self):
+        """Checks if temperature is below a dangerous level (5'C), and switches on heating if so"""
         if self.temperature < 5:
             self.switch_on_relay()
         elif self.temperature > 6:
             self.switch_off_relay()
+    
+    def get_measurements(self) -> dict:
+        """Gets measurements from temperature sensor and handles errors, 
+        by returning the last known set of measurements or a default"""
+        try:
+            self.measurements = requests.get(self.TEMPERATURE_URL).json()
+        except Exception as e:
+            print(e)
+        try:
+            measurements = self.measurements
+        except AttributeError:
+            measurements = {
+                'temperature': 0,
+                'pressure': 0,
+                'humidity': 0
+            }
+        return measurements
 
 ```
+So, there's another dependency (`pip install apscheduler`), which is a really simple, but popular and powerful library letting us schedule tasks at either specific times or at intervals, but now you can see it taking shape. The system in its current state will actually perform the task of keeping our space above 20'C, and will check the temperature every 5 minutes. We currently still have no way to configure the system, but the `conf` dictionary is a hint of what's coming, as it will also store the times we want the heating to be on, which, again, we can add in later. We're also not using the `frost_stat_loop` method, a feature which guards against frozen pipes that is included in most off the shelf wall heating programmers.
+
+I've added a `THRESHOLD` attribute that defines the 'deadzone' in which the relay will neither be switched on nor off, used in the `too_cold` property which is in turn used in the `main_loop` method. It returns a bool (`True`/`False`) unless the temperature is within the threshold, in which case it returns `None` (it has no return clause, so technically is a void function, but in Python this is the same as returning `None`).
+
+OK let's get to the fun stuff, the endpoints! For the purposes of this tutorial, I have decided that 4 endpoints will suffice: one to get the data (GET); one to set the data (POST); one to trigger/cancel an override (GET); and one to turn on/off the program (GET).
+
+One great thing about FastAPI and one of its core dependencies, Pydantic, is that it allows you to define types for the arguments that your endpoints accept which when used correctly, serve to validate data that is either being sent or received by the API. When used in conjunction with TypeScript on the front-end, it is truly a delight to work with. If your types are named similarly, it is almost like you are using different dialects of the same language, when jumping between front and back.
+
+```python3
+from fastapi import APIRouter
+from pydantic import BaseModel
+
+from .heating_system import HeatingSystem
+
+router = APIRouter()
+hs = HeatingSystem()
+
+class HeatingResponse(BaseModel):
+    temperature: float
+    target: int
+    
+class HeatingUpdate(BaseModel):
+    target: int
+
+@router.get('/heating/')
+async def heating():
+    return HeatingResponse(
+        temperature=hs.temperature,
+        target=hs.target,
+    )
+
+@router.post('/heating/')
+async def heating(update: HeatingUpdate):
+    hs.conf['target'] = update.target
+    return await heating()
+```
+
+The one thing that you have to get used to with FastAPI is using async / await. But one way to look at it is that an asynchronous function, or coroutine, will behave exactly as you would expect a synchronous function to behave (within another asynchronous function) if it is preceded with the keyword `await`.
+
+Now would be a good time to check out the Swagger documentation that is automatically generated for us. Go to `http://localhost:8080/docs`
