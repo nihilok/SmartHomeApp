@@ -11,7 +11,8 @@ import { FullScreenLoader } from "../Loaders/FullScreenLoader";
 import { HelpButton } from "../HelpButton/HelpButton";
 import { FullScreenComponent } from "../Custom/FullScreenComponent";
 import { ProgramArrow } from "./ProgramArrow";
-import {WeatherButton} from "../WeatherButton/WeatherButton";
+import { WeatherButton } from "../WeatherButton/WeatherButton";
+import { OpenCloseButton } from "./OpenCloseButton";
 
 export function SettingsForm() {
   interface Override {
@@ -60,6 +61,7 @@ export function SettingsForm() {
   const [config, setConfig] = React.useState(initialState);
   const [isLoading, setIsLoading] = React.useState(true);
   const [helpMode, setHelpMode] = React.useState(false);
+  const [row2, setRow2] = React.useState(true);
   const [currentTemp, setCurrentTemp] = React.useState<number>();
   const [relayOn, setRelayOn] = React.useState(false);
   const [override, setOverride] = React.useState<Override>({
@@ -166,11 +168,11 @@ export function SettingsForm() {
 
   const withinLimit1: boolean =
     !!config.program_on &&
-    checkTimeStringWithinLimit(config.on_1, config.off_1)
+    checkTimeStringWithinLimit(config.on_1, config.off_1);
 
   const withinLimit2: boolean =
     !!config.program_on &&
-    checkTimeStringWithinLimit(config.on_2 as string, config.off_2 as string)
+    checkTimeStringWithinLimit(config.on_2 as string, config.off_2 as string);
 
   const overrideDisabled = () => {
     switch (true) {
@@ -233,64 +235,70 @@ export function SettingsForm() {
     return () => clearInterval(interval);
   }, [fetch, parseData]);
 
+  const click = () => {
+    const elem = document.getElementsByClassName("section")[0] as HTMLElement;
+    elem.style.transform = "scale(0)";
+    elem.style.height = "0";
+  };
+
   return (
     <FullScreenComponent>
-      <WeatherButton/>
+      <WeatherButton />
       <HelpButton helpMode={helpMode} setHelpMode={setHelpMode} />
       <form className="heating-settings">
-        <Box>
-          {isLoading ? (
-            <FullScreenLoader />
-          ) : (
-            <>
-              <h1>Heating Settings</h1>
-              {currentTemp && (
-                <StyledTooltip
-                  title={`Indoor Temperature. Relay is currently ${
-                    relayOn ? "on" : "off"
-                  }`}
-                  placement="top"
-                  disabled={!helpMode}
-                >
-                  <h1
-                    className={classNames("TempDisplay", {
-                      TempDisplay__On: relayOn,
-                    })}
-                  >
-                    {currentTemp.toFixed(1)}&deg;C
-                  </h1>
-                </StyledTooltip>
-              )}
-              <Stack
-                spacing={2}
-                direction="row"
-                sx={{ mb: 3 }}
-                alignItems="center"
-                justifyContent="center"
+        {isLoading ? (
+          <FullScreenLoader />
+        ) : (
+          <>
+            <h1>Heating Settings</h1>
+            {currentTemp && (
+              <StyledTooltip
+                title={`Indoor Temperature. Relay is currently ${
+                  relayOn ? "on" : "off"
+                }`}
+                placement="top"
+                disabled={!helpMode}
               >
-                <h2>Target:</h2>
-                <StyledTooltip
-                  title="Desired internal temperature"
-                  placement="top"
-                  disabled={!helpMode}
+                <h1
+                  className={classNames("TempDisplay", {
+                    TempDisplay__On: relayOn,
+                  })}
                 >
-                  <Slider
-                    aria-label="Target Temperature"
-                    value={config.target}
-                    onChange={handleSliderChange}
-                    min={10}
-                    max={28}
-                  />
-                </StyledTooltip>
-                <h2>{config.target}&deg;C</h2>
-              </Stack>
+                  {currentTemp.toFixed(1)}&deg;C
+                </h1>
+              </StyledTooltip>
+            )}
+            <Stack
+              spacing={2}
+              direction="row"
+              sx={{ mb: 3 }}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <h2>Target:</h2>
+              <StyledTooltip
+                title="Desired internal temperature"
+                placement="top"
+                disabled={!helpMode}
+              >
+                <Slider
+                  aria-label="Target Temperature"
+                  value={config.target}
+                  onChange={handleSliderChange}
+                  min={10}
+                  max={28}
+                />
+              </StyledTooltip>
+              <h2>{config.target}&deg;C</h2>
+            </Stack>
 
+            <section style={{ position: "relative" }}>
               <Stack
-                spacing={2}
+                spacing={4}
                 direction="row"
                 sx={{ mb: 5 }}
                 alignItems="center"
-                justifyContent="space-evenly"
+                justifyContent="center"
                 className={"TimeInputRow"}
               >
                 <StyledTextField
@@ -305,10 +313,20 @@ export function SettingsForm() {
                   onChange={handleTimeChange}
                   disabled={!config.program_on}
                 />
-                <ProgramArrow
-                  programOn={config.program_on as boolean}
-                  withinLimit={withinLimit1}
-                />
+                <span>
+                  <ProgramArrow
+                    programOn={config.program_on as boolean}
+                    withinLimit={withinLimit1}
+                  />
+                  <ProgramArrow
+                    programOn={config.program_on as boolean}
+                    withinLimit={withinLimit1}
+                  />
+                  <ProgramArrow
+                    programOn={config.program_on as boolean}
+                    withinLimit={withinLimit1}
+                  />
+                </span>
                 <StyledTextField
                   label="Off 1"
                   name="off_1"
@@ -322,46 +340,75 @@ export function SettingsForm() {
                   disabled={!config.program_on}
                 />
               </Stack>
-              <Stack
-                spacing={2}
-                direction="row"
-                sx={{ mb: 3 }}
-                alignItems="center"
-                justifyContent="space-evenly"
-                className={"TimeInputRow"}
-              >
-                <StyledTextField
-                  label="On 2"
-                  name="on_2"
-                  type="time"
-                  value={config.on_2}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  onChange={handleTimeChange}
-                  disabled={!config.program_on}
-                />
-                <ProgramArrow
-                  programOn={config.program_on as boolean}
-                  withinLimit={withinLimit2}
-                />
-                <StyledTextField
-                  label="Off 2"
-                  type="time"
-                  name="off_2"
-                  value={config.off_2}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  onChange={handleTimeChange}
-                  disabled={!config.program_on}
-                />
-              </Stack>
-              <StyledTooltip
-                  title="Frost stat mode when off (5&deg;C)"
-                  placement="top"
-                  disabled={!helpMode}
+              {row2 ? (
+                ""
+              ) : (
+                <OpenCloseButton open={true} closeFunc={() => setRow2(true)} />
+              )}
+            </section>
+            {row2 ? (
+              <section className="section" style={{ position: "relative" }}>
+                <Stack
+                  spacing={4}
+                  direction="row"
+                  sx={{ mb: 3 }}
+                  alignItems="center"
+                  justifyContent="center"
+                  className={"TimeInputRow"}
                 >
+                  <StyledTextField
+                    label="On 2"
+                    name="on_2"
+                    type="time"
+                    value={config.on_2}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    onChange={handleTimeChange}
+                    disabled={!config.program_on}
+                  />
+                  <span>
+                    <ProgramArrow
+                      programOn={config.program_on as boolean}
+                      withinLimit={withinLimit2}
+                    />
+                    <ProgramArrow
+                      programOn={config.program_on as boolean}
+                      withinLimit={withinLimit2}
+                    />
+                    <ProgramArrow
+                      programOn={config.program_on as boolean}
+                      withinLimit={withinLimit2}
+                    />
+                  </span>
+                  <StyledTextField
+                    label="Off 2"
+                    type="time"
+                    name="off_2"
+                    value={config.off_2}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    onChange={handleTimeChange}
+                    disabled={!config.program_on}
+                  />
+                </Stack>
+                <OpenCloseButton
+                  open={false}
+                  closeFunc={() => {
+                    click();
+                    setTimeout(() => setRow2(false), 500);
+                  }}
+                />
+              </section>
+            ) : (
+              ""
+            )}
+            <StyledTooltip
+              title="Frost stat mode when off (5&deg;C)"
+              placement="top"
+              disabled={!helpMode}
+            >
               <Stack
                 spacing={2}
                 direction="row"
@@ -370,66 +417,65 @@ export function SettingsForm() {
                 justifyContent="center"
               >
                 <h2>Program:</h2>
-                  <Switch
-                    {...programLabel}
-                    onChange={handleProgramChange}
-                    checked={config.program_on}
-                  />
+                <Switch
+                  {...programLabel}
+                  onChange={handleProgramChange}
+                  checked={config.program_on}
+                />
                 <h2>{config.program_on ? "On" : "Off"}</h2>
               </Stack>
-                </StyledTooltip>
+            </StyledTooltip>
+            <Stack
+              spacing={2}
+              direction="column"
+              sx={{ mb: 4 }}
+              alignItems="center"
+              justifyContent="center"
+            >
               <Stack
                 spacing={2}
-                direction="column"
-                sx={{ mb: 4 }}
+                direction="row"
+                sx={{ mb: 0 }}
                 alignItems="center"
                 justifyContent="center"
               >
-                <Stack
-                  spacing={2}
-                  direction="row"
-                  sx={{ mb: 0 }}
-                  alignItems="center"
-                  justifyContent="center"
+                <StyledTooltip
+                  title={`${override.on ? "Cancel" : "Run"} thermostat control${
+                    !override.on ? " for 1 hour" : ""
+                  }`}
+                  placement="top"
+                  disabled={!helpMode}
                 >
-                  <StyledTooltip
-                    title={`${
-                      override.on ? "Cancel" : "Run"
-                    } thermostat control${!override.on ? " for 1 hour" : ""}`}
-                    placement="top"
-                    disabled={!helpMode}
-                  >
-                    <span>
-                      <Button
-                        variant={
-                          override.on && !overrideDisabled()
-                            ? "contained"
-                            : "outlined"
-                        }
-                        disabled={overrideDisabled()}
-                        onClick={handleOverride}
-                      >
-                        {override.on && !overrideDisabled()
-                          ? "Cancel Override"
-                          : "1hr Override"}
-                      </Button>
-                    </span>
-                  </StyledTooltip>
-                </Stack>
-                {override.start && !overrideDisabled() ? (
-                  <p className="text-muted">
-                    on until{" "}
-                    {new Date(
-                      (override.start + 3600) * 1000
-                    ).toLocaleTimeString()}
-                  </p>
-                ) : (
-                  <p style={{ opacity: 0 }}>Override Off</p>
-                )}
+                  <span>
+                    <Button
+                      variant={
+                        override.on && !overrideDisabled()
+                          ? "contained"
+                          : "outlined"
+                      }
+                      disabled={overrideDisabled()}
+                      onClick={handleOverride}
+                    >
+                      {override.on && !overrideDisabled()
+                        ? "Cancel Override"
+                        : "1hr Override"}
+                    </Button>
+                  </span>
+                </StyledTooltip>
               </Stack>
-            </>
-          )}
-        </Box>
+              {override.start && !overrideDisabled() ? (
+                <p className="text-muted">
+                  on until{" "}
+                  {new Date(
+                    (override.start + 3600) * 1000
+                  ).toLocaleTimeString()}
+                </p>
+              ) : (
+                <p style={{ opacity: 0 }}>Override Off</p>
+              )}
+            </Stack>
+          </>
+        )}
       </form>
     </FullScreenComponent>
   );

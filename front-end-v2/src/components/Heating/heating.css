@@ -16,8 +16,9 @@
 
 .heating-settings {
     width: clamp(10ch, 70ch, 80vw);
-    margin: auto;
     text-align: center;
+    height: 100%;
+    padding-top: 4rem;
 }
 
 .heating-settings input {
@@ -66,4 +67,22 @@
 
 .on-arrow {
     --muted: var(--text-main);
+}
+
+.section {
+    transition: transform 500ms ease;
+    transform-origin: right top;
+}
+
+.close-button {
+    position: absolute;
+    right: -3vmin;
+    top: 0;
+    bottom: 0;
+    margin: 0 auto;
+    font-size: 2rem;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
 }
