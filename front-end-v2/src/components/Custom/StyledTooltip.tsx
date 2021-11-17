@@ -5,12 +5,15 @@ import {primary} from "../../constants/colors";
 
 interface Props extends TooltipProps {
   disabled?: boolean;
+  top?: boolean;
+  bottom?: boolean;
 }
 
 export const StyledTooltip = styled(({ className, ...props }: Props) => (
   props.disabled ? <>{props.children}</> : <Tooltip {...props} classes={{ popper: className }}/>
 ))({
   [`& .${tooltipClasses.tooltip}`]: {
-    backgroundColor: primary[900]
+    backgroundColor: primary[900],
+    marginTop: '2rem'
   },
 });

@@ -10,6 +10,7 @@ export function WeatherButton() {
   interface WeatherDict {
       main: string;
       description: string;
+      icon: string;
   }
 
   interface WeatherDay {
@@ -64,7 +65,7 @@ export function WeatherButton() {
           }}
           onClose={handleTooltipClose}
           open={open}
-          placement={'right'}
+          placement={'right-end'}
           disableFocusListener
           disableHoverListener
           disableTouchListener
@@ -77,7 +78,7 @@ export function WeatherButton() {
             aria-label="help"
             component="div"
           >
-            <CloudIcon />
+              <img src={`http://openweathermap.org/img/wn/${weather ? weather.current.weather[0].icon : '02d'}@2x.png`} width={45}></img>
           </IconButton>
         </StyledTooltip>
       </div>

@@ -357,6 +357,11 @@ export function SettingsForm() {
                   disabled={!config.program_on}
                 />
               </Stack>
+              <StyledTooltip
+                  title="Frost stat mode when off (5&deg;C)"
+                  placement="top"
+                  disabled={!helpMode}
+                >
               <Stack
                 spacing={2}
                 direction="row"
@@ -365,19 +370,14 @@ export function SettingsForm() {
                 justifyContent="center"
               >
                 <h2>Program:</h2>
-                <StyledTooltip
-                  title="Frost stat mode when off (5&deg;C)"
-                  placement="top"
-                  disabled={!helpMode}
-                >
                   <Switch
                     {...programLabel}
                     onChange={handleProgramChange}
                     checked={config.program_on}
                   />
-                </StyledTooltip>
                 <h2>{config.program_on ? "On" : "Off"}</h2>
               </Stack>
+                </StyledTooltip>
               <Stack
                 spacing={2}
                 direction="column"
