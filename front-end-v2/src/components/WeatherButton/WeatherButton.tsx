@@ -6,15 +6,6 @@ import CloudIcon from '@mui/icons-material/Cloud';
 import {useFetchWithToken} from "../../hooks/FetchWithToken";
 
 export function WeatherButton() {
-  const [open, setOpen] = React.useState(false);
-
-  const handleTooltipClose = () => {
-    setOpen(false);
-  };
-
-  const handleTooltipOpen = () => {
-    setOpen(true);
-  };
 
   interface WeatherDict {
       main: string;
@@ -36,15 +27,25 @@ export function WeatherButton() {
     daily: WeatherDay[];
   }
 
+  const [open, setOpen] = React.useState(false);
   const [weather, setWeather] = React.useState<Weather>();
 
   const fetch = useFetchWithToken();
 
-  React.useEffect(() => {
-      fetch('/weather/').then((res) => res.json().then((data)=>{
+  async function getWeather() {
+      await fetch('/weather/').then((res) => res.json().then((data)=>{
           setWeather(data)
       }))
-  }, [])
+  }
+
+  const handleTooltipClose = () => {
+    setOpen(false);
+  };
+
+  const handleTooltipOpen = () => {
+    setOpen(true);
+    getWeather().catch(err=>console.log(err))
+  };
 
   const content =
       <>
