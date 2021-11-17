@@ -31,7 +31,7 @@ central-heating-project/
 
 In my setup, this will (eventually) be on the machine whose GPIO pins control the relay, which is separate from the temperature sensor, although it would be possible to have the temperature sensor attached to the same Raspberry Pi. See my initial write-up for more.
 
-Ok let's start, as I did then, with the heating system. I have stuck with the OOP approach that I set out with, as it has proved useful to be able to import the whole system and reference its attributes and properties in the API, but a functional approach based on the main methods and properties would also be possible.
+Ok let's start, as I did then, with the heating system. I have stuck with the OOP approach that I set out with, as it has proved useful to be able to import the whole system and reference its attributes and properties in the API, but a functional approach based on the main methods and properties would also be possible. The essence of the `HeatingSystem` class is as follows:
 ```python3
 # central-heating-project/server/heating/heating_system.py
 
@@ -66,7 +66,7 @@ class HeatingSystem:
         if self.relay_on:
             self.pi.write(self.RELAY_GPIO_PIN, 0)
 ```
-So straight away we have a Python dependency (`pip install pigpio`), so it would be worth creating a virtual environment; you will also need to install and run the pigpio daemon on your Raspberry Pi (`sudo apt install pigpiod -y && pigpiod`). Otherwise, though, you can see that the system is relatively simple, and while it still needs a way to check the measurements served by the NodeMCU unit, which we haven't started on yet, and a way to check these against a target set by the user, as well as to schedule the task of doing so, we have everything we need to see how the essence of the system will work.
+So straight away we have a Python dependency (`pip install pigpio`), so it would be worth creating a virtual environment; you will also need to install and run the pigpio daemon on your Raspberry Pi (`sudo apt install pigpiod -y && pigpiod`). Otherwise, though, you can see that the system is relatively simple, and while it still needs a way to check the measurements served by the NodeMCU unit, which we haven't started on yet, and a way to check these against a target set by the user, as well as to schedule the task of doing so, we have everything we need to see how basic functionality of the system will work.
 
 We will come back to this to add more complexity, but for now let's take a look at the API endpoints and see if we can't turn on the relay from our smartphone! I know straight away that I'm going to be using FastAPI for this build, as while the initial build of this used Flask, FastAPI has now far surpassed Flask as my go-to framework of choice.
 
