@@ -83,7 +83,9 @@ async def weather() -> WeatherReport:
         r = requests.get(url).json()
         weather_dict = {"current": r["current"], "daily": r["daily"]}
         await set_weather(weather_dict)
-    return WeatherReport(**weather_dict)
+    weather_report = WeatherReport(**weather_dict)
+    print(weather_report)
+    return weather_report
 
 
 # Central heating endpoints

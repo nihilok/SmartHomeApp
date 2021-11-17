@@ -34,6 +34,7 @@ export function HelpButton({ helpMode, setHelpMode }: Props) {
           }}
           onClose={handleTooltipClose}
           open={open}
+          placement={'left'}
           disableFocusListener
           disableHoverListener
           disableTouchListener

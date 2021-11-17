@@ -11,6 +11,7 @@ import { FullScreenLoader } from "../Loaders/FullScreenLoader";
 import { HelpButton } from "../HelpButton/HelpButton";
 import { FullScreenComponent } from "../Custom/FullScreenComponent";
 import { ProgramArrow } from "./ProgramArrow";
+import {WeatherButton} from "../WeatherButton/WeatherButton";
 
 export function SettingsForm() {
   interface Override {
@@ -234,6 +235,7 @@ export function SettingsForm() {
 
   return (
     <FullScreenComponent>
+      <WeatherButton/>
       <HelpButton helpMode={helpMode} setHelpMode={setHelpMode} />
       <form className="heating-settings">
         <Box>
