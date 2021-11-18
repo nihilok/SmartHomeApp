@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -154,21 +155,31 @@ async def heating_on_off(
     return await heating()
 
 
+# @router.get("/heating/advance/{mins}/", response_model=Advance)
+# async def advance(
+#     mins: int = 30, user: HouseholdMemberPydantic = Depends(get_current_active_user)
+# ):
+#     """Turns heating on for a given period of time outside of the normal schedule."""
+#     time_on = hs.advance(mins)
+#     if time_on:
+#         return Advance(on=True, start=time_on)
+#     raise HTTPException(status_code=400)
+
+
 @router.get("/heating/advance/{mins}/", response_model=Advance)
-async def advance(
-    mins: int = 30, user: HouseholdMemberPydantic = Depends(get_current_active_user)
+async def override_advance(
+    mins: int = 30,
+    user: HouseholdMemberPydantic = Depends(get_current_active_user),
 ):
-    """Turns heating on for a given period of time outside of the normal schedule."""
-    time_on = hs.advance(mins)
-    if time_on:
-        return Advance(on=True, start=time_on)
-    raise HTTPException(status_code=400)
+    """Starts override/advance task in running event loop"""
+    started = await hs.start_advance(mins)
+    return Advance(on=True, start=started, relay=hs.relay_state)
 
 
 @router.get("/heating/cancel/")
 async def cancel_advance(
     user: HouseholdMemberPydantic = Depends(get_current_active_user),
 ):
-    """Cancels advance loop"""
+    """Cancels advance task"""
     hs.cancel_advance()
-    return {}
+    return Advance(on=False, relay=hs.relay_state)

@@ -276,60 +276,44 @@ async def update_heating(update: HeatingUpdate):
 ```
 It would be possible to pass the target update as just an int, but again, we plan to beef this model up later when we add in the times. You can play in swagger (`/docs`) with passing different payloads and seeing the response. In most cases, if you don't pass something that can be represented by the pydantic model you created, you will get an HTTP Unprocessable Entity response (422). In our case, in the body of the POST request to `/heating/` we would have to have an `update` key that represents an object with a `target` key or we will get a 422. If we were passing a single int value as a parameter, we would type hint the parameter as an int, and while a string representing an integer can be coersed into the correct type, anything else will return a 422. 
 
-While these errors tell you exactly which parameters are failing, it can sometimes be difficult to debug them without removing the type entirely, as the function never executes past checking the types of the parameters, which is not enough for you to be able to print or log the object, for example, to see what's going wrong.
-
+While these errors tell you exactly which parameters are failing, it can sometimes be difficult to debug them without removing the type entirely, as the function never executes past checking the types of the parameters, which is not enough for you to be able to print or log the object, for example, to see what's going wrong. Lets make another endpoint to turn the heating program on and off:
 
 ```python3
 # central-heating-project/server/heating/heating_endpoints.py
 
-from fastapi import APIRouter
-from pydantic import BaseModel
+class ProgramResponse(BaseModel):
+    program_on: bool
 
-from .heating_system import HeatingSystem
-
-router = APIRouter()
-hs = HeatingSystem()
-
-
-# Create models for our parameters/responses:
-class HeatingResponse(BaseModel):
-    temperature: float
-    target: int
-    
-class HeatingUpdate(BaseModel):
-    target: int
-
-
-# Create functions for our different endpoints/routes:
-@router.get('/heating/', response_model=HeatingResponse)
-async def heating():
-    return HeatingResponse(
-        temperature=hs.temperature,
-        target=hs.target,
-    )
-
-
-@router.post('/heating/', response_model=HeatingResponse)
-async def update_heating(update: HeatingUpdate):
-    hs.conf['target'] = update.target
-    return await heating()
-
-
-@router.get('/heating/program/', reponse_model=HeatingResponse)
+@router.get('/heating/program/', reponse_model=ProgramResponse)
 async def program_on_off(off: bool = False):
-    if off:
+    if off and hs.conf.program_on:
         hs.program_off()
-    else:
+    elif not hs.conf.program_on:
         hs.program_on()
-    return await heating()
+    return ProgramResponse(program_on=hs.conf.program_on)
 
+```
+You could do this in a simpler way, without the `off` parameter (just flicking on/off at each request), but introducing it as well as the defensive checks for the current state of the system, allows the function to be idempotent, and the client to achieve their desired result and receive a 200 response, regardless of whether the state of the server had diverged with the state of the client. Since `off` defaults to False, it is not a required parameter. Since this is a GET request, this if needed it can be passed as a query parameter in the URL (`/heating/program/?off=true`).
 
-@router.get('/heating/override/', response_model=HeatingResponse)
-async def override(cancel: bool = False):
-    if cancel:
-        hs.cancel_advance()
-    else:
-        hs.advance()
-    return await heating()
+We can do something similar for the advance/override functionality, and we can use FastAPI's async functionality to our advantage. In the first implementation of this system, I used the threading library for the same purpose.
 
+```python3
+# central-heating-project/server/heating/heating_system.py
+
+import asyncio
+import time
+...
+class HeatingSystem:
+    ...
+    async def advance(self, mins: int = 30):
+        if not self.advance_on:
+            start_time = time.time()
+            self.advance_on = start_time
+            while start_time > time.time() - (30*60):
+                self.thermostat()
+                asyncio.sleep(60)
+    
+    async def start_advance(self, mins: int = 30):
+        loop = asyncio.get_running_loop()
+        loop.create_task(self.advance(mins))
 ```

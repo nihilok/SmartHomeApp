@@ -140,7 +140,8 @@ export function SettingsForm() {
   const debounce = React.useCallback(
     (state: HeatingConfig) => {
       clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
-      if ((!config.on_2 && config.off_2) || (config.on_2 && !config.off_2)) return
+      if ((!config.on_2 && config.off_2) || (config.on_2 && !config.off_2))
+        return;
       timeoutRef.current = setTimeout(() => {
         setSettings(state)
           .catch((error) => console.log(error))
@@ -152,8 +153,11 @@ export function SettingsForm() {
 
   async function handleOverride() {
     if (override.on) {
-      return await fetch("/heating/cancel/").then(() =>
-        setOverride({ on: false })
+      return await fetch("/heating/cancel/").then((res) =>
+        res.json().then((data) => {
+          setOverride({ on: data.on });
+          setRelayOn(data.relay);
+        })
       );
     }
     await fetch("/heating/advance/60/").then((res) =>
@@ -166,6 +170,7 @@ export function SettingsForm() {
           on: true,
           start: data.start,
         });
+        setRelayOn(data.relay);
       })
     );
   }

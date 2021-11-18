@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import logging
@@ -21,6 +22,7 @@ logging.basicConfig(level=logging.INFO)
 class Advance(BaseModel):
     on: bool = False
     start: Optional[int] = None
+    relay: Optional[bool] = None
 
 
 class HeatingConf(BaseModel):
@@ -69,7 +71,8 @@ class HeatingSystem:
         if self.check_time():
             self.thermostat_control()
         else:
-            self.switch_off_relay()
+            if not self.advance_on:
+                self.switch_off_relay()
 
     def backup_loop(self):
         """Turns on heating if house is below 5'C to prevent ice damage"""
@@ -88,7 +91,8 @@ class HeatingSystem:
 
     def program_off(self):
         self.conf.program_on = False
-        self.switch_off_relay()
+        if not self.advance_on:
+            self.switch_off_relay()
         self.scheduler.pause()
         self.backup_scheduler.resume()
         self.save_state()
@@ -140,26 +144,26 @@ class HeatingSystem:
         return datetime.strptime(time, "%H:%M").time()
 
     def check_time(self) -> bool:
-        if self.conf.program_on:
-            time_now = BritishTime.now().time()
-            try:
-                if (
-                    self.parse_time(self.conf.off_1)
-                    > time_now
-                    > self.parse_time(self.conf.on_1)
-                ):
-                    return True
-                elif not self.conf.on_2:
-                    return False
-                if (
-                    self.parse_time(self.conf.off_2)
-                    > time_now
-                    > self.parse_time(self.conf.on_2)
-                ):
-                    return True
-            except ValueError:
-                pass
-        return False
+        if not self.conf.program_on:
+            return False
+        time_now = BritishTime.now().time()
+        try:
+            if (
+                self.parse_time(self.conf.off_1)
+                > time_now
+                > self.parse_time(self.conf.on_1)
+            ):
+                return True
+            elif not self.conf.on_2:
+                return False
+            elif (
+                self.parse_time(self.conf.off_2)
+                > time_now
+                > self.parse_time(self.conf.on_2)
+            ):
+                return True
+        except ValueError:
+            return False
 
     def save_state(self):
         with open(self.config_file, "w") as f:
@@ -188,31 +192,24 @@ class HeatingSystem:
     def check_state(self) -> bool:
         return not not self.pi.read(27)
 
-    def advance(self, mins: int = 15) -> Optional[float]:
-        if self.check_time():
-            return
-        if not self.thread:
-            self.advance_on = time.time()
-            self.conf.advance = Advance(on=True, start=self.advance_on)
-            self.thread = Thread(target=self.advance_thread, args=(mins,))
-            self.thread.start()
-        return self.advance_on
-
-    def advance_thread(self, mins: int):
-        while self.advance_on and time.time() - self.advance_on < mins * 60:
-            if not self.thread or not self.advance_on:
-                break
-            self.thermostat_control()
-            time.sleep(30)
-            if self.check_time():
-                self.cancel_advance()
-
-    def cancel_advance(self):
-        self.thread = None
-        self.advance_on = None
-        self.conf.advance = Advance(on=False)
-        self.switch_off_relay()
-        self.save_state()
+    # def advance(self, mins: int = 15) -> Optional[float]:
+    #     if self.check_time():
+    #         return
+    #     if not self.thread:
+    #         self.advance_on = time.time()
+    #         self.conf.advance = Advance(on=True, start=self.advance_on)
+    #         self.thread = Thread(target=self.advance_thread, args=(mins,))
+    #         self.thread.start()
+    #     return self.advance_on
+    #
+    # def advance_thread(self, mins: int):
+    #     while self.advance_on and time.time() - self.advance_on < mins * 60:
+    #         if not self.thread or not self.advance_on:
+    #             break
+    #         self.thermostat_control()
+    #         time.sleep(30)
+    #         if self.check_time():
+    #             self.cancel_advance()
 
     @property
     def advance_start_time(self) -> Optional[float]:
@@ -233,3 +230,31 @@ class HeatingSystem:
     @property
     def relay_state(self) -> bool:
         return self.check_state()
+
+    async def async_advance(self, mins: int = 30):
+        if not self.advance_on:
+            self.scheduler.pause()
+            self.advance_on = time.time()
+            self.conf.advance = Advance(on=True, start=self.advance_on)
+            check = self.advance_on
+            while check > time.time() - (30 * 60):
+                if not self.advance_on or self.check_time():
+                    self.cancel_advance()
+                    break
+                self.thermostat_control()
+                await asyncio.sleep(60)
+
+    async def start_advance(self, mins: int = 30):
+        loop = asyncio.get_running_loop()
+        loop.create_task(self.async_advance(mins))
+        while not self.advance_on:
+            await asyncio.sleep(.1)
+        return self.advance_on
+
+    def cancel_advance(self):
+        self.thread = None
+        self.advance_on = None
+        self.conf.advance = Advance(on=False)
+        self.scheduler.resume()
+        self.main_loop()
+        self.save_state()
