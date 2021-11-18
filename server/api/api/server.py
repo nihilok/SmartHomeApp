@@ -43,6 +43,6 @@ register_tortoise(
     add_exception_handlers=True,
 )
 
-app.mount(
-    "/", StaticFiles(directory="../smarthome-app/build", html=True), name="spa"
-)
+# app.mount(
+#     "/", StaticFiles(directory="../smarthome-app/build", html=True), name="spa"
+# )
