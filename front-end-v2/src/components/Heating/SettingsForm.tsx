@@ -14,6 +14,7 @@ import { ProgramArrow } from "./ProgramArrow";
 import { WeatherButton } from "../WeatherButton/WeatherButton";
 import { OpenCloseButton } from "./OpenCloseButton";
 import { useSnackbar } from "notistack";
+import AcUnitIcon from "@mui/icons-material/AcUnit";
 
 export function SettingsForm() {
   interface Override {
@@ -375,19 +376,21 @@ export function SettingsForm() {
                   disabled={!config.program_on}
                 />
               </Stack>
-              {row2 ? (
-                ""
-              ) : (
-                <OpenCloseButton
-                  open={true}
-                  callback={() => {
-                    clearTimeout(
-                      row2TimeoutRef.current as ReturnType<typeof setTimeout>
-                    );
-                    setRow2(true);
-                  }}
-                />
-              )}
+              {row2
+                ? ""
+                : config.program_on && (
+                    <OpenCloseButton
+                      open={true}
+                      callback={() => {
+                        clearTimeout(
+                          row2TimeoutRef.current as ReturnType<
+                            typeof setTimeout
+                          >
+                        );
+                        setRow2(true);
+                      }}
+                    />
+                  )}
             </section>
             {row2 ? (
               <section className="section" style={{ position: "relative" }}>
@@ -436,7 +439,9 @@ export function SettingsForm() {
                     disabled={!config.program_on}
                   />
                 </Stack>
-                <OpenCloseButton open={false} callback={handleHideRow} />
+                {config.program_on && (
+                  <OpenCloseButton open={false} callback={handleHideRow} />
+                )}
               </section>
             ) : (
               ""
@@ -459,7 +464,18 @@ export function SettingsForm() {
                   onChange={handleProgramChange}
                   checked={config.program_on}
                 />
-                <h2>{config.program_on ? "On" : "Off"}</h2>
+                <h2>
+                  {config.program_on ? (
+                    "On"
+                  ) : (
+                    <div className="flex">
+                      {"Off "}
+                      <AcUnitIcon
+                        style={{ marginTop: "2px", display: "block" }}
+                      />
+                    </div>
+                  )}
+                </h2>
               </Stack>
             </StyledTooltip>
             <Stack

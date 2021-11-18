@@ -6,7 +6,7 @@ export const StyledTextField = styled(TextField)({
     "& fieldset": {
       borderColor: primary[50],
     },
-    "&:hover fieldset": {
+    "&:hover:not(.Mui-disabled) fieldset": {
       borderColor: primary[300],
     },
   },
