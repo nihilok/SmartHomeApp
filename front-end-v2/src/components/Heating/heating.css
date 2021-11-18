@@ -21,6 +21,23 @@
     padding-top: 4rem;
 }
 
+.heating-settings > div:first-of-type {
+    height: 100%;
+}
+
+.heating-settings h1.title {
+    position: absolute;
+    font-size: 1.5rem;
+    border: 1px solid;
+    border-radius: 3px;
+    padding: .25rem;
+    width: max-content;
+    margin: auto;
+    top: 1.25rem;
+    right: 0;
+    left: 0;
+}
+
 .heating-settings input {
     text-align: center;
     justify-content: center;

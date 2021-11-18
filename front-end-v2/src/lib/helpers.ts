@@ -1,4 +1,5 @@
 export function checkTimeStringWithinLimit(on: string, off: string) {
+  if (!on || !off) return false;
   const timeNow = new Date();
   const on_diff = timeNow.getHours() - parseInt(on.split(":")[0]);
   if (on_diff < 0) return false;

@@ -99,6 +99,10 @@ input {
   align-items: center;
 }
 
+.space-evenly {
+  justify-content: space-evenly;
+}
+
 input[type=time],
 input[type=time]::-webkit-inner-spin-button,
 input[type=time]::-webkit-outer-spin-button {

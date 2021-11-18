@@ -42,7 +42,8 @@ export function SettingsForm() {
     indoor_temperature: number;
     sensor_readings: Sensors;
     relay_on: boolean;
-    conf: HeatingConfig;
+    advance?: Override;
+    conf?: HeatingConfig;
   }
 
   type Data = APIResponse;
@@ -90,7 +91,7 @@ export function SettingsForm() {
     if (!lockRef.current) {
       lockRef.current = true;
       if (data.conf) {
-        const { on_1, off_1, on_2, off_2, program_on, target, advance } =
+        const { on_1, off_1, on_2, off_2, program_on, target } =
           data.conf;
         setConfig({
           on_1,
@@ -100,17 +101,16 @@ export function SettingsForm() {
           program_on,
           target,
         });
-        setOverride(advance ?? { on: false });
+        setOverride(data.advance ?? { on: false });
       }
       if (data.indoor_temperature) setCurrentTemp(data.indoor_temperature);
       if (data.relay_on !== null) setRelayOn(data.relay_on);
-      lockRef.current = false;
     }
   }, []);
 
   const getSettings = React.useCallback(async () => {
     console.debug("Getting settings");
-    await fetch("/heating/")
+    await fetch("/heating/?conf=true")
       .then((res) =>
         res.json().then((data: Data) => {
           if (res.status !== 200) return console.log(data);
@@ -285,8 +285,8 @@ export function SettingsForm() {
         {isLoading ? (
           <FullScreenLoader />
         ) : (
-          <>
-            <h1>Heating Settings</h1>
+          <div className="flex flex-col space-evenly">
+            <h1 className="title">Heating Settings</h1>
             {currentTemp && (
               <StyledTooltip
                 title={`Indoor Temperature. Relay is currently ${
@@ -314,7 +314,7 @@ export function SettingsForm() {
               <h2>Target:</h2>
               <StyledTooltip
                 title="Desired internal temperature"
-                placement="top"
+                placement="bottom"
                 disabled={!helpMode}
               >
                 <Slider
@@ -327,7 +327,6 @@ export function SettingsForm() {
               </StyledTooltip>
               <h2>{config.target}&deg;C</h2>
             </Stack>
-
             <section style={{ position: "relative" }}>
               <Stack
                 spacing={4}
@@ -527,7 +526,7 @@ export function SettingsForm() {
                 <p style={{ opacity: 0 }}>Override Off</p>
               )}
             </Stack>
-          </>
+          </div>
         )}
       </form>
     </FullScreenComponent>
