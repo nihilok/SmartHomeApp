@@ -137,7 +137,7 @@ async def update_heating_conf(
     conf: HeatingConf, user: HouseholdMemberPydantic = Depends(get_current_active_user)
 ):
     if hs.conf != conf:
-        hs.conf.__dict__.update(**conf.dict(exclude_unset=True))
+        hs.conf.__dict__.update(**conf.dict())
         hs.save_state()
         hs.main_loop()
     return await heating()

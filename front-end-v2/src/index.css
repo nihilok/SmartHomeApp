@@ -4,7 +4,8 @@
   --primary-dark: #e65100;
   --primary-light: #ffcc80;
   --text-main: #fff3e0;
-  --background-color: #3b3b3b;
+  --background-color: #262626;
+  --background-gradient: linear-gradient(0deg, #3b3b3b 80%, #0d0d0d);
 }
 
 * {
@@ -21,6 +22,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background-color);
   color: var(--text-main);
+  padding-top: 1rem;
 }
 
 code {
@@ -76,7 +78,7 @@ input {
 }
 
 .full-screen {
-  height: 100vh;
+  min-height: calc(100vh - 1rem);
   width: 100vw;
   position: relative;
 }
@@ -112,3 +114,6 @@ input[type="time"]::-webkit-date-and-time-value {
   text-align: center;
 }
 
+:focus {
+  outline: none;
+}

@@ -38,10 +38,6 @@
     color: var(--primary-dark);
 }
 
-.TimeInputRow > :nth-child(2) {
-    margin-right: .25rem;
-}
-
 .heating-settings svg, .heating-settings img, .heating-settings object {
     max-width: 20vw;
     object-fit: contain;
@@ -70,7 +66,7 @@
 }
 
 .section {
-    transition: transform 500ms ease;
+    transition: transform 500ms ease, opacity 400ms ease;
     transform-origin: right top;
 }
 

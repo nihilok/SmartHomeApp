@@ -4,6 +4,7 @@ import "./index.css";
 import App from "./App";
 import { BrowserRouter as Router } from "react-router-dom";
 import { AuthContextProvider } from "./context/AuthContext";
+import { SnackbarProvider } from "notistack";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import reportWebVitals from "./reportWebVitals";
 import { createTheme, ThemeProvider } from "@mui/material";
@@ -21,9 +22,11 @@ ReactDOM.render(
   <React.StrictMode>
     <AuthContextProvider>
       <ThemeProvider theme={theme}>
-        <Router>
-          <App />
-        </Router>
+        <SnackbarProvider maxSnack={3}>
+          <Router>
+            <App />
+          </Router>
+        </SnackbarProvider>
       </ThemeProvider>
     </AuthContextProvider>
   </React.StrictMode>,

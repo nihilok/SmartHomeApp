@@ -13,6 +13,7 @@ import { FullScreenComponent } from "../Custom/FullScreenComponent";
 import { ProgramArrow } from "./ProgramArrow";
 import { WeatherButton } from "../WeatherButton/WeatherButton";
 import { OpenCloseButton } from "./OpenCloseButton";
+import { useSnackbar } from "notistack";
 
 export function SettingsForm() {
   interface Override {
@@ -55,7 +56,9 @@ export function SettingsForm() {
   };
 
   const fetch = useFetchWithToken();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
+  const row2TimeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
   const lockRef = React.useRef(true);
   const firstLoad = React.useRef(true);
   const [config, setConfig] = React.useState(initialState);
@@ -137,13 +140,14 @@ export function SettingsForm() {
   const debounce = React.useCallback(
     (state: HeatingConfig) => {
       clearTimeout(timeoutRef.current as ReturnType<typeof setTimeout>);
+      if ((!config.on_2 && config.off_2) || (config.on_2 && !config.off_2)) return
       timeoutRef.current = setTimeout(() => {
         setSettings(state)
           .catch((error) => console.log(error))
           .then(() => (lockRef.current = true));
       }, 600);
     },
-    [setSettings]
+    [setSettings, config.on_2, config.off_2]
   );
 
   async function handleOverride() {
@@ -170,9 +174,10 @@ export function SettingsForm() {
     !!config.program_on &&
     checkTimeStringWithinLimit(config.on_1, config.off_1);
 
-  const withinLimit2: boolean =
-    !!config.program_on &&
-    checkTimeStringWithinLimit(config.on_2 as string, config.off_2 as string);
+  const withinLimit2: boolean = config.on_2
+    ? !!config.program_on &&
+      checkTimeStringWithinLimit(config.on_2 as string, config.off_2 as string)
+    : false;
 
   const overrideDisabled = () => {
     switch (true) {
@@ -235,10 +240,35 @@ export function SettingsForm() {
     return () => clearInterval(interval);
   }, [fetch, parseData]);
 
-  const click = () => {
+  const setRow2Null = () => {
+    row2TimeoutRef.current = setTimeout(() => {
+      lockRef.current = false;
+      setConfig((p) => ({
+        ...p,
+        on_2: undefined,
+        off_2: undefined,
+      }));
+    }, 4000);
+  };
+
+  const handleHideRow = () => {
     const elem = document.getElementsByClassName("section")[0] as HTMLElement;
     elem.style.transform = "scale(0)";
+    elem.style.opacity = "0";
     elem.style.height = "0";
+    setTimeout(() => {
+      enqueueSnackbar("Period 2 removed", {
+        action: <Button onClick={undoHideRow}>Undo</Button>,
+      });
+      setRow2(false);
+      setRow2Null();
+    }, 200);
+  };
+
+  const undoHideRow = () => {
+    clearTimeout(row2TimeoutRef.current as ReturnType<typeof setTimeout>);
+    setRow2(true);
+    closeSnackbar();
   };
 
   return (
@@ -296,13 +326,13 @@ export function SettingsForm() {
               <Stack
                 spacing={4}
                 direction="row"
-                sx={{ mb: 5 }}
+                sx={{ mb: 3 }}
                 alignItems="center"
                 justifyContent="center"
                 className={"TimeInputRow"}
               >
                 <StyledTextField
-                  label="On 1"
+                  label={`On${row2 ? " 1" : ""}`}
                   name="on_1"
                   type="time"
                   value={config.on_1}
@@ -328,7 +358,7 @@ export function SettingsForm() {
                   />
                 </span>
                 <StyledTextField
-                  label="Off 1"
+                  label={`Off${row2 ? " 1" : ""}`}
                   name="off_1"
                   type="time"
                   value={config.off_1}
@@ -343,7 +373,15 @@ export function SettingsForm() {
               {row2 ? (
                 ""
               ) : (
-                <OpenCloseButton open={true} closeFunc={() => setRow2(true)} />
+                <OpenCloseButton
+                  open={true}
+                  callback={() => {
+                    clearTimeout(
+                      row2TimeoutRef.current as ReturnType<typeof setTimeout>
+                    );
+                    setRow2(true);
+                  }}
+                />
               )}
             </section>
             {row2 ? (
@@ -360,7 +398,7 @@ export function SettingsForm() {
                     label="On 2"
                     name="on_2"
                     type="time"
-                    value={config.on_2}
+                    value={config.on_2 || ""}
                     InputLabelProps={{
                       shrink: true,
                     }}
@@ -385,7 +423,7 @@ export function SettingsForm() {
                     label="Off 2"
                     type="time"
                     name="off_2"
-                    value={config.off_2}
+                    value={config.off_2 || ""}
                     InputLabelProps={{
                       shrink: true,
                     }}
@@ -393,13 +431,7 @@ export function SettingsForm() {
                     disabled={!config.program_on}
                   />
                 </Stack>
-                <OpenCloseButton
-                  open={false}
-                  closeFunc={() => {
-                    click();
-                    setTimeout(() => setRow2(false), 500);
-                  }}
-                />
+                <OpenCloseButton open={false} callback={handleHideRow} />
               </section>
             ) : (
               ""

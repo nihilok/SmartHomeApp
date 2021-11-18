@@ -7,9 +7,11 @@ import { Button } from "@mui/material";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
 import {LOGIN, LOGOUT} from '../../context/AuthContext'
 import {FullScreenComponent} from "../Custom/FullScreenComponent";
+import {useSnackbar} from "notistack";
 
 export default function LoginForm() {
   const { context, dispatch } = useAuthContext();
+  const { enqueueSnackbar } = useSnackbar();
   let history = useHistory();
 
   const checkToken = React.useCallback(async () => {
@@ -23,6 +25,7 @@ export default function LoginForm() {
       response.json().then((data) => {
         if (response.status !== 200) {
           dispatch({ type: LOGOUT });
+          enqueueSnackbar('You have been logged out!')
         } else {
           dispatch({
             type: LOGIN,
@@ -31,7 +34,7 @@ export default function LoginForm() {
         }
       })
     );
-  }, [context, dispatch]);
+  }, [context, dispatch, enqueueSnackbar]);
 
   React.useEffect(() => {
     console.debug("Checking token");
@@ -96,6 +99,14 @@ export default function LoginForm() {
       });
   }
 
+  const error = React.useCallback((message:string | null)=>{
+    if (message) enqueueSnackbar(message, {variant: 'error'})
+  }, [enqueueSnackbar])
+
+  React.useEffect(()=>{
+    error(state.errorMessage)
+  }, [error, state.errorMessage])
+
   return state.isSubmitting ? (
     <FullScreenLoader />
   ) : (
@@ -115,7 +126,6 @@ export default function LoginForm() {
               name="password"
           />
           <Button type="submit">Log In</Button>
-          <div className={"inline-error-message"}>{state.errorMessage}</div>
         </form>
       </FullScreenComponent>
   );

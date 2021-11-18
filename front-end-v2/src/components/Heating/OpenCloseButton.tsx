@@ -2,11 +2,11 @@ import * as React from 'react'
 
 interface Props {
   open: boolean;
-  closeFunc: () => void;
+  callback: () => void;
 }
 
-export function OpenCloseButton({open, closeFunc}: Props) {
+export function OpenCloseButton({open, callback}: Props) {
   return (
-    <div className="close-button" onClick={closeFunc}>{open ? <>+</> : <>&times;</>}</div>
+    <div className="close-button" onClick={callback}>{open ? <>+</> : <>&times;</>}</div>
   )
 }
