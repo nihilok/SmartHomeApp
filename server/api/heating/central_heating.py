@@ -17,7 +17,7 @@ from .constants import TEMPERATURE_URL
 from .custom_datetimes import BritishTime
 from .telegram_bot import send_message
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 
 
 class Advance(BaseModel):

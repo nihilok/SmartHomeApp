@@ -11,3 +11,4 @@ passlib
 python-jose
 pytz
 aioredis<2.0.0
+aiohttp

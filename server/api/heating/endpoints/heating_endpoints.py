@@ -1,18 +1,18 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-import requests
-from fastapi import Depends, APIRouter, HTTPException
+from fastapi import Depends, APIRouter
 from pydantic import BaseModel
 
-from ..constants import WEATHER_URL, TEMPERATURE_URL, GPIO_PIN
 from ..custom_datetimes import BritishTime
 from ...auth.authentication import get_current_active_user
 from ...cache.redis_funcs import get_weather, set_weather
 from ...db.models import HouseholdMemberPydantic
 from ..central_heating import HeatingConf, Advance
 
+from ..constants import WEATHER_URL, TEMPERATURE_URL, GPIO_PIN
 from ...api.constants import TESTING
+from ...utils.async_requests import get_json
 
 if not TESTING:
     from ..central_heating import HeatingSystem
@@ -48,7 +48,8 @@ router = APIRouter()
 
 
 class WeatherReport(BaseModel):
-    # keys = ['dt', 'sunrise', 'sunset', 'temp', 'feels_like', 'pressure', 'humidity', 'dew_point', 'uvi', 'clouds',
+    # keys = ['dt', 'sunrise', 'sunset', 'temp', 'feels_like',
+    #         'pressure', 'humidity', 'dew_point', 'uvi', 'clouds',
     #         'visibility', 'wind_speed', 'wind_deg', 'weather']
     current: dict
     daily: List[dict]
@@ -84,8 +85,7 @@ class HeatingInfo(BaseModel):
 async def weather() -> WeatherReport:
     weather_dict = await get_weather()
     if not weather_dict:
-        url = WEATHER_URL
-        r = requests.get(url).json()
+        r = await get_json(WEATHER_URL)
         weather_dict = {"current": r["current"], "daily": r["daily"]}
         await set_weather(weather_dict)
     weather_report = WeatherReport(**weather_dict)
@@ -127,10 +127,10 @@ async def heating(conf: bool = False):
         "indoor_temperature": hs.temperature,
         "sensor_readings": hs.measurements,
         "relay_on": hs.relay_state,
-        "advance": hs.conf.advance
+        "advance": hs.conf.advance,
     }
     if conf:
-        context['conf'] = hs.conf
+        context["conf"] = hs.conf
     return HeatingInfo(**context)
 
 
