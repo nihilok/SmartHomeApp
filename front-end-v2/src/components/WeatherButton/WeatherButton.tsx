@@ -2,7 +2,6 @@ import * as React from 'react';
 import './weather-button.css'
 import {ClickAwayListener, IconButton} from "@mui/material";
 import {StyledTooltip} from "../Custom/StyledTooltip";
-import CloudIcon from '@mui/icons-material/Cloud';
 import {useFetchWithToken} from "../../hooks/FetchWithToken";
 
 export function WeatherButton() {
@@ -78,7 +77,7 @@ export function WeatherButton() {
             aria-label="help"
             component="div"
           >
-              <img src={`http://openweathermap.org/img/wn/${weather ? weather.current.weather[0].icon : '02d'}@2x.png`} width={45}></img>
+              <img src={`https://openweathermap.org/img/wn/${weather ? weather.current.weather[0].icon : '02d'}@2x.png`} width={45}></img>
           </IconButton>
         </StyledTooltip>
       </div>
