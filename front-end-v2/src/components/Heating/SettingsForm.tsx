@@ -39,14 +39,12 @@ export function SettingsForm() {
   }
 
   interface APIResponse {
-    indoor_temperature: number;
-    sensor_readings: Sensors;
-    relay_on: boolean;
+    indoor_temperature?: number;
+    sensor_readings?: Sensors;
+    relay_on?: boolean;
     advance?: Override;
     conf?: HeatingConfig;
   }
-
-  type Data = APIResponse;
 
   const initialState: HeatingConfig = {
     target: 20,
@@ -87,24 +85,27 @@ export function SettingsForm() {
     setConfig({ ...config, [event.target.name]: event.target.value });
   }
 
-  const parseData = React.useCallback((data: Data) => {
-    if (!lockRef.current) {
-      lockRef.current = true;
-      if (data.conf) {
-        const { on_1, off_1, on_2, off_2, program_on, target } =
-          data.conf;
-        setConfig({
-          on_1,
-          off_1,
-          on_2,
-          off_2,
-          program_on,
-          target,
-        });
-        setOverride(data.advance ?? { on: false });
-      }
-      if (data.indoor_temperature) setCurrentTemp(data.indoor_temperature);
-      if (data.relay_on !== null) setRelayOn(data.relay_on);
+  const parseData = React.useCallback((data: APIResponse) => {
+    if (data.conf) {
+      const { on_1, off_1, on_2, off_2, program_on, target } = data.conf;
+      setConfig({
+        on_1,
+        off_1,
+        on_2,
+        off_2,
+        program_on,
+        target,
+      });
+      setOverride(data.advance ?? { on: false });
+    }
+    if (
+      data.indoor_temperature !== undefined &&
+      data.indoor_temperature !== null
+    ) {
+      setCurrentTemp(data.indoor_temperature);
+    }
+    if (data.relay_on === false || data.relay_on === true) {
+      setRelayOn(data.relay_on);
     }
   }, []);
 
@@ -112,8 +113,9 @@ export function SettingsForm() {
     console.debug("Getting settings");
     await fetch("/heating/?conf=true")
       .then((res) =>
-        res.json().then((data: Data) => {
+        res.json().then((data: APIResponse) => {
           if (res.status !== 200) return console.log(data);
+          lockRef.current = true;
           parseData(data);
         })
       )
@@ -130,7 +132,10 @@ export function SettingsForm() {
         res.json().then((data) => {
           if (res.status !== 200) console.error(data);
           else {
-            if (data !== currentState) parseData(data);
+            if (data !== currentState) {
+              lockRef.current = true;
+              parseData(data);
+            }
           }
         })
       );
@@ -235,13 +240,15 @@ export function SettingsForm() {
   React.useEffect(() => {
     function getInfo() {
       fetch("/heating/").then((res) =>
-        res.json().then((data: Data) => {
-          if (res.status !== 200) return console.log(data);
+        res.json().then((data: APIResponse) => {
+          if (res.status !== 200) {
+            console.log(data);
+            return;
+          }
           parseData(data);
         })
       );
     }
-    getInfo();
     let interval = setInterval(getInfo, TEMPERATURE_INTERVAL);
     return () => clearInterval(interval);
   }, [fetch, parseData]);
@@ -258,17 +265,11 @@ export function SettingsForm() {
   };
 
   const handleHideRow = () => {
-    const elem = document.getElementsByClassName("section")[0] as HTMLElement;
-    elem.style.transform = "scale(0)";
-    elem.style.opacity = "0";
-    elem.style.height = "0";
-    setTimeout(() => {
-      enqueueSnackbar("Period 2 removed", {
-        action: <Button onClick={undoHideRow}>Undo</Button>,
-      });
-      setRow2(false);
-      setRow2Null();
-    }, 200);
+    enqueueSnackbar("Period 2 removed", {
+      action: <Button onClick={undoHideRow}>Undo</Button>,
+    });
+    setRow2(false);
+    setRow2Null();
   };
 
   const undoHideRow = () => {
@@ -327,123 +328,107 @@ export function SettingsForm() {
               </StyledTooltip>
               <h2>{config.target}&deg;C</h2>
             </Stack>
-            <section style={{ position: "relative" }}>
-              <Stack
-                spacing={4}
-                direction="row"
-                sx={{ mb: 3 }}
-                alignItems="center"
-                justifyContent="center"
-                className={"TimeInputRow"}
-              >
+            <section className={"time-grid"}>
+              <div />
+              <StyledTextField
+                label={`On${row2 ? " 1" : ""}`}
+                name="on_1"
+                type="time"
+                value={config.on_1}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                required={true}
+                onChange={handleTimeChange}
+                disabled={!config.program_on}
+              />
+              <span>
+                <ProgramArrow
+                  programOn={config.program_on as boolean}
+                  withinLimit={withinLimit1}
+                />
+                <ProgramArrow
+                  programOn={config.program_on as boolean}
+                  withinLimit={withinLimit1}
+                />
+                <ProgramArrow
+                  programOn={config.program_on as boolean}
+                  withinLimit={withinLimit1}
+                />
+              </span>
+              <StyledTextField
+                label={`Off${row2 ? " 1" : ""}`}
+                name="off_1"
+                type="time"
+                value={config.off_1}
+                required={true}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                onChange={handleTimeChange}
+                disabled={!config.program_on}
+              />
+              {row2 ? (
+                <div />
+              ) : (
+                config.program_on && (
+                  <OpenCloseButton
+                    open={true}
+                    callback={() => {
+                      clearTimeout(
+                        row2TimeoutRef.current as ReturnType<typeof setTimeout>
+                      );
+                      setRow2(true);
+                    }}
+                  />
+                )
+              )}
+            </section>
+            {row2 ? (
+              <section className={"time-grid"} id={"row-2"}>
+                <div />
                 <StyledTextField
-                  label={`On${row2 ? " 1" : ""}`}
-                  name="on_1"
+                  label="On 2"
+                  name="on_2"
                   type="time"
-                  value={config.on_1}
+                  value={config.on_2 || ""}
                   InputLabelProps={{
                     shrink: true,
                   }}
-                  required={true}
                   onChange={handleTimeChange}
                   disabled={!config.program_on}
                 />
                 <span>
                   <ProgramArrow
                     programOn={config.program_on as boolean}
-                    withinLimit={withinLimit1}
+                    withinLimit={withinLimit2}
                   />
                   <ProgramArrow
                     programOn={config.program_on as boolean}
-                    withinLimit={withinLimit1}
+                    withinLimit={withinLimit2}
                   />
                   <ProgramArrow
                     programOn={config.program_on as boolean}
-                    withinLimit={withinLimit1}
+                    withinLimit={withinLimit2}
                   />
                 </span>
                 <StyledTextField
-                  label={`Off${row2 ? " 1" : ""}`}
-                  name="off_1"
+                  label="Off 2"
                   type="time"
-                  value={config.off_1}
-                  required={true}
+                  name="off_2"
+                  value={config.off_2 || ""}
                   InputLabelProps={{
                     shrink: true,
                   }}
                   onChange={handleTimeChange}
                   disabled={!config.program_on}
                 />
-              </Stack>
-              {row2
-                ? ""
-                : config.program_on && (
-                    <OpenCloseButton
-                      open={true}
-                      callback={() => {
-                        clearTimeout(
-                          row2TimeoutRef.current as ReturnType<
-                            typeof setTimeout
-                          >
-                        );
-                        setRow2(true);
-                      }}
-                    />
-                  )}
-            </section>
-            {row2 ? (
-              <section className="section" style={{ position: "relative" }}>
-                <Stack
-                  spacing={4}
-                  direction="row"
-                  sx={{ mb: 3 }}
-                  alignItems="center"
-                  justifyContent="center"
-                  className={"TimeInputRow"}
-                >
-                  <StyledTextField
-                    label="On 2"
-                    name="on_2"
-                    type="time"
-                    value={config.on_2 || ""}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    onChange={handleTimeChange}
-                    disabled={!config.program_on}
-                  />
-                  <span>
-                    <ProgramArrow
-                      programOn={config.program_on as boolean}
-                      withinLimit={withinLimit2}
-                    />
-                    <ProgramArrow
-                      programOn={config.program_on as boolean}
-                      withinLimit={withinLimit2}
-                    />
-                    <ProgramArrow
-                      programOn={config.program_on as boolean}
-                      withinLimit={withinLimit2}
-                    />
-                  </span>
-                  <StyledTextField
-                    label="Off 2"
-                    type="time"
-                    name="off_2"
-                    value={config.off_2 || ""}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    onChange={handleTimeChange}
-                    disabled={!config.program_on}
-                  />
-                </Stack>
                 {config.program_on && (
                   <OpenCloseButton open={false} callback={handleHideRow} />
-                )}
+                )}{" "}
               </section>
             ) : (
-              ""
+              <div />
             )}
             <StyledTooltip
               title="Frost stat mode when off (5&deg;C)"

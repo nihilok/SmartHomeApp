@@ -1,0 +1,7 @@
+.time-grid {
+    display: grid;
+    grid-template-columns: 1fr 3fr 2fr 3fr 1fr;
+    width: 100%;
+    align-items: center;
+    margin: 1rem auto;
+}
