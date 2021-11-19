@@ -15,6 +15,7 @@ from pydantic import BaseModel
 
 from .constants import TEMPERATURE_URL
 from .custom_datetimes import BritishTime
+from .telegram_bot import send_message
 
 logging.basicConfig(level=logging.INFO)
 
@@ -46,6 +47,7 @@ class HeatingSystem:
         """Create connection with temperature api and load settings
         from config file"""
         self.pi = pigpio.pi()
+        self.error: bool = False
         self.measurements = self.get_measurements()
         self.conf = self.get_or_create_config()
         self.advance_on = None
@@ -120,14 +122,20 @@ class HeatingSystem:
         """Gets measurements from temperature sensor and handles errors,
         by returning the last known set of measurements or a default"""
         try:
-            self.measurements = requests.get(self.TEMPERATURE_URL).json()
+            req = requests.get(self.TEMPERATURE_URL)
+            if req.status_code == 200 and self.error:
+                self.error = False
+            self.measurements = req.json()
         except Exception as e:
-            logging.error(str(e))
+            if not self.error:
+                send_message(f'{e.__class__.__name__}: {str(e)}')
         try:
-            measurements = self.measurements
-        except AttributeError:
-            measurements = {"temperature": 0, "pressure": 0, "humidity": 0}
-        return measurements
+            return self.measurements
+        except AttributeError as e:
+            if not self.error:
+                send_message(f'{e.__class__.__name__}: No measurements found on first load')
+                self.error = True
+            return {"temperature": 0, "pressure": 0, "humidity": 0}
 
     def check_temp(self) -> Optional[bool]:
         target = float(self.conf.target)
@@ -237,7 +245,7 @@ class HeatingSystem:
             self.advance_on = time.time()
             self.conf.advance = Advance(on=True, start=self.advance_on)
             check = self.advance_on
-            while check > time.time() - (30 * 60):
+            while check > time.time() - (mins * 60):
                 if not self.advance_on or self.check_time():
                     self.cancel_advance()
                     break
