@@ -208,8 +208,8 @@ export function SettingsForm() {
     await fetch("/heating/on_off/").then((res) =>
       res.json().then((data) => {
         if (res.status !== 200) return console.log(data);
+        lockRef.current = true;
         parseData(data);
-        lockRef.current = false;
       })
     );
   }
@@ -308,7 +308,7 @@ export function SettingsForm() {
             <Stack
               spacing={2}
               direction="row"
-              sx={{ mb: 3 }}
+              sx={{ mb: 1 }}
               alignItems="center"
               justifyContent="center"
             >

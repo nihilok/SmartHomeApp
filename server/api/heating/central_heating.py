@@ -4,7 +4,7 @@ import os
 import logging
 import time
 from datetime import datetime
-from threading import Thread
+# from threading import Thread
 from typing import Optional
 
 import pigpio
@@ -13,7 +13,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 
-from .constants import TEMPERATURE_URL
 from .custom_datetimes import BritishTime
 from .telegram_bot import send_message
 
@@ -56,11 +55,12 @@ class HeatingSystem:
         self.scheduler.add_job(self.main_loop, "interval", minutes=1, id="main_loop")
         self.scheduler.start(paused=True)
         self.backup_scheduler.add_job(
-            self.backup_loop, "interval", minutes=5, id="main_loop"
+            self.backup_loop, "interval", minutes=5, id="backup_loop"
         )
-        self.backup_scheduler.start(paused=True)
         if self.conf.program_on:
             self.program_on()
+        else:
+            self.backup_scheduler.start()
 
     def thermostat_control(self):
         if self.too_cold is True:
@@ -88,8 +88,9 @@ class HeatingSystem:
     def program_on(self):
         self.conf.program_on = True
         self.main_loop()
-        self.backup_scheduler.pause()
         self.scheduler.resume()
+        if self.backup_scheduler.running:
+            self.backup_scheduler.shutdown()
         self.save_state()
 
     def program_off(self):
@@ -97,7 +98,7 @@ class HeatingSystem:
         if not self.advance_on:
             self.switch_off_relay()
         self.scheduler.pause()
-        self.backup_scheduler.resume()
+        self.backup_scheduler.start()
         self.save_state()
 
     def get_or_create_config(self):
