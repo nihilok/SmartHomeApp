@@ -41,12 +41,13 @@ class HeatingSystem:
     scheduler = BackgroundScheduler()
     backup_scheduler = BackgroundScheduler()
     THRESHOLD = 0.2
-    TEMPERATURE_URL = TEMPERATURE_URL  # Local IP of temperature sensor API
 
-    def __init__(self):
+    def __init__(self, gpio_pin: int, temperature_url: str):
         """Create connection with temperature api and load settings
         from config file"""
         self.pi = pigpio.pi()
+        self.gpio_pin = gpio_pin
+        self.temperature_url = temperature_url
         self.error: bool = False
         self.measurements = self.get_measurements()
         self.conf = self.get_or_create_config()
@@ -122,7 +123,7 @@ class HeatingSystem:
         """Gets measurements from temperature sensor and handles errors,
         by returning the last known set of measurements or a default"""
         try:
-            req = requests.get(self.TEMPERATURE_URL)
+            req = requests.get(self.temperature_url)
             if req.status_code == 200 and self.error:
                 self.error = False
             self.measurements = req.json()
@@ -135,7 +136,7 @@ class HeatingSystem:
             if not self.error:
                 send_message(f'{e.__class__.__name__}: No measurements found on first load')
                 self.error = True
-            return {"temperature": 0, "pressure": 0, "humidity": 0}
+            return {"temperature": 5, "pressure": 0, "humidity": 0}
 
     def check_temp(self) -> Optional[bool]:
         target = float(self.conf.target)
@@ -191,14 +192,14 @@ class HeatingSystem:
 
     def switch_on_relay(self):
         if not self.check_state():
-            self.pi.write(27, 1)
+            self.pi.write(self.gpio_pin, 1)
 
     def switch_off_relay(self):
         if self.check_state():
-            self.pi.write(27, 0)
+            self.pi.write(self.gpio_pin, 0)
 
     def check_state(self) -> bool:
-        return not not self.pi.read(27)
+        return not not self.pi.read(self.gpio_pin)
 
     # def advance(self, mins: int = 15) -> Optional[float]:
     #     if self.check_time():

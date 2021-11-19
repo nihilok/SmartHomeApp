@@ -1,4 +1,3 @@
-import asyncio
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -6,7 +5,7 @@ import requests
 from fastapi import Depends, APIRouter, HTTPException
 from pydantic import BaseModel
 
-from ..constants import WEATHER_URL
+from ..constants import WEATHER_URL, TEMPERATURE_URL, GPIO_PIN
 from ..custom_datetimes import BritishTime
 from ...auth.authentication import get_current_active_user
 from ...cache.redis_funcs import get_weather, set_weather
@@ -21,6 +20,7 @@ else:
 
     @dataclass
     class HeatingSystem:
+
         conf = HeatingConf(
             target="20",
             on_1="08:30",
@@ -29,6 +29,9 @@ else:
             off_2="22:30",
             program_on=True,
         )
+
+        def __init__(self, gpio_pin, temperature_url):
+            pass
 
         def check_state(self):
             return self.conf.program_on
@@ -40,7 +43,7 @@ else:
             self.conf.program_on = False
 
 
-hs = HeatingSystem()
+hs = HeatingSystem(GPIO_PIN, TEMPERATURE_URL)
 router = APIRouter()
 
 
