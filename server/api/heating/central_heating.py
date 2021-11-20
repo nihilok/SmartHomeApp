@@ -4,7 +4,6 @@ import os
 import logging
 import time
 from datetime import datetime
-# from threading import Thread
 from typing import Optional
 
 import pigpio
@@ -48,8 +47,8 @@ class HeatingSystem:
         self.gpio_pin = gpio_pin
         self.temperature_url = temperature_url
         self.error: bool = False
-        self.measurements = self.get_measurements()
         self.conf = self.get_or_create_config()
+        self.measurements = self.get_measurements()
         self.advance_on = None
         self.thread = None
         self.scheduler.add_job(self.main_loop, "interval", minutes=1, id="main_loop")
@@ -62,6 +61,22 @@ class HeatingSystem:
         else:
             self.backup_scheduler.start()
 
+    @property
+    def too_cold(self) -> Optional[bool]:
+        return self.check_temp()
+
+    @property
+    def within_program_time(self) -> bool:
+        return self.check_time()
+
+    @property
+    def temperature(self) -> float:
+        return float(self.get_measurements()["temperature"])
+
+    @property
+    def relay_state(self) -> bool:
+        return self.check_state()
+
     def thermostat_control(self):
         if self.too_cold is True:
             self.switch_on_relay()
@@ -71,7 +86,7 @@ class HeatingSystem:
     def main_loop(self):
         """If time is within range, turn on relay if temp is below range,
         turn off if above range."""
-        if self.check_time():
+        if self.within_program_time:
             self.thermostat_control()
         else:
             if not self.advance_on:
@@ -79,10 +94,10 @@ class HeatingSystem:
 
     def backup_loop(self):
         """Turns on heating if house is below 5'C to prevent ice damage"""
-        self.get_measurements()
-        if float(self.temperature) < 5:
+        temp = float(self.temperature)
+        if temp < 5:
             self.switch_on_relay()
-        elif float(self.temperature) > 6:
+        elif temp > 6:
             self.switch_off_relay()
 
     def program_on(self):
@@ -137,7 +152,7 @@ class HeatingSystem:
             if not self.error:
                 send_message(f'{e.__class__.__name__}: No measurements found on first load')
                 self.error = True
-            return {"temperature": 5, "pressure": 0, "humidity": 0}
+            return {"temperature": 20, "pressure": 0, "humidity": 0}
 
     def check_temp(self) -> Optional[bool]:
         target = float(self.conf.target)
@@ -201,45 +216,6 @@ class HeatingSystem:
 
     def check_state(self) -> bool:
         return not not self.pi.read(self.gpio_pin)
-
-    # def advance(self, mins: int = 15) -> Optional[float]:
-    #     if self.check_time():
-    #         return
-    #     if not self.thread:
-    #         self.advance_on = time.time()
-    #         self.conf.advance = Advance(on=True, start=self.advance_on)
-    #         self.thread = Thread(target=self.advance_thread, args=(mins,))
-    #         self.thread.start()
-    #     return self.advance_on
-    #
-    # def advance_thread(self, mins: int):
-    #     while self.advance_on and time.time() - self.advance_on < mins * 60:
-    #         if not self.thread or not self.advance_on:
-    #             break
-    #         self.thermostat_control()
-    #         time.sleep(30)
-    #         if self.check_time():
-    #             self.cancel_advance()
-
-    @property
-    def advance_start_time(self) -> Optional[float]:
-        return self.advance_on
-
-    @property
-    def too_cold(self) -> Optional[bool]:
-        return self.check_temp()
-
-    @property
-    def within_program_time(self) -> bool:
-        return self.check_time()
-
-    @property
-    def temperature(self) -> float:
-        return float(self.get_measurements()["temperature"])
-
-    @property
-    def relay_state(self) -> bool:
-        return self.check_state()
 
     async def async_advance(self, mins: int = 30):
         if not self.advance_on:
