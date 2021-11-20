@@ -77,7 +77,7 @@ export function WeatherButton() {
         >
           <IconButton
             onClick={handleTooltipOpen}
-            className={"weather-button"}
+            sx={{mt: .1, ml: -.2}}
             color={open ? "primary" : "default"}
             aria-label="help"
             component="div"
