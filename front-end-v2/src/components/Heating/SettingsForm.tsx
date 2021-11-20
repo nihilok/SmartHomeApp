@@ -236,8 +236,8 @@ export function SettingsForm() {
   }
 
   function toggleSettings() {
-      localStorage.setItem("showSettings", JSON.stringify(!showSettings))
-      setShowSettings(!showSettings)
+    localStorage.setItem("showSettings", JSON.stringify(!showSettings));
+    setShowSettings(!showSettings);
   }
 
   React.useEffect(() => {
@@ -328,8 +328,9 @@ export function SettingsForm() {
                 </h1>
               </StyledTooltip>
             )}
-            <Barometer readings={readings} />
-            {showSettings && (
+            {!showSettings ? (
+              <Barometer readings={readings} />
+            ) : (
               <>
                 <Stack
                   spacing={2}
@@ -541,7 +542,18 @@ export function SettingsForm() {
                 </Stack>
               </>
             )}
-              <Button sx={{width: 'max-content', mx: 'auto', fontSize: '.75rem', py: 0, pt: .5}} onClick={toggleSettings}>{showSettings ? 'Hide' : 'Show'} Settings</Button>
+            <Button
+              sx={{
+                width: "max-content",
+                mx: "auto",
+                fontSize: ".75rem",
+                py: 0,
+                pt: 0.5,
+              }}
+              onClick={toggleSettings}
+            >
+              {showSettings ? "Hide" : "Show"} Settings
+            </Button>
           </div>
         )}
       </form>
