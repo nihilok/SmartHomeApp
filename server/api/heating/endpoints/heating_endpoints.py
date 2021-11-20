@@ -62,7 +62,7 @@ class ApiInfo(BaseModel):
     outdoor_float: Optional[float] = None
     weather: str = "- -"
     last_updated: str = "--:--:--"
-    on: bool = hs.check_state()
+    on: bool = hs.relay_state
     program_on: bool = hs.conf.program_on
     advance: Optional[Advance] = None
 
@@ -104,7 +104,7 @@ async def api():
         outdoor_float=float(weather_report.current["temp"]),
         weather=weather_report.current["weather"][0]["description"],
         last_updated=updated.strftime("%H:%S"),
-        on=hs.check_state(),
+        on=hs.relay_state,
         program_on=hs.conf.program_on,
         advance=hs.conf.advance,
     )
@@ -115,7 +115,7 @@ async def temp_only():
     return ApiInfo(
         indoor_temp=str("{0:.1f}".format(hs.temperature)) + "°C",
         temp_float=hs.temperature,
-        on=hs.check_state(),
+        on=hs.relay_state,
         program_on=hs.conf.program_on,
         advance=hs.conf.advance,
     )

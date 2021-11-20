@@ -75,7 +75,7 @@ class HeatingSystem:
 
     @property
     def relay_state(self) -> bool:
-        return self.check_state()
+        return not not self.pi.read(self.gpio_pin)
 
     def thermostat_control(self):
         if self.too_cold is True:
@@ -135,7 +135,7 @@ class HeatingSystem:
                 json.dump(jsonable_encoder(conf), f)
         return conf
 
-    def get_measurements(self):
+    def get_measurements(self) -> dict:
         """Gets measurements from temperature sensor and handles errors,
         by returning the last known set of measurements or a default"""
         try:
@@ -145,12 +145,12 @@ class HeatingSystem:
             self.measurements = req.json()
         except Exception as e:
             if not self.error:
-                send_message(f'{e.__class__.__name__}: {str(e)}')
+                send_message(f'{__name__}: {e.__class__.__name__}: {str(e)}')
         try:
             return self.measurements
         except AttributeError as e:
             if not self.error:
-                send_message(f'{e.__class__.__name__}: No measurements found on first load')
+                send_message(f'{__name__}: {e.__class__.__name__}: No measurements found on first load')
                 self.error = True
             return {"temperature": 20, "pressure": 0, "humidity": 0}
 
@@ -207,15 +207,12 @@ class HeatingSystem:
         self.save_state()
 
     def switch_on_relay(self):
-        if not self.check_state():
+        if not self.relay_state:
             self.pi.write(self.gpio_pin, 1)
 
     def switch_off_relay(self):
-        if self.check_state():
+        if self.relay_state:
             self.pi.write(self.gpio_pin, 0)
-
-    def check_state(self) -> bool:
-        return not not self.pi.read(self.gpio_pin)
 
     async def async_advance(self, mins: int = 30):
         if not self.advance_on:
@@ -224,7 +221,7 @@ class HeatingSystem:
             self.conf.advance = Advance(on=True, start=self.advance_on)
             check = self.advance_on
             while check > time.time() - (mins * 60):
-                if not self.advance_on or self.check_time():
+                if self.within_program_time or not self.advance_on:
                     self.cancel_advance()
                     break
                 self.thermostat_control()
