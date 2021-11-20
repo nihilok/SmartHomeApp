@@ -15,10 +15,10 @@
 }
 
 .heating-settings {
-    width: clamp(10ch, 70ch, 80vw);
+    width: clamp(10ch, 65ch, 80vw);
     text-align: center;
     height: 100%;
-    padding-top: 4rem;
+    margin: 0 auto;
 }
 
 .heating-settings > div:first-of-type {
@@ -26,7 +26,6 @@
 }
 
 .heating-settings h1.title {
-    position: absolute;
     font-size: 1.5rem;
     border: 1px solid;
     border-radius: 3px;

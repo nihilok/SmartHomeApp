@@ -15,6 +15,8 @@ import { WeatherButton } from "../WeatherButton/WeatherButton";
 import { OpenCloseButton } from "./OpenCloseButton";
 import { useSnackbar } from "notistack";
 import AcUnitIcon from "@mui/icons-material/AcUnit";
+import { Barometer } from "../Barometer/Barometer";
+import { TopBar } from "../Custom/TopBar";
 
 export function SettingsForm() {
   interface Override {
@@ -62,7 +64,15 @@ export function SettingsForm() {
   const lockRef = React.useRef(true);
   const firstLoad = React.useRef(true);
   const [config, setConfig] = React.useState(initialState);
+  const [readings, setReadings] = React.useState({
+    temperature: 0,
+    pressure: 0,
+    humidity: 0,
+  });
   const [isLoading, setIsLoading] = React.useState(true);
+  const [showSettings, setShowSettings] = React.useState(
+    JSON.parse(localStorage.getItem("showSettings") as string) ?? true
+  );
   const [helpMode, setHelpMode] = React.useState(false);
   const [row2, setRow2] = React.useState(true);
   const [currentTemp, setCurrentTemp] = React.useState<number>();
@@ -96,7 +106,12 @@ export function SettingsForm() {
         program_on,
         target,
       });
-      setOverride(data.advance ?? { on: false });
+    }
+    setOverride(data.advance ?? { on: false });
+    if (data.sensor_readings !== undefined && data.sensor_readings !== null) {
+      setReadings(
+        data.sensor_readings ?? { temperature: 0, pressure: 0, humidity: 0 }
+      );
     }
     if (
       data.indoor_temperature !== undefined &&
@@ -220,6 +235,11 @@ export function SettingsForm() {
     programOnOff().catch((error) => console.log(error));
   }
 
+  function toggleSettings() {
+      localStorage.setItem("showSettings", JSON.stringify(!showSettings))
+      setShowSettings(!showSettings)
+  }
+
   React.useEffect(() => {
     getSettings().catch((error) => console.log(error));
     firstLoad.current = false;
@@ -249,6 +269,7 @@ export function SettingsForm() {
         })
       );
     }
+
     let interval = setInterval(getInfo, TEMPERATURE_INTERVAL);
     return () => clearInterval(interval);
   }, [fetch, parseData]);
@@ -280,14 +301,16 @@ export function SettingsForm() {
 
   return (
     <FullScreenComponent>
-      <WeatherButton />
-      <HelpButton helpMode={helpMode} setHelpMode={setHelpMode} />
+      <TopBar>
+        <WeatherButton />
+        <HelpButton helpMode={helpMode} setHelpMode={setHelpMode} />
+      </TopBar>
       <form className="heating-settings">
         {isLoading ? (
           <FullScreenLoader />
         ) : (
           <div className="flex flex-col space-evenly">
-            <h1 className="title">Heating Settings</h1>
+            <h1 className="title">Open Heating</h1>
             {currentTemp && (
               <StyledTooltip
                 title={`Indoor Temperature. Relay is currently ${
@@ -305,212 +328,220 @@ export function SettingsForm() {
                 </h1>
               </StyledTooltip>
             )}
-            <Stack
-              spacing={2}
-              direction="row"
-              sx={{ mb: 1 }}
-              alignItems="center"
-              justifyContent="center"
-            >
-              <h2>Target:</h2>
-              <StyledTooltip
-                title="Desired internal temperature"
-                placement="bottom"
-                disabled={!helpMode}
-              >
-                <Slider
-                  aria-label="Target Temperature"
-                  value={config.target}
-                  onChange={handleSliderChange}
-                  min={10}
-                  max={28}
-                />
-              </StyledTooltip>
-              <h2>{config.target}&deg;C</h2>
-            </Stack>
-            <section className={"time-grid"}>
-              <div />
-              <StyledTextField
-                label={`On${row2 ? " 1" : ""}`}
-                name="on_1"
-                type="time"
-                value={config.on_1}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                required={true}
-                onChange={handleTimeChange}
-                disabled={!config.program_on}
-              />
-              <span>
-                <ProgramArrow
-                  programOn={config.program_on as boolean}
-                  withinLimit={withinLimit1}
-                />
-                <ProgramArrow
-                  programOn={config.program_on as boolean}
-                  withinLimit={withinLimit1}
-                />
-                <ProgramArrow
-                  programOn={config.program_on as boolean}
-                  withinLimit={withinLimit1}
-                />
-              </span>
-              <StyledTextField
-                label={`Off${row2 ? " 1" : ""}`}
-                name="off_1"
-                type="time"
-                value={config.off_1}
-                required={true}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                onChange={handleTimeChange}
-                disabled={!config.program_on}
-              />
-              {row2 ? (
-                <div />
-              ) : (
-                config.program_on && (
-                  <OpenCloseButton
-                    open={true}
-                    callback={() => {
-                      clearTimeout(
-                        row2TimeoutRef.current as ReturnType<typeof setTimeout>
-                      );
-                      setRow2(true);
+            <Barometer readings={readings} />
+            {showSettings && (
+              <>
+                <Stack
+                  spacing={2}
+                  direction="row"
+                  sx={{ mb: 1 }}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <h2>Target:</h2>
+                  <StyledTooltip
+                    title="Desired internal temperature"
+                    placement="bottom"
+                    disabled={!helpMode}
+                  >
+                    <Slider
+                      aria-label="Target Temperature"
+                      value={config.target}
+                      onChange={handleSliderChange}
+                      min={10}
+                      max={28}
+                    />
+                  </StyledTooltip>
+                  <h2>{config.target}&deg;C</h2>
+                </Stack>
+                <section className={"time-grid"}>
+                  <div />
+                  <StyledTextField
+                    label={`On${row2 ? " 1" : ""}`}
+                    name="on_1"
+                    type="time"
+                    value={config.on_1}
+                    InputLabelProps={{
+                      shrink: true,
                     }}
+                    required={true}
+                    onChange={handleTimeChange}
+                    disabled={!config.program_on}
                   />
-                )
-              )}
-            </section>
-            {row2 ? (
-              <section className={"time-grid"} id={"row-2"}>
-                <div />
-                <StyledTextField
-                  label="On 2"
-                  name="on_2"
-                  type="time"
-                  value={config.on_2 || ""}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  onChange={handleTimeChange}
-                  disabled={!config.program_on}
-                />
-                <span>
-                  <ProgramArrow
-                    programOn={config.program_on as boolean}
-                    withinLimit={withinLimit2}
+                  <span>
+                    <ProgramArrow
+                      programOn={config.program_on as boolean}
+                      withinLimit={withinLimit1}
+                    />
+                    <ProgramArrow
+                      programOn={config.program_on as boolean}
+                      withinLimit={withinLimit1}
+                    />
+                    <ProgramArrow
+                      programOn={config.program_on as boolean}
+                      withinLimit={withinLimit1}
+                    />
+                  </span>
+                  <StyledTextField
+                    label={`Off${row2 ? " 1" : ""}`}
+                    name="off_1"
+                    type="time"
+                    value={config.off_1}
+                    required={true}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    onChange={handleTimeChange}
+                    disabled={!config.program_on}
                   />
-                  <ProgramArrow
-                    programOn={config.program_on as boolean}
-                    withinLimit={withinLimit2}
-                  />
-                  <ProgramArrow
-                    programOn={config.program_on as boolean}
-                    withinLimit={withinLimit2}
-                  />
-                </span>
-                <StyledTextField
-                  label="Off 2"
-                  type="time"
-                  name="off_2"
-                  value={config.off_2 || ""}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  onChange={handleTimeChange}
-                  disabled={!config.program_on}
-                />
-                {config.program_on && (
-                  <OpenCloseButton open={false} callback={handleHideRow} />
-                )}{" "}
-              </section>
-            ) : (
-              <div />
-            )}
-            <StyledTooltip
-              title="Frost stat mode when off (5&deg;C)"
-              placement="top"
-              disabled={!helpMode}
-            >
-              <Stack
-                spacing={2}
-                direction="row"
-                sx={{ mb: 1 }}
-                alignItems="center"
-                justifyContent="center"
-              >
-                <h2>Program:</h2>
-                <Switch
-                  {...programLabel}
-                  onChange={handleProgramChange}
-                  checked={config.program_on}
-                />
-                <h2>
-                  {config.program_on ? (
-                    "On"
+                  {row2 ? (
+                    <div />
                   ) : (
-                    <div className="flex">
-                      {"Off "}
-                      <AcUnitIcon
-                        style={{ marginTop: "2px", display: "block" }}
+                    config.program_on && (
+                      <OpenCloseButton
+                        open={true}
+                        callback={() => {
+                          clearTimeout(
+                            row2TimeoutRef.current as ReturnType<
+                              typeof setTimeout
+                            >
+                          );
+                          setRow2(true);
+                        }}
                       />
-                    </div>
+                    )
                   )}
-                </h2>
-              </Stack>
-            </StyledTooltip>
-            <Stack
-              spacing={2}
-              direction="column"
-              sx={{ mb: 4 }}
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Stack
-                spacing={2}
-                direction="row"
-                sx={{ mb: 0 }}
-                alignItems="center"
-                justifyContent="center"
-              >
+                </section>
+                {row2 ? (
+                  <section className={"time-grid"} id={"row-2"}>
+                    <div />
+                    <StyledTextField
+                      label="On 2"
+                      name="on_2"
+                      type="time"
+                      value={config.on_2 || ""}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      onChange={handleTimeChange}
+                      disabled={!config.program_on}
+                    />
+                    <span>
+                      <ProgramArrow
+                        programOn={config.program_on as boolean}
+                        withinLimit={withinLimit2}
+                      />
+                      <ProgramArrow
+                        programOn={config.program_on as boolean}
+                        withinLimit={withinLimit2}
+                      />
+                      <ProgramArrow
+                        programOn={config.program_on as boolean}
+                        withinLimit={withinLimit2}
+                      />
+                    </span>
+                    <StyledTextField
+                      label="Off 2"
+                      type="time"
+                      name="off_2"
+                      value={config.off_2 || ""}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      onChange={handleTimeChange}
+                      disabled={!config.program_on}
+                    />
+                    {config.program_on && (
+                      <OpenCloseButton open={false} callback={handleHideRow} />
+                    )}{" "}
+                  </section>
+                ) : (
+                  <div />
+                )}
                 <StyledTooltip
-                  title={`${override.on ? "Cancel" : "Run"} thermostat control${
-                    !override.on ? " for 1 hour" : ""
-                  }`}
+                  title="Frost stat mode when off (5&deg;C)"
                   placement="top"
                   disabled={!helpMode}
                 >
-                  <span>
-                    <Button
-                      variant={
-                        override.on && !overrideDisabled()
-                          ? "contained"
-                          : "outlined"
-                      }
-                      disabled={overrideDisabled()}
-                      onClick={handleOverride}
-                    >
-                      {override.on && !overrideDisabled()
-                        ? "Cancel Override"
-                        : "1hr Override"}
-                    </Button>
-                  </span>
+                  <Stack
+                    spacing={2}
+                    direction="row"
+                    sx={{ mb: 1 }}
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <h2>Program:</h2>
+                    <Switch
+                      {...programLabel}
+                      onChange={handleProgramChange}
+                      checked={config.program_on}
+                    />
+                    <h2>
+                      {config.program_on ? (
+                        "On"
+                      ) : (
+                        <div className="flex">
+                          {"Off "}
+                          <AcUnitIcon
+                            style={{ marginTop: "2px", display: "block" }}
+                          />
+                        </div>
+                      )}
+                    </h2>
+                  </Stack>
                 </StyledTooltip>
-              </Stack>
-              {override.start && !overrideDisabled() ? (
-                <p className="text-muted">
-                  on until{" "}
-                  {new Date(
-                    (override.start + 3600) * 1000
-                  ).toLocaleTimeString()}
-                </p>
-              ) : (
-                <p style={{ opacity: 0 }}>Override Off</p>
-              )}
-            </Stack>
+                <Stack
+                  spacing={2}
+                  direction="column"
+                  sx={{ mb: 4 }}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Stack
+                    spacing={2}
+                    direction="row"
+                    sx={{ mb: 0 }}
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <StyledTooltip
+                      title={`${
+                        override.on ? "Cancel" : "Run"
+                      } thermostat control${!override.on ? " for 1 hour" : ""}`}
+                      placement="top"
+                      disabled={!helpMode}
+                    >
+                      <span>
+                        <Button
+                          variant={
+                            override.on && !overrideDisabled()
+                              ? "contained"
+                              : "outlined"
+                          }
+                          disabled={overrideDisabled()}
+                          onClick={handleOverride}
+                        >
+                          {override.on && !overrideDisabled()
+                            ? "Cancel Override"
+                            : "1hr Override"}
+                        </Button>
+                      </span>
+                    </StyledTooltip>
+                  </Stack>
+                  {override.start && !overrideDisabled() ? (
+                    <p className="text-muted">
+                      on until{" "}
+                      {new Date(
+                        (override.start + 3600) * 1000
+                      ).toLocaleTimeString()}
+                    </p>
+                  ) : (
+                    <p style={{ opacity: 0 }}>Override Off</p>
+                  )}
+                </Stack>
+              </>
+            )}
+              <Button sx={{width: 'max-content', mx: 'auto', fontSize: '.75rem', py: 0, pt: .5}} onClick={toggleSettings}>{showSettings ? 'Hide' : 'Show'} Settings</Button>
           </div>
         )}
       </form>

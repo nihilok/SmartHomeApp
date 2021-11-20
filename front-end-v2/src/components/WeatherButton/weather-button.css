@@ -1,5 +1,4 @@
-.weather-button {
-    position: absolute !important;
-    left: .25rem;
-    top: .4rem;
+.weather-icon {
+    width: 38px;
+    margin-top: -4px;
 }

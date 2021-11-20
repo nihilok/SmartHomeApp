@@ -22,7 +22,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background-color);
   color: var(--text-main);
-  padding-top: 1rem;
 }
 
 code {
