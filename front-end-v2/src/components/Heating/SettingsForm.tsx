@@ -1,7 +1,7 @@
 import * as React from "react";
 import "./heating.css";
 import classNames from "classnames";
-import { Box, Button, Slider, Stack, Switch } from "@mui/material";
+import { Button, Slider, Stack, Switch } from "@mui/material";
 import { StyledTooltip } from "../Custom/StyledTooltip";
 import { StyledTextField } from "../Custom/StyledTextField";
 import { TEMPERATURE_INTERVAL } from "../../constants/constants";
@@ -74,7 +74,9 @@ export function SettingsForm() {
     JSON.parse(localStorage.getItem("showSettings") as string) ?? true
   );
   const [helpMode, setHelpMode] = React.useState(false);
-  const [row2, setRow2] = React.useState(true);
+  const [row2, setRow2] = React.useState(
+    !!config.on_2?.length && !!config.off_2?.length
+  );
   const [currentTemp, setCurrentTemp] = React.useState<number>();
   const [relayOn, setRelayOn] = React.useState(false);
   const [override, setOverride] = React.useState<Override>({
@@ -282,7 +284,7 @@ export function SettingsForm() {
         on_2: undefined,
         off_2: undefined,
       }));
-      closeSnackbar()
+      closeSnackbar();
     }, 4000);
   };
 

@@ -32,7 +32,7 @@ export function WeatherButton() {
 
   const fetch = useFetchWithToken();
 
-  async function getWeather() {
+  const getWeather = React.useCallback(async () => {
     await fetch("/weather/").then((res) =>
       res.json().then((data) => {
         setWeather(data);
@@ -41,7 +41,7 @@ export function WeatherButton() {
         img.onload = () => setIsLoading(false)
       })
     );
-  }
+  }, [fetch])
 
   const handleTooltipClose = () => {
     setOpen(false);
@@ -58,7 +58,7 @@ export function WeatherButton() {
 
   React.useEffect(()=>{
     weatherCallback();
-  },[])
+  },[weatherCallback])
 
   const content = (
     <>
