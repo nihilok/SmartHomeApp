@@ -17,6 +17,7 @@ import { useSnackbar } from "notistack";
 import AcUnitIcon from "@mui/icons-material/AcUnit";
 import { Barometer } from "../Barometer/Barometer";
 import { TopBar } from "../Custom/TopBar";
+import { CountDown } from "../CountDown";
 
 export function SettingsForm() {
   interface Override {
@@ -74,9 +75,7 @@ export function SettingsForm() {
     JSON.parse(localStorage.getItem("showSettings") as string) ?? true
   );
   const [helpMode, setHelpMode] = React.useState(false);
-  const [row2, setRow2] = React.useState(
-    !!config.on_2?.length && !!config.off_2?.length
-  );
+  const [row2, setRow2] = React.useState(true);
   const [currentTemp, setCurrentTemp] = React.useState<number>();
   const [relayOn, setRelayOn] = React.useState(false);
   const [override, setOverride] = React.useState<Override>({
@@ -100,6 +99,8 @@ export function SettingsForm() {
   const parseData = React.useCallback((data: APIResponse) => {
     if (data.conf) {
       const { on_1, off_1, on_2, off_2, program_on, target } = data.conf;
+      if (!on_2 && !off_2) setRow2(false);
+      else setRow2(true);
       setConfig({
         on_1,
         off_1,
@@ -534,10 +535,7 @@ export function SettingsForm() {
                   </Stack>
                   {override.start && !overrideDisabled() ? (
                     <p className="text-muted">
-                      on until{" "}
-                      {new Date(
-                        (override.start + 3600) * 1000
-                      ).toLocaleTimeString()}
+                      {<CountDown endTime={override.start + 3600} />}
                     </p>
                   ) : (
                     <p style={{ opacity: 0 }}>Override Off</p>
