@@ -60,7 +60,10 @@ export default function LoginForm() {
     console.debug("Checking token");
     let timeout = setTimeout(() => {}, 1);
     checkToken().then(() => {
-      setState((p) => ({ ...p, isSubmitting: false }));
+      timeout = setTimeout(
+        () => setState((p) => ({ ...p, isSubmitting: false })),
+        400
+      );
     });
     return () => clearTimeout(timeout);
   }, [checkToken]);
