@@ -282,11 +282,12 @@ export function SettingsForm() {
         on_2: undefined,
         off_2: undefined,
       }));
+      closeSnackbar()
     }, 4000);
   };
 
   const handleHideRow = () => {
-    enqueueSnackbar("Period 2 removed", {
+    enqueueSnackbar("Second period removed", {
       action: <Button onClick={undoHideRow}>Undo</Button>,
     });
     setRow2(false);
@@ -310,7 +311,7 @@ export function SettingsForm() {
           <FullScreenLoader />
         ) : (
           <div className="flex flex-col space-evenly">
-            <h1 className="title">Open Heating</h1>
+            {/*<h1 className="title">Open Heating</h1>*/}
             {currentTemp && (
               <StyledTooltip
                 title={`Indoor Temperature. Relay is currently ${

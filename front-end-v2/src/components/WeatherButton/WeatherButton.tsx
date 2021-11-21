@@ -1,6 +1,6 @@
 import * as React from "react";
 import "./weather-button.css";
-import { ClickAwayListener, IconButton } from "@mui/material";
+import {CircularProgress, ClickAwayListener, IconButton} from "@mui/material";
 import { StyledTooltip } from "../Custom/StyledTooltip";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
 
@@ -27,6 +27,7 @@ export function WeatherButton() {
   }
 
   const [open, setOpen] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [weather, setWeather] = React.useState<Weather>();
 
   const fetch = useFetchWithToken();
@@ -35,6 +36,9 @@ export function WeatherButton() {
     await fetch("/weather/").then((res) =>
       res.json().then((data) => {
         setWeather(data);
+        let img = new Image();
+        img.src = `https://openweathermap.org/img/wn/${data.current.weather[0].icon}@2x.png`
+        img.onload = () => setIsLoading(false)
       })
     );
   }
@@ -43,10 +47,18 @@ export function WeatherButton() {
     setOpen(false);
   };
 
+  const weatherCallback = React.useCallback(()=>{
+    getWeather().catch((err) => console.log(err));
+  }, [getWeather])
+
   const handleTooltipOpen = () => {
     setOpen(true);
-    getWeather().catch((err) => console.log(err));
+    weatherCallback();
   };
+
+  React.useEffect(()=>{
+    weatherCallback();
+  },[])
 
   const content = (
     <>
@@ -81,12 +93,12 @@ export function WeatherButton() {
             color={open ? "primary" : "default"}
             aria-label="help"
             component="div"
-          >
+          >{ isLoading ? <CircularProgress size={20} sx={{m: 1}}/> :
             <img className={'weather-icon'}
               src={`https://openweathermap.org/img/wn/${
                 weather ? weather.current.weather[0].icon : "02d"
-              }@2x.png`}
-            />
+              }@2x.png`} alt={'Icon displaying current weather'}
+            />}
           </IconButton>
         </StyledTooltip>
       </div>

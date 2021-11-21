@@ -27,7 +27,7 @@
 
 .heating-settings h1.title {
     font-size: 1.5rem;
-    border: 1px solid;
+    border-bottom: 2px solid;
     border-radius: 3px;
     padding: .25rem;
     width: max-content;

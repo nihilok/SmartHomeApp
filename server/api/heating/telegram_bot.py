@@ -10,5 +10,6 @@ def send_message(message):
         f"sendMessage?chat_id={CHANNEL_ID}&text={message}"
     )
 
+
 if __name__ == "__main__":
     send_message("It works!")

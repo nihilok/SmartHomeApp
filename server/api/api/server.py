@@ -1,11 +1,11 @@
 import os
 from fastapi import FastAPI
-from starlette.staticfiles import StaticFiles
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
 from fastapi.middleware.cors import CORSMiddleware
 from .constants import origins
 from ..auth import authentication
+from ..secrets import router as secrets_router
 from ..db.endpoints import crud_endpoints
 from ..heating.endpoints import heating_endpoints
 from ..planner.endpoints import planner_endpoints
@@ -15,6 +15,7 @@ from ..baby_tracker.endpoints import router as baby_router
 # Create ASGI app:
 app = FastAPI()
 app.include_router(authentication.router)
+app.include_router(secrets_router)
 app.include_router(heating_endpoints.router)
 app.include_router(crud_endpoints.router)
 app.include_router(planner_endpoints.router)
@@ -42,7 +43,3 @@ register_tortoise(
     generate_schemas=True,
     add_exception_handlers=True,
 )
-
-# app.mount(
-#     "/", StaticFiles(directory="../smarthome-app/build", html=True), name="spa"
-# )
