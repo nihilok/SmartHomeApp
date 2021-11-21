@@ -13,7 +13,7 @@ export function CountDown({ endTime }: Props) {
       const minutes = Math.floor((timeLeft % (60 * 60 * 24)) / 60);
       const seconds = Math.floor(timeLeft % 60);
       setRemaining(
-        `${minutes}:${seconds > 10 ? seconds : `${0}${seconds}`} remaining`
+        `${minutes}:${seconds > 9 ? seconds : `${0}${seconds}`} remaining`
       );
     }
     countDown();
