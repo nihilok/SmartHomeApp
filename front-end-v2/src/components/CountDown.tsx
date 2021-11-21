@@ -5,7 +5,7 @@ interface Props {
 }
 
 export function CountDown({ endTime }: Props) {
-  const [remaining, setRemaining] = React.useState("");
+  const [remaining, setRemaining] = React.useState("--:-- remaining");
 
   React.useEffect(() => {
     function countDown() {
