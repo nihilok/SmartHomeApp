@@ -22,5 +22,5 @@ export function CountDown({ endTime }: Props) {
     return () => clearInterval(interval);
   }, [endTime]);
 
-  return <div>{remaining}</div>;
+  return <>{remaining}</>;
 }
