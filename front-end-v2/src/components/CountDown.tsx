@@ -13,7 +13,7 @@ export function CountDown({endTime}: Props) {
             const timeLeft = endTime - Date.now()/1000;
             const minutes = Math.floor(timeLeft % (60 * 60 * 24) / (60));
             const seconds = Math.floor(timeLeft % (60));
-            setRemaining(`${minutes} mins ${seconds} secs remaining`)
+            setRemaining(`${minutes}:${seconds} remaining`)
         }
         countDown()
         let interval: ReturnType<typeof setInterval>
