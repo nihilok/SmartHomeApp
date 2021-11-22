@@ -14,8 +14,9 @@ from pydantic import BaseModel
 
 from .custom_datetimes import BritishTime
 from .telegram_bot import send_message
+from ..logger import get_logger
 
-logging.basicConfig(level=logging.WARNING)
+logger = get_logger()
 
 
 class Advance(BaseModel):
@@ -46,7 +47,7 @@ class HeatingSystem:
         self.pi = pigpio.pi()
         self.gpio_pin = gpio_pin
         self.temperature_url = temperature_url
-        self.error: bool = False
+        self.error: list[bool, bool] = [False, False]
         self.conf = self.get_or_create_config()
         self.measurements = self.get_measurements()
         self.advance_on = None
@@ -78,9 +79,12 @@ class HeatingSystem:
         return not not self.pi.read(self.gpio_pin)
 
     def thermostat_control(self):
-        if self.too_cold is True:
+        check = self.too_cold
+        if check is True:
+            logger.debug('too cold')
             self.switch_on_relay()
-        elif self.too_cold is False:
+        elif check is False:
+            logger.debug('warm enough')
             self.switch_off_relay()
 
     def main_loop(self):
@@ -96,8 +100,10 @@ class HeatingSystem:
         """Turns on heating if house is below 5'C to prevent ice damage"""
         temp = float(self.temperature)
         if temp < 5:
+            logger.debug('Frost stat warning (below 5`C)')
             self.switch_on_relay()
         elif temp > 6:
+            logger.debug('Frost stat warning resolved (above 6`C)')
             self.switch_off_relay()
 
     def program_on(self):
@@ -116,49 +122,35 @@ class HeatingSystem:
         self.backup_scheduler.start()
         self.save_state()
 
-    def get_or_create_config(self):
-        try:
-            with open(self.config_file, "r") as f:
-                file_dict = json.load(f)
-                conf = HeatingConf(**file_dict)
-        except Exception as e:
-            logging.error(str(e))
-            conf = HeatingConf(
-                target=20,
-                on_1="06:30",
-                off_1="08:30",
-                on_2="20:30",
-                off_2="22:30",
-                program_on=True,
-            )
-            with open(self.config_file, "w") as f:
-                json.dump(jsonable_encoder(conf), f)
-        return conf
-
     def get_measurements(self) -> dict:
         """Gets measurements from temperature sensor and handles errors,
         by returning the last known set of measurements or a default"""
         try:
             req = requests.get(self.temperature_url)
-            if req.status_code == 200 and self.error:
-                self.error = False
+            if req.status_code == 200 and any(self.error):
+                self.error = [False, False]
             self.measurements = req.json()
         except Exception as e:
-            if not self.error:
-                send_message(f'{__name__}: {e.__class__.__name__}: {str(e)}')
+            if not self.error[0]:
+                log_msg = f"{__name__}: {e.__class__.__name__}: {str(e)}"
+                logger.error(log_msg)
+                send_message(log_msg)
+                self.error[0] = True
         try:
             return self.measurements
         except AttributeError as e:
-            if not self.error:
-                send_message(f'{__name__}: {e.__class__.__name__}: No measurements found on first load')
-                self.error = True
+            if not self.error[1]:
+                log_msg = f"{__name__}: {e.__class__.__name__}: No measurements found on first load"
+                logger.error(log_msg)
+                send_message(log_msg)
+                self.error[1] = True
             return {"temperature": 20, "pressure": 0, "humidity": 0}
 
     def check_temp(self) -> Optional[bool]:
         target = float(self.conf.target)
         current = self.temperature
-        msg = f"\ntarget: {target}\ncurrent: {current}"
-        logging.debug(msg)
+        msg = f"target: {target}, current: {current}"
+        logger.debug(msg)
         if target - self.THRESHOLD > current:
             return True
         elif target <= current:
@@ -188,6 +180,9 @@ class HeatingSystem:
             ):
                 return True
         except ValueError:
+            logger.warning(
+                f"ValueError while checking time (times: {self.conf.on_1,self.conf.off_1,self.conf.on_2,self.conf.off_2})"
+            )
             return False
 
     def save_state(self):
@@ -208,14 +203,17 @@ class HeatingSystem:
 
     def switch_on_relay(self):
         if not self.relay_state:
+            logger.debug('Switching on relay')
             self.pi.write(self.gpio_pin, 1)
 
     def switch_off_relay(self):
         if self.relay_state:
+            logger.debug('Switching off relay')
             self.pi.write(self.gpio_pin, 0)
 
     async def async_advance(self, mins: int = 30):
         if not self.advance_on:
+            logger.debug('Advance starting')
             self.scheduler.pause()
             self.advance_on = time.time()
             self.conf.advance = Advance(on=True, start=self.advance_on)
@@ -226,12 +224,14 @@ class HeatingSystem:
                     break
                 self.thermostat_control()
                 await asyncio.sleep(60)
+        logger.debug('Advance already started')
 
     async def start_advance(self, mins: int = 30):
         loop = asyncio.get_running_loop()
         loop.create_task(self.async_advance(mins))
         while not self.advance_on:
-            await asyncio.sleep(.1)
+            await asyncio.sleep(0.1)
+        logger.debug(f'Started at {BritishTime.fromtimestamp(self.advance_on)}')
         return self.advance_on
 
     def cancel_advance(self):
@@ -239,5 +239,25 @@ class HeatingSystem:
         self.advance_on = None
         self.conf.advance = Advance(on=False)
         self.scheduler.resume()
+        logger.debug('Advance cancelled')
         self.main_loop()
         self.save_state()
+
+    def get_or_create_config(self):
+        try:
+            with open(self.config_file, "r") as f:
+                file_dict = json.load(f)
+                conf = HeatingConf(**file_dict)
+        except Exception as e:
+            logging.error(str(e))
+            conf = HeatingConf(
+                target=20,
+                on_1="06:30",
+                off_1="08:30",
+                on_2="20:30",
+                off_2="22:30",
+                program_on=True,
+            )
+            with open(self.config_file, "w") as f:
+                json.dump(jsonable_encoder(conf), f)
+        return conf

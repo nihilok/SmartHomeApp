@@ -18,6 +18,7 @@ import AcUnitIcon from "@mui/icons-material/AcUnit";
 import { Barometer } from "../Barometer/Barometer";
 import { TopBar } from "../Custom/TopBar";
 import { CountDown } from "../CountDown";
+import {RecentActors} from "@mui/icons-material";
 
 export function SettingsForm() {
   interface Override {
@@ -42,10 +43,10 @@ export function SettingsForm() {
   }
 
   interface APIResponse {
-    indoor_temperature?: number;
-    sensor_readings?: Sensors;
-    relay_on?: boolean;
-    advance?: Override;
+    indoor_temperature: number;
+    sensor_readings: Sensors;
+    relay_on: boolean;
+    advance: Override;
     conf?: HeatingConfig;
   }
 
@@ -96,9 +97,8 @@ export function SettingsForm() {
     setConfig({ ...config, [event.target.name]: event.target.value });
   }
 
-  const parseData = React.useCallback((data: APIResponse) => {
-    if (data.conf) {
-      const { on_1, off_1, on_2, off_2, program_on, target } = data.conf;
+  const parseConf = React.useCallback((conf: HeatingConfig) => {
+    const { on_1, off_1, on_2, off_2, program_on, target } = conf;
       if (!on_2 && !off_2) setRow2(false);
       else setRow2(true);
       setConfig({
@@ -109,23 +109,17 @@ export function SettingsForm() {
         program_on,
         target,
       });
+  }, [])
+
+  const parseData = React.useCallback((data: APIResponse) => {
+    if (data.conf) {
+      parseConf(data.conf)
     }
-    setOverride(data.advance ?? { on: false });
-    if (data.sensor_readings !== undefined && data.sensor_readings !== null) {
-      setReadings(
-        data.sensor_readings ?? { temperature: 0, pressure: 0, humidity: 0 }
-      );
-    }
-    if (
-      data.indoor_temperature !== undefined &&
-      data.indoor_temperature !== null
-    ) {
-      setCurrentTemp(data.indoor_temperature);
-    }
-    if (data.relay_on === false || data.relay_on === true) {
-      setRelayOn(data.relay_on);
-    }
-  }, []);
+    setOverride(data.advance);
+    setReadings(data.sensor_readings);
+    setCurrentTemp(data.indoor_temperature);
+    setRelayOn(data.relay_on);
+  }, [parseConf]);
 
   const getSettings = React.useCallback(async () => {
     console.debug("Getting settings");
@@ -227,7 +221,7 @@ export function SettingsForm() {
       res.json().then((data) => {
         if (res.status !== 200) return console.log(data);
         lockRef.current = true;
-        parseData(data);
+        parseConf(data.conf)
       })
     );
   }
@@ -272,7 +266,6 @@ export function SettingsForm() {
         })
       );
     }
-
     let interval = setInterval(getInfo, TEMPERATURE_INTERVAL);
     return () => clearInterval(interval);
   }, [fetch, parseData]);
@@ -424,6 +417,7 @@ export function SettingsForm() {
                       label="On 2"
                       name="on_2"
                       type="time"
+                      required={true}
                       value={config.on_2 || ""}
                       InputLabelProps={{
                         shrink: true,
@@ -449,6 +443,7 @@ export function SettingsForm() {
                       label="Off 2"
                       type="time"
                       name="off_2"
+                      required={true}
                       value={config.off_2 || ""}
                       InputLabelProps={{
                         shrink: true,

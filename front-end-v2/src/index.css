@@ -102,9 +102,16 @@ input {
   justify-content: space-evenly;
 }
 
-input[type=time],
-input[type=time]::-webkit-inner-spin-button,
-input[type=time]::-webkit-outer-spin-button {
+input[type="time"],
+input[type="time"]::-webkit-inner-spin-button,
+input[type="time"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+input[type="time"]::-webkit-clear-button,
+input[type="time"]::-webkit-clear-button {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;

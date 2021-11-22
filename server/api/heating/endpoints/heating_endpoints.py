@@ -127,7 +127,7 @@ async def heating(conf: bool = False):
         "indoor_temperature": hs.temperature,
         "sensor_readings": hs.measurements,
         "relay_on": hs.relay_state,
-        "advance": hs.conf.advance,
+        "advance": hs.conf.advance or Advance(on=False),
     }
     if conf:
         context["conf"] = hs.conf
