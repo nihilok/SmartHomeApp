@@ -217,6 +217,7 @@ class HeatingSystem:
             self.scheduler.pause()
             self.advance_on = time.time()
             self.conf.advance = Advance(on=True, start=self.advance_on)
+            self.save_state()
             check = self.advance_on
             while check > time.time() - (mins * 60):
                 if self.within_program_time or not self.advance_on:
@@ -257,6 +258,7 @@ class HeatingSystem:
                 on_2="20:30",
                 off_2="22:30",
                 program_on=True,
+                advance=Advance(on=False)
             )
             with open(self.config_file, "w") as f:
                 json.dump(jsonable_encoder(conf), f)

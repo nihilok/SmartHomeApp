@@ -11,3 +11,8 @@ export function checkTimeStringWithinLimit(on: string, off: string) {
     if (parseInt(off.split(":")[1]) <= timeNow.getMinutes()) return false;
   return true;
 }
+
+
+export function checkResponse(data: any, setState: (input: any)=>void) {
+  if (data !== null && data !== undefined) setState(data)
+}

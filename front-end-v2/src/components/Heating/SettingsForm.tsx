@@ -6,7 +6,7 @@ import { StyledTooltip } from "../Custom/StyledTooltip";
 import { StyledTextField } from "../Custom/StyledTextField";
 import { TEMPERATURE_INTERVAL } from "../../constants/constants";
 import { useFetchWithToken } from "../../hooks/FetchWithToken";
-import { checkTimeStringWithinLimit } from "../../lib/helpers";
+import {checkResponse, checkTimeStringWithinLimit} from "../../lib/helpers";
 import { FullScreenLoader } from "../Loaders/FullScreenLoader";
 import { HelpButton } from "../HelpButton/HelpButton";
 import { FullScreenComponent } from "../Custom/FullScreenComponent";
@@ -115,10 +115,10 @@ export function SettingsForm() {
     if (data.conf) {
       parseConf(data.conf)
     }
-    setOverride(data.advance);
-    setReadings(data.sensor_readings);
-    setCurrentTemp(data.indoor_temperature);
-    setRelayOn(data.relay_on);
+    checkResponse(data.sensor_readings, setReadings);
+    checkResponse(data.advance, setOverride)
+    checkResponse(data.indoor_temperature, setCurrentTemp)
+    checkResponse(data.relay_on, setRelayOn)
   }, [parseConf]);
 
   const getSettings = React.useCallback(async () => {
