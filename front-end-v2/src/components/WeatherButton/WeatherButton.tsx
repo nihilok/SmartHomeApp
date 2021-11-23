@@ -63,8 +63,8 @@ export function WeatherButton() {
   }, [weatherCallback]);
 
   React.useEffect(() => {
-    setSunrise(weather?.current?.sunrise as number *1000);
-    setSunset(weather?.current?.sunset as number *1000);
+    setSunrise((weather?.current?.sunrise as number) * 1000);
+    setSunset((weather?.current?.sunset as number) * 1000);
   }, [weather?.current?.sunrise, weather?.current?.sunset]);
 
   const content = (
@@ -77,8 +77,10 @@ export function WeatherButton() {
         {weather?.current?.weather[0]?.description}){" "}
       </p>
       <p>
-        Sunrise/set: {new Date(sunrise as number).toLocaleTimeString()}/
-        {new Date(sunset as number).toLocaleTimeString()}
+        Sunrise/set: {new Date(sunrise as number).getHours()}:
+        {new Date(sunrise as number).getMinutes()}/
+        {new Date(sunset as number).getHours()}:
+        {new Date(sunset as number).getMinutes()}
       </p>
     </>
   );
