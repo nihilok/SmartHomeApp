@@ -63,8 +63,8 @@ export function WeatherButton() {
   }, [weatherCallback]);
 
   React.useEffect(() => {
-    setSunrise(weather?.current?.sunrise);
-    setSunset(weather?.current?.sunset);
+    setSunrise(weather?.current?.sunrise as number *1000);
+    setSunset(weather?.current?.sunset as number *1000);
   }, [weather?.current?.sunrise, weather?.current?.sunset]);
 
   const content = (
