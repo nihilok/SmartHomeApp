@@ -70,7 +70,7 @@ export function WeatherButton() {
         {weather?.current?.weather[0]?.description}){" "}
       </p>
       <p>
-        Sunrise/set: {weather?.current?.sunrise}/{weather?.current?.sunset}
+        Sunrise/set: {new Date(weather?.current?.sunrise as number).getHours()}:{new Date(weather?.current?.sunrise as number).getMinutes()}/{new Date(weather?.current?.sunset as number).getHours()}:{new Date(weather?.current?.sunset as number).getMinutes()}
       </p>
     </>
   );
