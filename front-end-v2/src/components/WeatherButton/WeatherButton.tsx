@@ -29,6 +29,8 @@ export function WeatherButton() {
   const [open, setOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [weather, setWeather] = React.useState<Weather>();
+  const [sunrise, setSunrise] = React.useState<number>();
+  const [sunset, setSunset] = React.useState<number>();
 
   const fetch = useFetchWithToken();
 
@@ -60,6 +62,11 @@ export function WeatherButton() {
     weatherCallback();
   }, [weatherCallback]);
 
+  React.useEffect(() => {
+      setSunrise(weather?.current?.sunrise)
+      setSunset(weather?.current?.sunset)
+  }, [weather?.current?.sunrise, weather?.current?.sunset])
+
   const content = (
     <>
       <h3>Weather</h3>
@@ -70,7 +77,7 @@ export function WeatherButton() {
         {weather?.current?.weather[0]?.description}){" "}
       </p>
       <p>
-        Sunrise/set: {new Date(weather?.current?.sunrise as number).getHours()}:{new Date(weather?.current?.sunrise as number).getMinutes()}/{new Date(weather?.current?.sunset as number).getHours()}:{new Date(weather?.current?.sunset as number).getMinutes()}
+        Sunrise/set: {new Date(sunrise as number).getHours()}:{new Date(sunrise as number).getMinutes()}/{new Date(sunset as number).getHours()}:{new Date(sunset as number).getMinutes()}
       </p>
     </>
   );
