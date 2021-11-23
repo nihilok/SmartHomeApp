@@ -63,11 +63,11 @@ export function WeatherButton() {
   const content = (
     <>
       <h3>Weather</h3>
-      <p>Outdoor Temperature: {weather?.current.temp}&deg;C</p>
-      <p>Feels Like: {weather?.current.feels_like}&deg;C</p>
+      <p>Outdoor Temperature: {weather?.current?.temp}&deg;C</p>
+      <p>Feels Like: {weather?.current?.feels_like}&deg;C</p>
       <p>
-        Weather: {weather?.current.weather[0]?.main} (
-        {weather?.current.weather[0]?.description})
+        Weather: {weather?.current?.weather[0]?.main} (
+        {weather?.current?.weather[0]?.description})
       </p>
     </>
   );

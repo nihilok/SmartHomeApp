@@ -9,6 +9,7 @@ import { LOGIN, LOGOUT } from "../../context/AuthContext";
 import { FullScreenComponent } from "../Custom/FullScreenComponent";
 import { useSnackbar } from "notistack";
 import { useTelegramDebugMessage } from "../../hooks/TelegramBot";
+import {useFetchWithToken} from "../../hooks/FetchWithToken";
 
 export default function LoginForm() {
   const { context, dispatch } = useAuthContext();
@@ -26,14 +27,14 @@ export default function LoginForm() {
 
   let history = useHistory();
 
+  const fetchWithToken = useFetchWithToken();
+
   const checkToken = React.useCallback(async () => {
     const localToken: string | null = localStorage.getItem("token");
     if (!localToken) return;
     const token = JSON.parse(localToken);
-    fetch(`${context.apiBaseUrl}/check_token/`, {
-      method: "POST",
-      body: JSON.stringify(token),
-    })
+    console.log(token)
+    fetchWithToken(`/check_token/`)
       .then((response) =>
         response.json().then((data) => {
           if (response.status !== 200) {
@@ -119,6 +120,7 @@ export default function LoginForm() {
           console.log(error)
         );
         enqueueSnackbar(message, { variant: "error" });
+        setState(p=>({...p, errorMessage: null}))
       }
     },
     [enqueueSnackbar, sendMessage]
