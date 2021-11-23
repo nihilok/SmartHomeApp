@@ -78,3 +78,5 @@ self.addEventListener('message', (event) => {
 });
 
 // Any other custom service worker logic can go here.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const VERSION_NO = '0.2.0'
