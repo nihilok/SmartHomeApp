@@ -86,7 +86,7 @@ export function WeatherButton() {
         {weather?.current?.weather[0]?.description}){" "}
       </p>
       <p>
-        Sunrise/set: {sunrise}/{sunset}
+        Sunrise/set: {sunrise} / {sunset}
       </p>
     </>
   );
