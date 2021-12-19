@@ -3,7 +3,7 @@
 
 ###### Recent changes:
 
-- This repository has now been succeded (sort of) by [OpenCentralHeating](https://github.com/nihilok/OpenCentralHeating) which focuses just on the central heating feautures.
+- This repository has now been succeded (sort of) by [OpenCentralHeating](https://github.com/nihilok/OpenCentralHeating) which focuses just on the central heating features.
 
 ### Installation:
 
