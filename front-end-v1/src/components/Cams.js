@@ -21,7 +21,7 @@ function Cams(props) {
         <>
         <Header text='Cams' back={'/'}/>
         <div className={"flex-col-center container"}>
-            <div className="cam-screen"><div className="cam-title"><h3>Car <span ref={clock}>{time}</span></h3></div><img src={`${authState.camUrl}?t=${param}`} className={"cam-feed"} alt={"cam_feed"}/></div>
+            <div className="cam-screen"><div className="cam-title"><h3>Car <span ref={clock}>{time}</span></h3></div><img src={`${authState.camUrl}?t=${param}&hackers_fuck_off`} className={"cam-feed"} alt={"cam_feed"}/></div>
         </div>
         </>
     );

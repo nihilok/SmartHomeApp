@@ -27,12 +27,13 @@ import {
     faVideo,
     faCheckCircle,
     faClock,
-    faCalendarAlt
+    faCalendarAlt,
+    faLightbulb
 } from '@fortawesome/free-solid-svg-icons'
 import {BrowserRouter as Router} from "react-router-dom";
 import {ToastProvider} from "./contexts/ToastContext";
 
-library.add(faBaby, faCog, faCalendarAlt, faClock, faPizzaSlice, faFireAlt, faShoppingCart, faRoute, faMusic, faTasks, faMoneyBillWave, faArrowLeft, faTimes, faVideo, faCheckCircle)
+library.add(faLightbulb, faBaby, faCog, faCalendarAlt, faClock, faPizzaSlice, faFireAlt, faShoppingCart, faRoute, faMusic, faTasks, faMoneyBillWave, faArrowLeft, faTimes, faVideo, faCheckCircle)
 
 
 ReactDOM.render(
