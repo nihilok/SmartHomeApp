@@ -10,7 +10,7 @@ const ListItem = ({item, deleteItem}) => {
     const itemText = itemRef.current;
     if (itemText) {
       itemText.style.textDecoration = 'line-through';
-      setCompleted(true)
+      setCompleted(true);
     }
   }
 
@@ -18,17 +18,17 @@ const ListItem = ({item, deleteItem}) => {
     const itemText = itemRef.current;
     if (itemText) {
       itemText.style.textDecoration = 'none';
-      setCompleted(false)
+      setCompleted(false);
     }
   }
 
   const handleUndo = () => {
-    timeout.current = setTimeout(undoMarkCompleted, 500)
+    timeout.current = setTimeout(undoMarkCompleted, 500);
   }
 
   function handleDelete() {
-    clearTimeout(timeout.current)
-    setTimeout(deleteItem, 100)
+    clearTimeout(timeout.current);
+    setTimeout(deleteItem, 100);
   }
 
 
