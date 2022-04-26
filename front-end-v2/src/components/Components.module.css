@@ -1,0 +1,33 @@
+.MainMenu {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+}
+
+.MenuItem {
+    margin: 0 2rem;
+    display: flex;
+    width: 15rem;
+    justify-content: center;
+    align-items: center;
+    height: 3rem;
+    border-radius: .25rem;
+    background-color: var(--content-bg);
+    box-shadow: var(--box-shadow);
+    text-decoration: none;
+    outline: none;
+    color: inherit;
+    user-select: none;
+}
+
+.MenuItem:hover, .MenuItem:focus {
+    background-color: white;
+    box-shadow: var(--box-shadow-low);
+}
+
+.MenuItem:visited {
+}
